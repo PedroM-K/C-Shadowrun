@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08090b">
+  <meta name="description"
+    content="Shadowrun: Anarchy - Terminal Clandestino de Gerenciamento de Runner (100% Client-side, Offline, PWA)">
+  <title>SHADOWRUN // ANARCHY - RUNNER TERMINAL</title>
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="apple-touch-icon" href="./icons/icon.svg">
+
+  <!-- Tactical Style Sheets -->
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/animations.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+</head>
+
+<body>
+  <div class="terminal-shell">
+
+    <!-- ===================================================================
+         TACTICAL HEADER (SYSTEM HUD BAR)
+         =================================================================== -->
+    <header class="terminal-header">
+      <div class="header-left">
+        <button id="btn-mobile-nav" class="btn-term btn-term-sm mobile-nav-toggle" aria-label="Abrir Menu">
+          ☰
+        </button>
+        <span class="sys-logo-tag">SYS // SRA-2080</span>
+        <div class="sys-title-group">
+          <h1>SHADOWRUN <span style="color: var(--term-green);">// ANARCHY</span></h1>
+          <div class="sub">CLANDESTINE RUNNER MANAGEMENT OS</div>
+        </div>
+      </div>
+
+      <!-- Center HUD Stat Indicators -->
+      <div class="header-center">
+        <div class="hud-stat-pill">
+          <span>USER:</span>
+          <strong id="header-user-display" style="color: var(--term-green);">---</strong>
+        </div>
+        <div class="hud-stat-pill">
+          <span>NODE:</span>
+          <span class="sys-tag" style="color: var(--term-cyan);">LOCAL_SECURE</span>
+        </div>
+        <div class="hud-stat-pill">
+          <span>STATUS:</span>
+          <span class="led-indicator led-green"></span>
+          <span style="color: var(--text-bright);">ONLINE</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="header-right">
+        <button id="btn-header-dice" class="btn-term btn-term-primary" title="Abrir Matrix Dice Roller">
+          ROLAR D6
+        </button>
+        <button id="btn-header-export" class="btn-term" title="Exportar JSON da Ficha">
+          EXPORTAR
+        </button>
+        <button id="btn-header-import" class="btn-term" title="Importar JSON da Ficha">
+          IMPORTAR
+        </button>
+        <input type="file" id="file-import-input" accept=".json,application/json" style="display: none;" />
+      </div>
+    </header>
+
+    <!-- ===================================================================
+         WORKSPACE: FIXED SIDEBAR + MAIN CONTENT DECK
+         =================================================================== -->
+    <div class="terminal-workspace">
+
+      <!-- Tactical Sidebar Navigation -->
+      <aside class="terminal-sidebar" id="terminal-sidebar">
+        <!-- Runner Identity Mini-Dossier -->
+        <div class="sidebar-runner-card bracket-box">
+          <div class="tag">// ACTIVE RUNNER</div>
+          <div id="sidebar-alias-display" class="alias">---</div>
+          <div class="sub-meta">
+            <span id="sidebar-meta-display">---</span>
+            <span id="sidebar-arch-display" style="color: var(--term-green);">---</span>
+          </div>
+        </div>
+
+        <!-- 10 Technical Sections -->
+        <nav class="sidebar-nav-list" aria-label="Navegação do Terminal">
+          <button class="nav-link-btn active" data-tab="overview">
+            <span class="nav-idx">01</span> // PERFIL & MARCAS
+          </button>
+          <button class="nav-link-btn" data-tab="attributes">
+            <span class="nav-idx">02</span> // ATRIBUTOS & BIO
+          </button>
+          <button class="nav-link-btn" data-tab="skills">
+            <span class="nav-idx">03</span> // PERÍCIAS DE AÇÃO
+          </button>
+          <button class="nav-link-btn" data-tab="combat">
+            <span class="nav-idx">04</span> // COMBATE & MONITORES
+          </button>
+          <button class="nav-link-btn" data-tab="weapons">
+            <span class="nav-idx">05</span> // ARSENAL REGISTRADO
+          </button>
+          <button class="nav-link-btn" data-tab="amps">
+            <span class="nav-idx">06</span> // SHADOW AMPS
+          </button>
+          <button class="nav-link-btn" data-tab="gear">
+            <span class="nav-idx">07</span> // INVENTÁRIO & VEÍCULOS
+          </button>
+          <button class="nav-link-btn" data-tab="contacts">
+            <span class="nav-idx">08</span> // REDE DE CONTATOS
+          </button>
+          <button class="nav-link-btn" data-tab="notes">
+            <span class="nav-idx">09</span> // DOSSIÊ DE MISSÃO
+          </button>
+          <button class="nav-link-btn" data-tab="data">
+            <span class="nav-idx">10</span> // SISTEMA & DADOS
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Tactical Deck -->
+      <main class="terminal-main-deck">
+
+        <!-- =================================================================
+             01 // PERFIL DO RUNNER & MARCAS (CUES & DISPOSITIONS)
+             ================================================================= -->
+        <section id="tab-overview" class="tab-pane active">
+          <!-- Hero Component: Anarchy Points -->
+          <div class="anarchy-hero-card">
+            <div class="anarchy-label-group">
+              <div class="tag">// SRA TACTICAL RESOURCE</div>
+              <div class="title">PONTOS DE TRAMA (ANARCHY POINTS)</div>
+              <div class="desc">Recurso narrativo para assumir a cena, tomar iniciativa ou contra-atacar.</div>
+            </div>
+            <div class="anarchy-counter-box">
+              <div id="val-plot-points-hero" class="anarchy-digital-val">00</div>
+              <div class="stepper-tactical">
+                <button id="btn-plot-dec" title="Gastar Ponto de Trama">-</button>
+                <span id="val-plot-points" class="val">0</span>
+                <button id="btn-plot-inc" title="Ganhar Ponto de Trama">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="deck-grid-2">
+            <!-- Left: Identity Dossier -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">01.1 //</span> DOSSIÊ DO RUNNER
+                </div>
+                <span class="sys-tag" style="color: var(--term-green);">IDENT_RECORD</span>
+              </div>
+              <div class="term-panel-body">
+
+                <!-- Hero Street Name Input -->
+                <div class="field-block" style="margin-bottom: 1.25rem;">
+                  <div class="field-label">
+                    <span>NOM DE GUERRE (STREET NAME)</span>
+                    <span class="code">CODE: ALIAS_SEC</span>
+                  </div>
+                  <input type="text" id="char-alias" class="field-input identity-field" data-field="alias"
+                    style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 700; color: var(--term-green); letter-spacing: 1px;"
+                    placeholder="Ex: Ghostwire" />
+                </div>
+
+                <div class="deck-grid-2">
+                  <div class="field-block">
+                    <div class="field-label">NOME LEGAL / REGISTRADO</div>
+                    <input type="text" id="char-name" class="field-input identity-field" data-field="name"
+                      placeholder="Ex: Jax Valentine" />
+                  </div>
+                  <div class="field-block">
+                    <div class="field-label">METATIPO</div>
+                    <select id="char-metatype" class="field-input identity-field" data-field="metatype">
+                      <option value="Human">Humano (+1 Edge)</option>
+                      <option value="Elf">Elfo (Visão Penumbra / Agilidade)</option>
+                      <option value="Dwarf">Anão (Termo / Resistência)</option>
+                      <option value="Ork">Ork (Visão Penumbra / Físico)</option>
+                      <option value="Troll">Troll (Termo / Armadura Dérmica +1)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="deck-grid-2">
+                  <div class="field-block">
+                    <div class="field-label">ARQUÉTIPO / FUNÇÃO</div>
+                    <input type="text" id="char-archetype" class="field-input identity-field" data-field="archetype"
+                      placeholder="Ex: Street Samurai, Decker, Rigger..." />
+                  </div>
+                  <div class="field-block">
+                    <div class="field-label">MATRIZ SOBRENATURAL</div>
+                    <select id="char-awakenedType" class="field-input identity-field" data-field="awakenedType">
+                      <option value="mundane">Mundano (Sem Magia / Ressonância)</option>
+                      <option value="awakened_mage">Desperto: Mago / Xamã</option>
+                      <option value="awakened_adept">Desperto: Adepto Físico</option>
+                      <option value="emerged_techno">Emergido: Tecnomante</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                  <div class="field-block">
+                    <div class="field-label">GÊNERO</div>
+                    <input type="text" id="char-gender" class="field-input identity-field" data-field="gender" />
+                  </div>
+                  <div class="field-block">
+                    <div class="field-label">IDADE</div>
+                    <input type="text" id="char-age" class="field-input identity-field" data-field="age" />
+                  </div>
+                  <div class="field-block">
+                    <div class="field-label">ALTURA</div>
+                    <input type="text" id="char-height" class="field-input identity-field" data-field="height" />
+                  </div>
+                  <div class="field-block">
+                    <div class="field-label">PESO</div>
+                    <input type="text" id="char-weight" class="field-input identity-field" data-field="weight" />
+                  </div>
+                </div>
+
+                <!-- Financial & Karma Block -->
+                <div
+                  style="background: var(--bg-elevated); border: 1px solid var(--border-panel); padding: 0.85rem; border-radius: var(--radius-xs); margin-top: 0.75rem;">
+                  <div class="deck-grid-2">
+                    <div class="field-block" style="margin-bottom: 0;">
+                      <div class="field-label">KARMA DISPONÍVEL</div>
+                      <input type="number" id="char-karma" class="field-input field-input-mono identity-field"
+                        data-field="karma" style="font-weight: 700; color: var(--term-green);" />
+                    </div>
+                    <div class="field-block" style="margin-bottom: 0;">
+                      <div class="field-label">SALDO EM CREDSTICK (¥)</div>
+                      <input type="number" id="char-nuyen" class="field-input field-input-mono identity-field"
+                        data-field="nuyen" style="font-weight: 700; color: var(--term-amber);" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Cues & Dispositions (SRA Narrative Architecture) -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">01.2 //</span> MARCAS & DISPOSIÇÕES (SRA)
+                </div>
+                <span class="sys-tag" style="color: var(--term-purple);">NARRATIVE_LOG</span>
+              </div>
+              <div class="term-panel-body">
+
+                <!-- Cues Section -->
+                <div style="margin-bottom: 1.5rem;">
+                  <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <div class="field-label" style="margin-bottom: 0;">FRASES DE EFEITO (CUES)</div>
+                    <button id="btn-add-cue" class="btn-term btn-term-sm">+ DICA</button>
+                  </div>
+                  <div id="cues-list-container"></div>
+                </div>
+
+                <!-- Dispositions Section -->
+                <div>
+                  <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <div class="field-label" style="margin-bottom: 0;">DISPOSIÇÕES & ATITUDE</div>
+                    <button id="btn-add-disp" class="btn-term btn-term-sm">+ DISPOSIÇÃO</button>
+                  </div>
+                  <div id="dispositions-list-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             02 // ATRIBUTOS PRINCIPAIS & SEGMENTED LED METERS
+             ================================================================= -->
+        <section id="tab-attributes" class="tab-pane">
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">02 //</span> ATRIBUTOS PRIMÁRIOS DO RUNNER
+              </div>
+              <span class="sys-tag" style="color: var(--term-green);">BIO_TELEMETRY</span>
+            </div>
+            <div class="term-panel-body">
+              <div
+                style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 1.25rem;">
+                // TELEMETRIA CORPORAL: Clique em [+] ou [-] para alterar os valores base. Modificadores e limites são
+                computados em tempo real.
+              </div>
+
+              <!-- Segmented Attribute Cards Grid -->
+              <div id="attributes-grid-container" class="attr-tactical-grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             03 // PERÍCIAS DE AÇÃO (SHADOWRUN: ANARCHY)
+             ================================================================= -->
+        <section id="tab-skills" class="tab-pane">
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">03.1 //</span> PERÍCIAS DE AÇÃO TÁTICA
+              </div>
+              <span class="sys-tag" style="color: var(--term-green);">RESERVA // DADO_D6</span>
+            </div>
+            <div class="term-panel-body">
+              <div
+                style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 1rem;">
+                // RESERVA: ATRIBUTO + PERÍCIA + ESPECIALIZAÇÃO (+2) - PENALIDADE DE FERIMENTOS.
+              </div>
+              <div id="skills-list-container"></div>
+            </div>
+          </div>
+
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">03.2 //</span> PERÍCIAS DE CONHECIMENTO & IDIOMAS
+              </div>
+              <button id="btn-add-ks" class="btn-term btn-term-sm">+ CONHECIMENTO</button>
+            </div>
+            <div class="term-panel-body">
+              <div id="knowledge-skills-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             04 // COMBATE TÁTICO & MONITORES DE DANO
+             ================================================================= -->
+        <section id="tab-combat" class="tab-pane">
+          <!-- Tactical HUD Strip -->
+          <div class="tactical-hud-strip">
+            <div class="hud-metric">
+              <span class="label">DEFESA FÍSICA (AGI + LOG)</span>
+              <span id="val-defense-pool" class="num">8</span>
+            </div>
+            <div class="hud-metric">
+              <span class="label">DEFESA MENTAL (WIL + LOG)</span>
+              <span id="val-spell-defense-pool" class="num" style="color: var(--term-cyan);">7</span>
+            </div>
+            <div class="hud-metric">
+              <span class="label">FERIMENTOS ATUAIS</span>
+              <span id="wound-penalty-display" class="num" style="color: var(--term-green);">0</span>
+            </div>
+            <div class="hud-metric" style="align-items: flex-end; justify-content: center;">
+              <button id="btn-heal-all" class="btn-term btn-term-primary btn-term-sm">🩹 RESTAURAR TUDO</button>
+            </div>
+          </div>
+
+          <div class="deck-grid-2">
+            <!-- Damage Monitors -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">04.1 //</span> MONITORES DE DANO (CELL TRACKS)
+                </div>
+                <span class="sys-tag" style="color: var(--term-red);">VITAL_SIGNS</span>
+              </div>
+              <div class="term-panel-body">
+                <!-- Armor Track -->
+                <div class="monitor-deck-card">
+                  <div class="monitor-deck-header">
+                    <span class="monitor-name-tag" style="color: var(--term-amber);">
+                      🛡️ MONITOR DE ARMADURA (ARMOR TRACK)
+                    </span>
+                    <span id="val-armor-count" class="sys-tag" style="color: var(--term-amber);">0 / 9</span>
+                  </div>
+                  <div
+                    style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.5rem;">
+                    // Em Anarchy, a armadura absorve dano físico até se esgotar.
+                  </div>
+                  <div id="track-armor-boxes" class="cell-track-grid"></div>
+                </div>
+
+                <!-- Physical Track -->
+                <div class="monitor-deck-card">
+                  <div class="monitor-deck-header">
+                    <span class="monitor-name-tag" style="color: var(--term-red);">
+                      🩸 MONITOR FÍSICO (8 + FOR/2)
+                    </span>
+                    <span id="val-phys-count" class="sys-tag" style="color: var(--term-red);">0 / 10</span>
+                  </div>
+                  <div id="track-physical-boxes" class="cell-track-grid"></div>
+                </div>
+
+                <!-- Stun Track -->
+                <div class="monitor-deck-card">
+                  <div class="monitor-deck-header">
+                    <span class="monitor-name-tag" style="color: var(--term-cyan);">
+                      ⚡ MONITOR DE ATORDOAMENTO (8 + VON/2)
+                    </span>
+                    <span id="val-stun-count" class="sys-tag" style="color: var(--term-cyan);">0 / 10</span>
+                  </div>
+                  <div id="track-stun-boxes" class="cell-track-grid"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edge Pool & Quick Rolls -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">04.2 //</span> RESERVA DE EDGE & DEFESA RÁPIDA
+                </div>
+                <span class="sys-tag" style="color: var(--term-green);">TACTICAL_ACTIONS</span>
+              </div>
+              <div class="term-panel-body">
+                <!-- Edge Monitor -->
+                <div class="monitor-deck-card"
+                  style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div class="monitor-name-tag" style="color: var(--term-green);">EDGE DISPONÍVEL NA SESSÃO</div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted);">Gaste Edge para rolar novamente falhas ou
+                      usar a Regra dos Seis.</div>
+                  </div>
+                  <div class="stepper-tactical">
+                    <button id="btn-edge-dec">-</button>
+                    <span id="val-edge-count" class="val" style="min-width: 48px; color: var(--term-green);">3 /
+                      3</span>
+                    <button id="btn-edge-inc">+</button>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                  <button id="btn-roll-defense" class="btn-term btn-term-primary"
+                    style="justify-content: space-between;">
+                    <span>TESTE DE DEFESA FÍSICA (AGI + LOG)</span>
+                    <span class="sys-tag">ROLAR</span>
+                  </button>
+                  <button id="btn-roll-spell-defense" class="btn-term" style="justify-content: space-between;">
+                    <span>TESTE DE DEFESA MENTAL / FEITIÇOS</span>
+                    <span class="sys-tag">ROLAR</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             05 // ARSENAL REGISTRADO & WEAPONS
+             ================================================================= -->
+        <section id="tab-weapons" class="tab-pane">
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">05 //</span> ARSENAL REGISTRADO NO SISTEMA
+              </div>
+              <button id="btn-add-weapon" class="btn-term btn-term-primary btn-term-sm">+ REGISTRAR ARMA</button>
+            </div>
+            <div class="term-panel-body">
+              <div id="weapons-list-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             06 // SHADOW AMPS (DIAGNÓSTICO MÉDICO & CYBERWARE)
+             ================================================================= -->
+        <section id="tab-amps" class="tab-pane">
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">06 //</span> SISTEMA DE AMPLIFICAÇÕES (SHADOW AMPS)
+              </div>
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+                  ESSÊNCIA: <strong id="amps-essence-display" style="color: var(--term-cyan);">6.00 / 6.00</strong>
+                </div>
+                <button id="btn-add-amp" class="btn-term btn-term-primary btn-term-sm">+ NOVA AMP</button>
+              </div>
+            </div>
+            <div class="term-panel-body">
+              <!-- Visual Essence Segmented Bar -->
+              <div
+                style="background: var(--bg-elevated); border: 1px solid var(--border-panel); padding: 0.85rem; border-radius: var(--radius-xs); margin-bottom: 1.25rem;">
+                <div
+                  style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; margin-bottom: 0.35rem;">
+                  <span>INTEGRIDADE BIOLÓGICA (ESSENCE)</span>
+                  <span id="amps-essence-percent" style="color: var(--term-cyan);">100% INTATOS</span>
+                </div>
+                <div class="segmented-meter" id="essence-bar-segments"></div>
+              </div>
+
+              <div id="shadow-amps-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             07 // INVENTÁRIO DE EQUIPAMENTOS & VEÍCULOS
+             ================================================================= -->
+        <section id="tab-gear" class="tab-pane">
+          <div class="deck-grid-2">
+            <!-- Gear items -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">07.1 //</span> EQUIPAMENTOS & ITENS
+                </div>
+                <button id="btn-add-gear" class="btn-term btn-term-sm">+ ITEM</button>
+              </div>
+              <div class="term-panel-body">
+                <div id="gear-list-container"></div>
+              </div>
+            </div>
+
+            <!-- Vehicles & Drones -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">07.2 //</span> VEÍCULOS & DRONES
+                </div>
+                <button id="btn-add-veh" class="btn-term btn-term-sm">+ VEÍCULO</button>
+              </div>
+              <div class="term-panel-body">
+                <div id="vehicles-list-container"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             08 // REDE DE CONTATOS & QUALIDADES
+             ================================================================= -->
+        <section id="tab-contacts" class="tab-pane">
+          <div class="deck-grid-2">
+            <!-- Contacts -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">08.1 //</span> REDE DE CONTATOS (FIXERS & DOCS)
+                </div>
+                <button id="btn-add-contact" class="btn-term btn-term-sm">+ CONTATO</button>
+              </div>
+              <div class="term-panel-body">
+                <div id="contacts-list-container"></div>
+              </div>
+            </div>
+
+            <!-- Qualities -->
+            <div class="term-panel bracket-box">
+              <div class="term-panel-header">
+                <div class="term-panel-title">
+                  <span class="prefix">08.2 //</span> QUALIDADES (TRAÇOS & DEFEITOS)
+                </div>
+                <button id="btn-add-quality" class="btn-term btn-term-sm">+ QUALIDADE</button>
+              </div>
+              <div class="term-panel-body">
+                <div id="qualities-list-container"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             09 // DOSSIÊ DE MISSÃO & ANOTAÇÕES
+             ================================================================= -->
+        <section id="tab-notes" class="tab-pane">
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">09 //</span> DIÁRIO DE OPERAÇÕES & NOTAS CLANDESTINAS
+              </div>
+              <span class="sys-tag" style="color: var(--term-green);">ENCRYPTED_LOG</span>
+            </div>
+            <div class="term-panel-body">
+              <textarea id="char-notes" class="field-input field-input-mono"
+                style="min-height: 420px; font-size: 0.95rem; line-height: 1.6;"
+                placeholder="// Insira anotações de corridas, débitos, senhas de Matrix, coordenadas seguras e termos contratuais com megacorporações..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             10 // DATA SYSTEM (DATA MANAGEMENT & EXPORT/IMPORT)
+             ================================================================= -->
+        <section id="tab-data" class="tab-pane">
+          <div class="data-panel-card bracket-box">
+            <div class="term-panel-title" style="margin-bottom: 0.5rem;">
+              <span class="prefix">10 //</span> DATA MANAGEMENT & PERSISTÊNCIA LOCAL
+            </div>
+            <div style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted); line-height: 1.5;">
+              // ARQUITETURA CLIENT-SIDE: Seus dados estão armazenados 100% no seu navegador através de
+              <strong>localStorage</strong>.
+              Nenhum dado é enviado a servidores remotos ou bancos de dados em nuvem. Para transferir entre navegadores
+              ou máquinas, exporte o arquivo <code>.json</code>.
+            </div>
+
+            <div class="data-actions-row">
+              <button id="btn-data-export" class="btn-term btn-term-primary" style="justify-content: flex-start;">
+                EXPORTAR FICHA (.JSON)
+              </button>
+              <button id="btn-data-import" class="btn-term" style="justify-content: flex-start;">
+                IMPORTAR FICHA (.JSON)
+              </button>
+              <button id="btn-data-new" class="btn-term" style="justify-content: flex-start;">
+                CRIAR NOVA FICHA PADRÃO
+              </button>
+              <button id="btn-data-wipe" class="btn-term btn-term-danger" style="justify-content: flex-start;">
+                APAGAR TODOS OS DADOS LOCAIS DO NAVEGADOR
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- ===================================================================
+         FOOTER: SYSTEM STATUS BAR
+         =================================================================== -->
+    <footer class="terminal-footbar">
+      <div class="foot-group">
+        <div class="foot-item">
+          <span>LOCAL STORAGE:</span>
+          <span class="led-indicator led-green"></span>
+          <span style="color: var(--term-green);">OK</span>
+        </div>
+        <div class="foot-item optional">
+          <span>NODE:</span>
+          <span style="color: var(--text-bright);">SECURE_CLIENT</span>
+        </div>
+      </div>
+
+      <div class="foot-group">
+        <div id="footer-save-status" class="foot-item">
+          <span>STATUS:</span>
+          <span class="led-indicator led-green"></span>
+          <span style="color: var(--text-bright);">SALVO LOCALMENTE</span>
+        </div>
+      </div>
+
+      <div class="foot-group">
+        <div class="foot-item">
+          <span>SCHEMA //</span>
+          <span style="color: var(--text-bright);">v1.0-SRA</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- =====================================================================
+       MATRIX D6 DICE ROLLER MODAL
+       ===================================================================== -->
+  <div id="modal-dice-roller" class="modal-backdrop">
+    <div class="modal-window bracket-box">
+      <div class="modal-header">
+        <div>
+          <h3 id="dice-modal-title" style="margin: 0; color: var(--term-green); font-size: 1.05rem;">MATRIX D6 ROLLER
+          </h3>
+          <div id="dice-modal-subtext"
+            style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted);">// TESTE DE RESERVA DE
+            DADOS</div>
+        </div>
+        <button id="btn-close-dice-modal" class="btn-term btn-term-sm" style="border: none;">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 120px;">
+            <label class="field-label" for="dice-pool-input">RESERVA DE DADOS (D6)</label>
+            <input type="number" id="dice-pool-input" class="field-input field-input-mono" min="1" max="50" value="6"
+              style="font-size: 1.4rem; font-weight: 800; text-align: center; color: var(--term-green);" />
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <label
+              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-family: var(--font-mono); cursor: pointer;">
+              <input type="checkbox" id="cb-anarchy-die" checked />
+              <span style="color: var(--term-purple); font-weight: 700;">DADO DE ANARQUIA (SRA)</span>
+            </label>
+            <label
+              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-family: var(--font-mono); cursor: pointer;">
+              <input type="checkbox" id="cb-rule-of-six" />
+              <span style="color: var(--term-cyan);">REGRA DOS SEIS (EDGE EXPLODE 6s)</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="dice-modal-results">
+          <div style="text-align: center; font-family: var(--font-mono); color: var(--text-muted); padding: 1.5rem;">
+            // AGUARDANDO COMANDO DE ROLAGEM...
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-modal-roll-action" class="btn-term btn-term-primary"
+          style="width: 100%; font-size: 0.95rem; padding: 0.65rem;">
+          🎲 EXECUTAR ROLAGEM NA MATRIZ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Main Standalone Client Bundle (Runs offline and on file:// protocol) -->
+  <script src="./js/bundle.js"></script>
+</body>
+
+</html>

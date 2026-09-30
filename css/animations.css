@@ -1,0 +1,76 @@
+/* ==========================================================================
+   SHADOWRUN: ANARCHY - TACTICAL MICRO-ANIMATIONS (100ms - 220ms)
+   Snappy, responsive, zero-delay terminal feedback
+   ========================================================================== */
+
+@keyframes termBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes livePulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+@keyframes terminalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cellFill {
+  0% { transform: scale(0.85); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.anim-fade {
+  animation: terminalFadeIn 0.16s ease-out forwards;
+}
+
+.anim-fill {
+  animation: cellFill 0.14s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}
+
+/* Status Indicators */
+.led-indicator {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.led-green {
+  background: var(--term-green);
+  box-shadow: 0 0 6px var(--term-green);
+  animation: livePulse 2.8s infinite ease-in-out;
+}
+
+.led-amber {
+  background: var(--term-amber);
+  box-shadow: 0 0 6px var(--term-amber);
+  animation: termBlink 0.6s infinite ease-in-out;
+}
+
+.led-red {
+  background: var(--term-red);
+  box-shadow: 0 0 6px var(--term-red);
+}
+
+.led-cyan {
+  background: var(--term-cyan);
+  box-shadow: 0 0 6px var(--term-cyan);
+}
+
+/* Fast hover transitions */
+.fast-transition {
+  transition: all 0.12s ease-in-out;
+}

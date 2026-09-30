@@ -1,0 +1,151 @@
+/* ==========================================================================
+   SHADOWRUN: ANARCHY - CLANDESTINE RUNNER TERMINAL THEME
+   Diegetic 2080 Tactical Operating System // No Generic SaaS / No RGB Gamer
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  /* 4-Layer Graphite Void (Physical Depth) */
+  --bg-void: #050608;
+  --bg-base: #08090b;
+  --bg-panel: #0d0f12;
+  --bg-card: #12151a;
+  --bg-elevated: #181c21;
+  --bg-input: #0a0c0f;
+
+  /* Primary Accent: Phosphor Terminal Green (Controlled, Tactical) */
+  --term-green: #00ff66;
+  --term-green-dim: rgba(0, 255, 102, 0.10);
+  --term-green-border: rgba(0, 255, 102, 0.28);
+  --term-green-glow: 0 0 10px rgba(0, 255, 102, 0.25);
+
+  /* Semantic System Signals */
+  --term-amber: #f59e0b;
+  --term-amber-dim: rgba(245, 158, 11, 0.10);
+  --term-amber-glow: 0 0 10px rgba(245, 158, 11, 0.25);
+
+  --term-red: #ff2a4b;
+  --term-red-dim: rgba(255, 42, 75, 0.12);
+  --term-red-glow: 0 0 10px rgba(255, 42, 75, 0.30);
+
+  --term-cyan: #00e5ff;
+  --term-cyan-dim: rgba(0, 229, 255, 0.10);
+  --term-cyan-glow: 0 0 10px rgba(0, 229, 255, 0.25);
+
+  --term-purple: #b388ff;
+  --term-purple-dim: rgba(179, 136, 255, 0.10);
+
+  /* Textures & Borders */
+  --border-subtle: #1c222b;
+  --border-panel: #242c38;
+  --border-bright: #364252;
+  --border-active: var(--term-green);
+
+  /* Typography */
+  --text-bright: #f0f6fc;
+  --text-main: #c2c9d4;
+  --text-muted: #748092;
+  --text-dim: #444e5d;
+  --text-code: var(--term-green);
+
+  --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Share Tech Mono', 'Consolas', monospace;
+  --font-heading: 'Chakra Petch', 'Space Grotesk', sans-serif;
+
+  /* Dimensions */
+  --header-height: 64px;
+  --footer-height: 38px;
+  --sidebar-width: 250px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14.5px;
+  background-color: var(--bg-void);
+  color: var(--text-main);
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  line-height: 1.45;
+  background-color: var(--bg-base);
+  background-image: 
+    linear-gradient(rgba(18, 22, 28, 0) 50%, rgba(0, 0, 0, 0.22) 50%),
+    linear-gradient(90deg, rgba(0, 255, 102, 0.015) 1px, transparent 1px),
+    linear-gradient(rgba(0, 255, 102, 0.015) 1px, transparent 1px);
+  background-size: 100% 3px, 32px 32px, 32px 32px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Typography Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+code, pre, .mono, .sys-tag, .stat-num {
+  font-family: var(--font-mono);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-panel);
+  border-radius: var(--radius-xs);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--term-green);
+}
+
+/* Focus Outline */
+:focus-visible {
+  outline: 1px solid var(--term-green);
+  outline-offset: 1px;
+}
+
+/* Tactical Corner Brackets */
+.bracket-box {
+  position: relative;
+}
+.bracket-box::before, .bracket-box::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: var(--term-green-border);
+  pointer-events: none;
+}
+.bracket-box::before {
+  top: 0;
+  left: 0;
+  border-top: 1px solid var(--term-green);
+  border-left: 1px solid var(--term-green);
+}
+.bracket-box::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1px solid var(--term-green);
+  border-right: 1px solid var(--term-green);
+}

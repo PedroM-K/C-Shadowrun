@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05070c"/>
+      <stop offset="50%" stop-color="#0b101d"/>
+      <stop offset="100%" stop-color="#05070c"/>
+    </linearGradient>
+
+    <!-- Neon Cyan Glow Gradient -->
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#0099ff"/>
+    </linearGradient>
+
+    <!-- Neon Pink Gradient -->
+    <linearGradient id="pinkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0055"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <!-- Filter Glow -->
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Container with Chamfered Corners -->
+  <rect width="512" height="512" rx="64" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="6"/>
+
+  <!-- Cyber Grid Lines -->
+  <path d="M64 128 L448 128 M64 256 L448 256 M64 384 L448 384" stroke="rgba(0, 240, 255, 0.08)" stroke-width="2"/>
+  <path d="M128 64 L128 448 M256 64 L256 448 M384 64 L384 448" stroke="rgba(0, 240, 255, 0.08)" stroke-width="2"/>
+
+  <!-- Outer HUD Ring with Tech Notches -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="url(#cyanGrad)" stroke-width="6" stroke-dasharray="24 12 48 12" filter="url(#glowCyan)"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="rgba(255, 0, 85, 0.4)" stroke-width="3" stroke-dasharray="16 8"/>
+
+  <!-- Shadowrun: Anarchy "A" Symbol Stylized -->
+  <!-- Left Leg of A -->
+  <line x1="256" y1="120" x2="140" y2="390" stroke="url(#pinkGrad)" stroke-width="24" stroke-linecap="round"/>
+  <!-- Right Leg of A -->
+  <line x1="256" y1="120" x2="372" y2="390" stroke="url(#pinkGrad)" stroke-width="24" stroke-linecap="round"/>
+  <!-- Crossbar extending through the circle -->
+  <line x1="100" y1="280" x2="412" y2="280" stroke="url(#cyanGrad)" stroke-width="24" stroke-linecap="round" filter="url(#glowCyan)"/>
+
+  <!-- Cyberpunk Matrix Node Dots -->
+  <circle cx="256" cy="120" r="14" fill="#00f0ff" filter="url(#glowCyan)"/>
+  <circle cx="140" cy="390" r="14" fill="#ff0055"/>
+  <circle cx="372" cy="390" r="14" fill="#ff0055"/>
+  <circle cx="100" cy="280" r="12" fill="#00ff9d"/>
+  <circle cx="412" cy="280" r="12" fill="#00ff9d"/>
+
+  <!-- Center Matrix Core -->
+  <polygon points="256,220 285,270 227,270" fill="none" stroke="#fff" stroke-width="4"/>
+
+  <!-- Text SRA in Mono Tech Font -->
+  <text x="256" y="450" font-family="'Share Tech Mono', monospace" font-size="28" font-weight="900" fill="#00f0ff" text-anchor="middle" letter-spacing="8">ANARCHY</text>
+</svg>
