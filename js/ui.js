@@ -137,7 +137,7 @@ export function executeModalRoll() {
 /**
  * Main UI Render function invoked on store state change
  */
-export function renderApp(char, derived) {
+export function renderApp(char, derived, eventMeta = {}) {
   if (!char) return;
 
   const alias = char.character.alias || char.character.name || "---";
@@ -154,6 +154,43 @@ export function renderApp(char, derived) {
   if (sidebarAlias) sidebarAlias.textContent = alias.toUpperCase();
   if (sidebarMeta) sidebarMeta.textContent = metatype.toUpperCase();
   if (sidebarArch) sidebarArch.textContent = archetype;
+
+  // Se o usuário está digitando ativamente, NÃO recriar elementos DOM para não perder foco
+  if (eventMeta?.isTyping) {
+    const target = eventMeta.sourceTarget;
+    // Se digitou especialização de perícia, atualiza cirurgicamente a pool da linha
+    if (target && target.classList.contains("skill-spec-input")) {
+      const row = target.closest(".skill-tactical-item");
+      const idx = parseInt(target.getAttribute("data-index"), 10);
+      if (row && !isNaN(idx) && char.skills?.[idx]) {
+        const pool = calculateSkillDicePool(char, char.skills[idx], true);
+        const poolBox = row.querySelector(".pool-box");
+        const rollBtn = row.querySelector(".btn-roll-skill");
+        if (poolBox) poolBox.textContent = `${pool}d6`;
+        if (rollBtn) rollBtn.setAttribute("data-pool", pool);
+      }
+    }
+    // Se digitou custo de essência em shadow amp
+    if (target && target.classList.contains("amp-ess-input")) {
+      const essenceDisplay = document.getElementById("amps-essence-display");
+      const essencePercent = document.getElementById("amps-essence-percent");
+      const essenceSegments = document.getElementById("essence-bar-segments");
+      if (essenceDisplay) essenceDisplay.textContent = `${derived.essence.remaining.toFixed(2)} / 6.00`;
+      if (essencePercent) {
+        const pct = Math.round((derived.essence.remaining / 6.0) * 100);
+        essencePercent.textContent = `${pct}% INTATOS`;
+      }
+      if (essenceSegments) {
+        let segHtml = "";
+        for (let i = 1; i <= 12; i++) {
+          const active = i <= Math.round(derived.essence.remaining * 2);
+          segHtml += `<div class="meter-segment ${active ? "filled essence-segment" : ""}"></div>`;
+        }
+        essenceSegments.innerHTML = segHtml;
+      }
+    }
+    return;
+  }
 
   // 01 // Overview & Cues
   renderOverviewTab(char);
@@ -207,7 +244,9 @@ function renderOverviewTab(char) {
   const cuesContainer = document.getElementById("cues-list-container");
   if (cuesContainer) {
     const cues = char.cues || [];
-    if (cues.length === 0) {
+    if (cuesContainer.contains(document.activeElement) && cuesContainer.querySelectorAll(".cue-input").length === cues.length) {
+      // Usuário está digitando dentro do container de dicas: não recriar DOM
+    } else if (cues.length === 0) {
       cuesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DICA CADASTRADA. CLIQUE EM [+ DICA] PARA ADICIONAR.</div>`;
     } else {
       cuesContainer.innerHTML = cues.map((cue, idx) => `
@@ -224,7 +263,9 @@ function renderOverviewTab(char) {
   const dispContainer = document.getElementById("dispositions-list-container");
   if (dispContainer) {
     const disps = char.dispositions || [];
-    if (disps.length === 0) {
+    if (dispContainer.contains(document.activeElement) && dispContainer.querySelectorAll(".disp-input").length === disps.length) {
+      // Usuário está digitando dentro do container de disposições: não recriar DOM
+    } else if (disps.length === 0) {
       dispContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DISPOSIÇÃO CADASTRADA. CLIQUE EM [+ DISPOSIÇÃO].</div>`;
     } else {
       dispContainer.innerHTML = disps.map((disp, idx) => `
@@ -296,51 +337,75 @@ function renderSkillsTab(char, derived) {
   const container = document.getElementById("skills-list-container");
   if (container) {
     const skills = char.skills || [];
-    container.innerHTML = skills.map((skill, idx) => {
-      const pool = calculateSkillDicePool(char, skill, true);
-      return `
-        <div class="skill-tactical-item" data-index="${idx}">
-          <div>
-            <div class="name">${escapeHtml(skill.name)}</div>
-            <span class="sys-tag" style="color: var(--term-green); font-size: 0.65rem;">// ${escapeHtml(skill.category)}</span>
+    if (container.contains(document.activeElement) && container.querySelectorAll(".skill-tactical-item").length === skills.length) {
+      // Foco ativo mantido no container de perícias
+    } else {
+      let currentCategory = "";
+      let htmlOutput = "";
+
+      skills.forEach((skill, idx) => {
+        const pool = calculateSkillDicePool(char, skill, true);
+        const cat = skill.category || "Geral";
+
+        if (cat !== currentCategory) {
+          currentCategory = cat;
+          const attrUpper = (skill.attr || "").toUpperCase();
+          htmlOutput += `
+            <div class="skills-category-header category-${escapeHtml(skill.attr || 'default')}">
+              <span class="cat-title">// ${escapeHtml(currentCategory.toUpperCase())} (${escapeHtml(attrUpper)})</span>
+              <span class="cat-line"></span>
+            </div>
+          `;
+        }
+
+        htmlOutput += `
+          <div class="skill-tactical-item" data-index="${idx}">
+            <div class="skill-name-col">
+              <div class="name">${escapeHtml(skill.name)}</div>
+              ${skill.description ? `<div class="skill-desc">${escapeHtml(skill.description)}</div>` : ""}
+            </div>
+            <div class="attr-tag attr-tag-${escapeHtml(skill.attr)}">[${escapeHtml((skill.attr || "").toUpperCase())}]</div>
+            <div>
+              <input 
+                type="text" 
+                class="field-input field-input-mono skill-spec-input" 
+                data-index="${idx}" 
+                value="${escapeHtml(skill.spec || "")}" 
+                placeholder="Especialização (+2)..." 
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+              />
+            </div>
+            <div class="stepper-tactical">
+              <button class="btn-skill-dec" data-index="${idx}">-</button>
+              <span class="val">${skill.rating}</span>
+              <button class="btn-skill-inc" data-index="${idx}">+</button>
+            </div>
+            <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
+            <div>
+              <button 
+                class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
+                data-skill-name="${escapeHtml(skill.name)}" 
+                data-pool="${pool}" 
+                data-attr="${escapeHtml(skill.attr)}"
+              >
+                🎲 ROLAR
+              </button>
+            </div>
           </div>
-          <div class="attr-tag">[${escapeHtml(skill.attr)}]</div>
-          <div>
-            <input 
-              type="text" 
-              class="field-input field-input-mono skill-spec-input" 
-              data-index="${idx}" 
-              value="${escapeHtml(skill.spec || "")}" 
-              placeholder="Especialização (+2)..." 
-              style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
-            />
-          </div>
-          <div class="stepper-tactical">
-            <button class="btn-skill-dec" data-index="${idx}">-</button>
-            <span class="val">${skill.rating}</span>
-            <button class="btn-skill-inc" data-index="${idx}">+</button>
-          </div>
-          <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
-          <div>
-            <button 
-              class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
-              data-skill-name="${escapeHtml(skill.name)}" 
-              data-pool="${pool}"
-              data-attr="${escapeHtml(skill.attr)}"
-            >
-              🎲 ROLAR
-            </button>
-          </div>
-        </div>
-      `;
-    }).join("");
+        `;
+      });
+
+      container.innerHTML = htmlOutput;
+    }
   }
 
   // Knowledge Skills
   const ksContainer = document.getElementById("knowledge-skills-container");
   if (ksContainer) {
     const kSkills = char.knowledgeSkills || [];
-    if (kSkills.length === 0) {
+    if (ksContainer.contains(document.activeElement) && ksContainer.querySelectorAll(".ks-name-input").length === kSkills.length) {
+      // Foco ativo mantido nas perícias de conhecimento
+    } else if (kSkills.length === 0) {
       ksContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM CONHECIMENTO REGISTRADO. CLIQUE EM [+ CONHECIMENTO] PARA ADICIONAR IDIOMAS OU SABERES.</div>`;
     } else {
       ksContainer.innerHTML = kSkills.map((ks, idx) => `
@@ -421,6 +486,9 @@ function renderWeaponsTab(char) {
   if (!container) return;
 
   const weapons = char.weapons || [];
+  if (container.contains(document.activeElement) && container.querySelectorAll(".weapon-tactical-card").length === weapons.length) {
+    return;
+  }
   if (weapons.length === 0) {
     container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// ARSENAL VAZIO. CLIQUE EM [+ REGISTRAR ARMA] PARA ADICIONAR SUAS ARMAS DE FOGO OU CORPO A CORPO.</div>`;
     return;
@@ -494,6 +562,9 @@ function renderShadowAmpsTab(char, derived) {
   if (!container) return;
 
   const amps = char.shadowAmps || [];
+  if (container.contains(document.activeElement) && container.querySelectorAll(".amp-diagnostic-item").length === amps.length) {
+    return;
+  }
   if (amps.length === 0) {
     container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// NENHUMA AMPLIFICAÇÃO INSTALADA (ESSÊNCIA 100% PURA: 6.00 / 6.00). CLIQUE EM [+ NOVA AMP] PARA INSTALAR CYBERWARE, BIOWARE, FEITIÇOS OU FORMAS.</div>`;
     return;
@@ -537,7 +608,9 @@ function renderGearTab(char) {
   const gearContainer = document.getElementById("gear-list-container");
   if (gearContainer) {
     const gear = char.gear || [];
-    if (gear.length === 0) {
+    if (gearContainer.contains(document.activeElement) && gearContainer.querySelectorAll(".gear-name-input").length === gear.length) {
+      // Preservar foco em itens
+    } else if (gear.length === 0) {
       gearContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// INVENTÁRIO VAZIO. CLIQUE EM [+ ITEM] PARA ADICIONAR.</div>`;
     } else {
       gearContainer.innerHTML = gear.map((g, idx) => `
@@ -556,7 +629,9 @@ function renderGearTab(char) {
   const vehContainer = document.getElementById("vehicles-list-container");
   if (vehContainer) {
     const vehicles = char.vehicles || [];
-    if (vehicles.length === 0) {
+    if (vehContainer.contains(document.activeElement) && vehContainer.querySelectorAll(".veh-name-input").length === vehicles.length) {
+      // Preservar foco em veículos
+    } else if (vehicles.length === 0) {
       vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO. CLIQUE EM [+ VEÍCULO].</div>`;
     } else {
       vehContainer.innerHTML = vehicles.map((v, idx) => `
@@ -594,7 +669,9 @@ function renderContactsTab(char) {
   const contactsContainer = document.getElementById("contacts-list-container");
   if (contactsContainer) {
     const contacts = char.contacts || [];
-    if (contacts.length === 0) {
+    if (contactsContainer.contains(document.activeElement) && contactsContainer.querySelectorAll(".contact-name-input").length === contacts.length) {
+      // Preservar foco em contatos
+    } else if (contacts.length === 0) {
       contactsContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM CONTATO REGISTRADO. CLIQUE EM [+ CONTATO] PARA ADICIONAR FIXERS OU MÉDICOS.</div>`;
     } else {
       contactsContainer.innerHTML = contacts.map((c, idx) => `
@@ -634,7 +711,9 @@ function renderContactsTab(char) {
   const qualitiesContainer = document.getElementById("qualities-list-container");
   if (qualitiesContainer) {
     const qualities = char.qualities || [];
-    if (qualities.length === 0) {
+    if (qualitiesContainer.contains(document.activeElement) && qualitiesContainer.querySelectorAll(".quality-name-input").length === qualities.length) {
+      // Preservar foco em qualidades
+    } else if (qualities.length === 0) {
       qualitiesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA QUALIDADE REGISTRADA. CLIQUE EM [+ QUALIDADE].</div>`;
     } else {
       qualitiesContainer.innerHTML = qualities.map((q, idx) => `

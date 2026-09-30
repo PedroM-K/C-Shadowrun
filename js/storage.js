@@ -3,7 +3,7 @@
  * 100% Client-side local storage with automatic fallback and safety snapshots
  */
 
-import { STORAGE_KEY, STORAGE_BACKUP_PREFIX, createDefaultCharacter } from "./constants.js";
+import { STORAGE_KEY, STORAGE_BACKUP_PREFIX, createDefaultCharacter, normalizeCharacterSkills } from "./constants.js";
 
 /**
  * Loads the active character from localStorage.
@@ -22,7 +22,7 @@ export function loadCharacter() {
       console.warn("Corrupted character data in localStorage, using default template.");
       return createDefaultCharacter();
     }
-    return parsed;
+    return normalizeCharacterSkills(parsed);
   } catch (err) {
     console.error("Failed to load character from localStorage:", err);
     return createDefaultCharacter();

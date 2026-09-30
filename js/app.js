@@ -195,7 +195,7 @@ function setupDelegatedEvents() {
       if (field) {
         store.update(char => {
           char.character[field] = e.target.value;
-        });
+        }, true, { isTyping: true, sourceTarget: e.target });
       }
     });
   });
@@ -309,7 +309,7 @@ function setupDelegatedEvents() {
   document.getElementById("char-notes")?.addEventListener("input", (e) => {
     store.update(char => {
       char.notes = e.target.value;
-    });
+    }, true, { isTyping: true, sourceTarget: e.target });
   });
 
   // Edge Stepper
@@ -566,108 +566,110 @@ function setupDelegatedEvents() {
     const idx = parseInt(target.getAttribute("data-index"), 10);
     if (isNaN(idx)) return;
 
+    const typingMeta = { isTyping: true, sourceTarget: target };
+
     if (target.classList.contains("skill-spec-input")) {
-      store.update(char => { if (char.skills?.[idx]) char.skills[idx].spec = target.value; });
+      store.update(char => { if (char.skills?.[idx]) char.skills[idx].spec = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("cue-input")) {
-      store.update(char => { if (char.cues) char.cues[idx] = target.value; });
+      store.update(char => { if (char.cues) char.cues[idx] = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("disp-input")) {
-      store.update(char => { if (char.dispositions) char.dispositions[idx] = target.value; });
+      store.update(char => { if (char.dispositions) char.dispositions[idx] = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("ks-name-input")) {
-      store.update(char => { if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].name = target.value; });
+      store.update(char => { if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("amp-name-input")) {
-      store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].name = target.value; });
+      store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("amp-ess-input")) {
-      store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].essenceCost = parseFloat(target.value) || 0; });
+      store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].essenceCost = parseFloat(target.value) || 0; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("amp-effect-input")) {
-      store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].effect = target.value; });
+      store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].effect = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-name-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].name = target.value; });
+      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-dmg-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].damage = target.value; });
+      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].damage = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-ap-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ap = target.value; });
+      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ap = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-range-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].range = target.value; });
+      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].range = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-ammo-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ammo = target.value; });
+      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ammo = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-notes-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].notes = target.value; });
+      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].notes = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("gear-name-input")) {
-      store.update(char => { if (char.gear?.[idx]) char.gear[idx].name = target.value; });
+      store.update(char => { if (char.gear?.[idx]) char.gear[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("gear-qty-input")) {
-      store.update(char => { if (char.gear?.[idx]) char.gear[idx].qty = parseInt(target.value, 10) || 1; });
+      store.update(char => { if (char.gear?.[idx]) char.gear[idx].qty = parseInt(target.value, 10) || 1; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("gear-notes-input")) {
-      store.update(char => { if (char.gear?.[idx]) char.gear[idx].notes = target.value; });
+      store.update(char => { if (char.gear?.[idx]) char.gear[idx].notes = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("veh-name-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].name = target.value; });
+      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("veh-hand-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].handling = parseInt(target.value, 10) || 0; });
+      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].handling = parseInt(target.value, 10) || 0; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("veh-spd-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].speed = parseInt(target.value, 10) || 0; });
+      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].speed = parseInt(target.value, 10) || 0; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("veh-arm-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].armor = parseInt(target.value, 10) || 0; });
+      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].armor = parseInt(target.value, 10) || 0; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("veh-type-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].type = target.value; });
+      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].type = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("contact-name-input")) {
-      store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].name = target.value; });
+      store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("contact-role-input")) {
-      store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].role = target.value; });
+      store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].role = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("contact-notes-input")) {
-      store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].notes = target.value; });
+      store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].notes = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("quality-name-input")) {
-      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].name = target.value; });
+      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].name = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("quality-effect-input")) {
-      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].effect = target.value; });
+      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].effect = target.value; }, true, typingMeta);
       return;
     }
   });

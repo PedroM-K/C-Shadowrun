@@ -3,7 +3,7 @@
  * Handles safe file downloads, file uploads, schema validation, and data migration
  */
 
-import { SCHEMA_VERSION, SYSTEM_NAME, createDefaultCharacter } from "./constants.js";
+import { SCHEMA_VERSION, SYSTEM_NAME, createDefaultCharacter, normalizeCharacterSkills } from "./constants.js";
 
 /**
  * Validates whether an imported object has a valid Shadowrun: Anarchy character structure
@@ -87,6 +87,7 @@ export function migrateCharacterData(rawData) {
   migrated.dispositions = Array.isArray(migrated.dispositions) ? migrated.dispositions : defaultTemplate.dispositions;
 
   migrated.skills = Array.isArray(migrated.skills) ? migrated.skills : defaultTemplate.skills;
+  normalizeCharacterSkills(migrated);
   migrated.knowledgeSkills = Array.isArray(migrated.knowledgeSkills) ? migrated.knowledgeSkills : [];
   migrated.shadowAmps = Array.isArray(migrated.shadowAmps) ? migrated.shadowAmps : defaultTemplate.shadowAmps;
   migrated.qualities = Array.isArray(migrated.qualities) ? migrated.qualities : [];

@@ -54,34 +54,270 @@ export const ATTRIBUTES = [
 ];
 
 export const DEFAULT_ANARCHY_SKILLS = [
-  // Físicas / Combate
-  { id: "athletics", name: "Atletismo (Athletics)", attr: "str", category: "Físico", rating: 0, spec: "" },
-  { id: "close_combat", name: "Combate Corpo a Corpo (Close Combat)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-  { id: "firearms", name: "Armas de Fogo (Firearms)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-  { id: "heavy_weapons", name: "Armas Pesadas (Heavy Weapons)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-  { id: "projectiles", name: "Projéteis (Projectiles)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-  { id: "stealth", name: "Furtividade (Stealth)", attr: "agi", category: "Físico", rating: 0, spec: "" },
-  { id: "vehicle", name: "Veículos (Piloting/Driving)", attr: "agi", category: "Veículos", rating: 0, spec: "" },
+  // 1. AGILIDADE (AGI)
+  {
+    id: "athletics",
+    name: "Atletismo",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Correr, saltar, nadar e acrobacia."
+  },
+  {
+    id: "firearms",
+    name: "Armas de Fogo",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Pistolas, escopetas, submetralhadoras e fuzis."
+  },
+  {
+    id: "projectiles",
+    name: "Armas de Projéteis",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Arcos, bestas, armas de arremesso e certos ataques de criatura."
+  },
+  {
+    id: "vehicle_weapons",
+    name: "Armas de Veículo",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Armas montadas em veículos, armas montadas em drones e em suportes/tripés fixos."
+  },
+  {
+    id: "heavy_weapons",
+    name: "Armas Pesadas",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Metralhadoras, canhões de assalto, lança-mísseis e lança-granadas."
+  },
+  {
+    id: "escape_artist",
+    name: "Arte da Fuga",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Escapar de amarras e algemas, contorcionismo e despistar perseguidores."
+  },
+  {
+    id: "close_combat",
+    name: "Combate Corpo a Corpo",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Combate armado, combate desarmado e artes marciais."
+  },
+  {
+    id: "stealth",
+    name: "Furtividade",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Esgueirar, empalmar e prestidigitação."
+  },
+  {
+    id: "pilot_other",
+    name: "Pilotar (Outros)",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Barcos, aviões e praticamente qualquer coisa que se mova em algo diferente do chão."
+  },
+  {
+    id: "pilot_ground",
+    name: "Pilotar (Terrestres)",
+    attr: "agi",
+    category: "Agilidade",
+    rating: 0,
+    spec: "",
+    description: "Carros, caminhões, motos e até tanques. Drones com rodas e esteiras também."
+  },
 
-  // Mágicas / Sobrenaturais
-  { id: "sorcery", name: "Feitiçaria (Sorcery)", attr: "wil", category: "Magia", rating: 0, spec: "" },
-  { id: "conjuring", name: "Conjuração de Espíritos (Conjuring)", attr: "wil", category: "Magia", rating: 0, spec: "" },
-  { id: "astral_combat", name: "Combate Astral (Astral Combat)", attr: "wil", category: "Magia", rating: 0, spec: "" },
+  // 2. VONTADE (WIL)
+  {
+    id: "conjuring",
+    name: "Convocação",
+    attr: "wil",
+    category: "Vontade",
+    rating: 0,
+    spec: "",
+    description: "Invocação e banimento de espíritos. Apenas magistas. Impossível seu uso destreinado."
+  },
+  {
+    id: "astral_combat",
+    name: "Combate Astral",
+    attr: "wil",
+    category: "Vontade",
+    rating: 0,
+    spec: "",
+    description: "Combate astral/de espíritos. Apenas plano astral. Apenas magistas."
+  },
+  {
+    id: "close_combat_spirits",
+    name: "Combate Corpo a Corpo (Espíritos)",
+    attr: "wil",
+    category: "Vontade",
+    rating: 0,
+    spec: "",
+    description: "Apenas ao atacar espíritos (usa Vontade)."
+  },
+  {
+    id: "sorcery",
+    name: "Feitiçaria",
+    attr: "wil",
+    category: "Vontade",
+    rating: 0,
+    spec: "",
+    description: "Conjuração, conjuração ritual, encantação e contramágica. Apenas magistas. Impossível seu uso destreinado."
+  },
+  {
+    id: "survival",
+    name: "Sobrevivência",
+    attr: "wil",
+    category: "Vontade",
+    rating: 0,
+    spec: "",
+    description: "Sobrevivência na natureza, navegação e jejuar."
+  },
 
-  // Técnicas / Matriz
-  { id: "biotech", name: "Biotecnologia / Medicina (Biotech)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-  { id: "electronics", name: "Eletrônica (Electronics)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-  { id: "engineering", name: "Engenharia / Reparos (Engineering)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-  { id: "hacking", name: "Hacking / Cybercombate", attr: "log", category: "Técnico", rating: 0, spec: "" },
-  { id: "tracking", name: "Rastreamento / Investigação (Tracking)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-  { id: "tasking", name: "Tasking / Tecnomancia", attr: "log", category: "Técnico", rating: 0, spec: "" },
+  // 3. LÓGICA (LOG)
+  {
+    id: "biotech",
+    name: "Biotecnologia",
+    attr: "log",
+    category: "Lógica",
+    rating: 0,
+    spec: "",
+    description: "Primeiros socorros, medicina e cibertecnologia."
+  },
+  {
+    id: "electronics",
+    name: "Eletrônica",
+    attr: "log",
+    category: "Lógica",
+    rating: 0,
+    spec: "",
+    description: "Hardware e software de computadores, reparo de ciberdeck."
+  },
+  {
+    id: "engineering",
+    name: "Engenharia",
+    attr: "log",
+    category: "Lógica",
+    rating: 0,
+    spec: "",
+    description: "Reparo de automóveis, reparo de aeronaves e reparo de embarcações."
+  },
+  {
+    id: "hacking",
+    name: "Hackear",
+    attr: "log",
+    category: "Lógica",
+    rating: 0,
+    spec: "",
+    description: "Hackear computadores e cibercombate."
+  },
+  {
+    id: "tracking",
+    name: "Rastrear",
+    attr: "log",
+    category: "Lógica",
+    rating: 0,
+    spec: "",
+    description: "Rastreio físico, rastreio pela Matriz e perseguição."
+  },
+  {
+    id: "tasking",
+    name: "Tarefa",
+    attr: "log",
+    category: "Lógica",
+    rating: 0,
+    spec: "",
+    description: "Invocar sprites, tecer formas complexas e tarefas da Matriz. Apenas tecnomantes. Impossível seu uso destreinado."
+  },
 
-  // Sociais
-  { id: "con", name: "Lábia / Trapaça (Con)", attr: "cha", category: "Social", rating: 0, spec: "" },
-  { id: "disguise", name: "Disfarce (Disguise)", attr: "cha", category: "Social", rating: 0, spec: "" },
-  { id: "intimidation", name: "Intimidação (Intimidation)", attr: "cha", category: "Social", rating: 0, spec: "" },
-  { id: "negotiation", name: "Negociação / Etiqueta", attr: "cha", category: "Social", rating: 0, spec: "" }
+  // 4. CARISMA (CHA)
+  {
+    id: "disguise",
+    name: "Disfarce",
+    attr: "cha",
+    category: "Carisma",
+    rating: 0,
+    spec: "",
+    description: "Camuflagem, cosméticos, fantasias e alteração digital."
+  },
+  {
+    id: "intimidation",
+    name: "Intimidação",
+    attr: "cha",
+    category: "Carisma",
+    rating: 0,
+    spec: "",
+    description: "Influência, interrogatório e tortura."
+  },
+  {
+    id: "negotiation",
+    name: "Negociação",
+    attr: "cha",
+    category: "Carisma",
+    rating: 0,
+    spec: "",
+    description: "Barganha, contratos e diplomacia."
+  },
+  {
+    id: "con",
+    name: "Trapaça",
+    attr: "cha",
+    category: "Carisma",
+    rating: 0,
+    spec: "",
+    description: "Trapaça e charlatanismo, atuação, performance e etiqueta."
+  }
 ];
+
+/**
+ * Normalizes character skills array to match DEFAULT_ANARCHY_SKILLS
+ * preserving existing ratings and specs while applying new attributes and descriptions.
+ */
+export function normalizeCharacterSkills(char) {
+  if (!char) return char;
+  if (!Array.isArray(char.skills)) {
+    char.skills = DEFAULT_ANARCHY_SKILLS.map(s => ({ ...s, rating: 0, spec: "" }));
+    return char;
+  }
+
+  const existingMap = new Map();
+  for (const s of char.skills) {
+    if (s.id) existingMap.set(s.id, s);
+    if (s.id === "vehicle") {
+      existingMap.set("pilot_ground", s);
+    }
+  }
+
+  char.skills = DEFAULT_ANARCHY_SKILLS.map(defaultSkill => {
+    const existing = existingMap.get(defaultSkill.id);
+    return {
+      ...defaultSkill,
+      rating: existing ? (Number(existing.rating) || 0) : 0,
+      spec: existing?.spec || ""
+    };
+  });
+
+  return char;
+}
 
 export const SHADOW_AMP_TYPES = [
   { id: "cyberware", label: "Cyberware (Cibernético)" },

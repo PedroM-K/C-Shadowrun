@@ -62,34 +62,270 @@
   ];
 
   const DEFAULT_ANARCHY_SKILLS = [
-    // Físicas / Combate
-    { id: "athletics", name: "Atletismo (Athletics)", attr: "str", category: "Físico", rating: 0, spec: "" },
-    { id: "close_combat", name: "Combate Corpo a Corpo (Close Combat)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-    { id: "firearms", name: "Armas de Fogo (Firearms)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-    { id: "heavy_weapons", name: "Armas Pesadas (Heavy Weapons)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-    { id: "projectiles", name: "Projéteis (Projectiles)", attr: "agi", category: "Combate", rating: 0, spec: "" },
-    { id: "stealth", name: "Furtividade (Stealth)", attr: "agi", category: "Físico", rating: 0, spec: "" },
-    { id: "vehicle", name: "Veículos (Piloting/Driving)", attr: "agi", category: "Veículos", rating: 0, spec: "" },
+    // 1. AGILIDADE (AGI)
+    {
+      id: "athletics",
+      name: "Atletismo",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Correr, saltar, nadar e acrobacia."
+    },
+    {
+      id: "firearms",
+      name: "Armas de Fogo",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Pistolas, escopetas, submetralhadoras e fuzis."
+    },
+    {
+      id: "projectiles",
+      name: "Armas de Projéteis",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Arcos, bestas, armas de arremesso e certos ataques de criatura."
+    },
+    {
+      id: "vehicle_weapons",
+      name: "Armas de Veículo",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Armas montadas em veículos, armas montadas em drones e em suportes/tripés fixos."
+    },
+    {
+      id: "heavy_weapons",
+      name: "Armas Pesadas",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Metralhadoras, canhões de assalto, lança-mísseis e lança-granadas."
+    },
+    {
+      id: "escape_artist",
+      name: "Arte da Fuga",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Escapar de amarras e algemas, contorcionismo e despistar perseguidores."
+    },
+    {
+      id: "close_combat",
+      name: "Combate Corpo a Corpo",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Combate armado, combate desarmado e artes marciais."
+    },
+    {
+      id: "stealth",
+      name: "Furtividade",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Esgueirar, empalmar e prestidigitação."
+    },
+    {
+      id: "pilot_other",
+      name: "Pilotar (Outros)",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Barcos, aviões e praticamente qualquer coisa que se mova em algo diferente do chão."
+    },
+    {
+      id: "pilot_ground",
+      name: "Pilotar (Terrestres)",
+      attr: "agi",
+      category: "Agilidade",
+      rating: 0,
+      spec: "",
+      description: "Carros, caminhões, motos e até tanques. Drones com rodas e esteiras também."
+    },
 
-    // Mágicas / Sobrenaturais
-    { id: "sorcery", name: "Feitiçaria (Sorcery)", attr: "wil", category: "Magia", rating: 0, spec: "" },
-    { id: "conjuring", name: "Conjuração de Espíritos (Conjuring)", attr: "wil", category: "Magia", rating: 0, spec: "" },
-    { id: "astral_combat", name: "Combate Astral (Astral Combat)", attr: "wil", category: "Magia", rating: 0, spec: "" },
+    // 2. VONTADE (WIL)
+    {
+      id: "conjuring",
+      name: "Convocação",
+      attr: "wil",
+      category: "Vontade",
+      rating: 0,
+      spec: "",
+      description: "Invocação e banimento de espíritos. Apenas magistas. Impossível seu uso destreinado."
+    },
+    {
+      id: "astral_combat",
+      name: "Combate Astral",
+      attr: "wil",
+      category: "Vontade",
+      rating: 0,
+      spec: "",
+      description: "Combate astral/de espíritos. Apenas plano astral. Apenas magistas."
+    },
+    {
+      id: "close_combat_spirits",
+      name: "Combate Corpo a Corpo (Espíritos)",
+      attr: "wil",
+      category: "Vontade",
+      rating: 0,
+      spec: "",
+      description: "Apenas ao atacar espíritos (usa Vontade)."
+    },
+    {
+      id: "sorcery",
+      name: "Feitiçaria",
+      attr: "wil",
+      category: "Vontade",
+      rating: 0,
+      spec: "",
+      description: "Conjuração, conjuração ritual, encantação e contramágica. Apenas magistas. Impossível seu uso destreinado."
+    },
+    {
+      id: "survival",
+      name: "Sobrevivência",
+      attr: "wil",
+      category: "Vontade",
+      rating: 0,
+      spec: "",
+      description: "Sobrevivência na natureza, navegação e jejuar."
+    },
 
-    // Técnicas / Matriz
-    { id: "biotech", name: "Biotecnologia / Medicina (Biotech)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-    { id: "electronics", name: "Eletrônica (Electronics)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-    { id: "engineering", name: "Engenharia / Reparos (Engineering)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-    { id: "hacking", name: "Hacking / Cybercombate", attr: "log", category: "Técnico", rating: 0, spec: "" },
-    { id: "tracking", name: "Rastreamento / Investigação (Tracking)", attr: "log", category: "Técnico", rating: 0, spec: "" },
-    { id: "tasking", name: "Tasking / Tecnomancia", attr: "log", category: "Técnico", rating: 0, spec: "" },
+    // 3. LÓGICA (LOG)
+    {
+      id: "biotech",
+      name: "Biotecnologia",
+      attr: "log",
+      category: "Lógica",
+      rating: 0,
+      spec: "",
+      description: "Primeiros socorros, medicina e cibertecnologia."
+    },
+    {
+      id: "electronics",
+      name: "Eletrônica",
+      attr: "log",
+      category: "Lógica",
+      rating: 0,
+      spec: "",
+      description: "Hardware e software de computadores, reparo de ciberdeck."
+    },
+    {
+      id: "engineering",
+      name: "Engenharia",
+      attr: "log",
+      category: "Lógica",
+      rating: 0,
+      spec: "",
+      description: "Reparo de automóveis, reparo de aeronaves e reparo de embarcações."
+    },
+    {
+      id: "hacking",
+      name: "Hackear",
+      attr: "log",
+      category: "Lógica",
+      rating: 0,
+      spec: "",
+      description: "Hackear computadores e cibercombate."
+    },
+    {
+      id: "tracking",
+      name: "Rastrear",
+      attr: "log",
+      category: "Lógica",
+      rating: 0,
+      spec: "",
+      description: "Rastreio físico, rastreio pela Matriz e perseguição."
+    },
+    {
+      id: "tasking",
+      name: "Tarefa",
+      attr: "log",
+      category: "Lógica",
+      rating: 0,
+      spec: "",
+      description: "Invocar sprites, tecer formas complexas e tarefas da Matriz. Apenas tecnomantes. Impossível seu uso destreinado."
+    },
 
-    // Sociais
-    { id: "con", name: "Lábia / Trapaça (Con)", attr: "cha", category: "Social", rating: 0, spec: "" },
-    { id: "disguise", name: "Disfarce (Disguise)", attr: "cha", category: "Social", rating: 0, spec: "" },
-    { id: "intimidation", name: "Intimidação (Intimidation)", attr: "cha", category: "Social", rating: 0, spec: "" },
-    { id: "negotiation", name: "Negociação / Etiqueta", attr: "cha", category: "Social", rating: 0, spec: "" }
+    // 4. CARISMA (CHA)
+    {
+      id: "disguise",
+      name: "Disfarce",
+      attr: "cha",
+      category: "Carisma",
+      rating: 0,
+      spec: "",
+      description: "Camuflagem, cosméticos, fantasias e alteração digital."
+    },
+    {
+      id: "intimidation",
+      name: "Intimidação",
+      attr: "cha",
+      category: "Carisma",
+      rating: 0,
+      spec: "",
+      description: "Influência, interrogatório e tortura."
+    },
+    {
+      id: "negotiation",
+      name: "Negociação",
+      attr: "cha",
+      category: "Carisma",
+      rating: 0,
+      spec: "",
+      description: "Barganha, contratos e diplomacia."
+    },
+    {
+      id: "con",
+      name: "Trapaça",
+      attr: "cha",
+      category: "Carisma",
+      rating: 0,
+      spec: "",
+      description: "Trapaça e charlatanismo, atuação, performance e etiqueta."
+    }
   ];
+
+  /**
+   * Normalizes character skills array to match DEFAULT_ANARCHY_SKILLS
+   * preserving existing ratings and specs while applying new attributes and descriptions.
+   */
+  function normalizeCharacterSkills(char) {
+    if (!char) return char;
+    if (!Array.isArray(char.skills)) {
+      char.skills = DEFAULT_ANARCHY_SKILLS.map(s => ({ ...s, rating: 0, spec: "" }));
+      return char;
+    }
+
+    const existingMap = new Map();
+    for (const s of char.skills) {
+      if (s.id) existingMap.set(s.id, s);
+      if (s.id === "vehicle") {
+        existingMap.set("pilot_ground", s);
+      }
+    }
+
+    char.skills = DEFAULT_ANARCHY_SKILLS.map(defaultSkill => {
+      const existing = existingMap.get(defaultSkill.id);
+      return {
+        ...defaultSkill,
+        rating: existing ? (Number(existing.rating) || 0) : 0,
+        spec: existing?.spec || ""
+      };
+    });
+
+    return char;
+  }
 
   const SHADOW_AMP_TYPES = [
     { id: "cyberware", label: "Cyberware (Cibernético)" },
@@ -462,7 +698,7 @@
         console.warn("Corrupted character data in localStorage, using default template.");
         return createDefaultCharacter();
       }
-      return parsed;
+      return normalizeCharacterSkills(parsed);
     } catch (err) {
       console.error("Failed to load character from localStorage:", err);
       return createDefaultCharacter();
@@ -618,6 +854,7 @@
     migrated.dispositions = Array.isArray(migrated.dispositions) ? migrated.dispositions : defaultTemplate.dispositions;
 
     migrated.skills = Array.isArray(migrated.skills) ? migrated.skills : defaultTemplate.skills;
+    normalizeCharacterSkills(migrated);
     migrated.knowledgeSkills = Array.isArray(migrated.knowledgeSkills) ? migrated.knowledgeSkills : [];
     migrated.shadowAmps = Array.isArray(migrated.shadowAmps) ? migrated.shadowAmps : defaultTemplate.shadowAmps;
     migrated.qualities = Array.isArray(migrated.qualities) ? migrated.qualities : [];
@@ -762,11 +999,11 @@
       }
     }
 
-    update(mutationFn, triggerSave = true) {
+    update(mutationFn, triggerSave = true, meta = { type: "mutation" }) {
       if (typeof mutationFn === "function") {
         mutationFn(this.character);
       }
-      this.notify({ type: "mutation" });
+      this.notify(meta);
       if (triggerSave) {
         this.triggerAutoSave();
       }
@@ -965,7 +1202,7 @@
   /**
    * Main UI Render function invoked on store state change
    */
-  function renderApp(char, derived) {
+  function renderApp(char, derived, eventMeta = {}) {
     if (!char) return;
 
     const alias = char.character.alias || char.character.name || "---";
@@ -982,6 +1219,43 @@
     if (sidebarAlias) sidebarAlias.textContent = alias.toUpperCase();
     if (sidebarMeta) sidebarMeta.textContent = metatype.toUpperCase();
     if (sidebarArch) sidebarArch.textContent = archetype;
+
+    // Se o usuário está digitando ativamente, NÃO recriar elementos DOM para não perder foco
+    if (eventMeta?.isTyping) {
+      const target = eventMeta.sourceTarget;
+      // Se digitou especialização de perícia, atualiza cirurgicamente a pool da linha
+      if (target && target.classList.contains("skill-spec-input")) {
+        const row = target.closest(".skill-tactical-item");
+        const idx = parseInt(target.getAttribute("data-index"), 10);
+        if (row && !isNaN(idx) && char.skills?.[idx]) {
+          const pool = calculateSkillDicePool(char, char.skills[idx], true);
+          const poolBox = row.querySelector(".pool-box");
+          const rollBtn = row.querySelector(".btn-roll-skill");
+          if (poolBox) poolBox.textContent = `${pool}d6`;
+          if (rollBtn) rollBtn.setAttribute("data-pool", pool);
+        }
+      }
+      // Se digitou custo de essência em shadow amp
+      if (target && target.classList.contains("amp-ess-input")) {
+        const essenceDisplay = document.getElementById("amps-essence-display");
+        const essencePercent = document.getElementById("amps-essence-percent");
+        const essenceSegments = document.getElementById("essence-bar-segments");
+        if (essenceDisplay) essenceDisplay.textContent = `${derived.essence.remaining.toFixed(2)} / 6.00`;
+        if (essencePercent) {
+          const pct = Math.round((derived.essence.remaining / 6.0) * 100);
+          essencePercent.textContent = `${pct}% INTATOS`;
+        }
+        if (essenceSegments) {
+          let segHtml = "";
+          for (let i = 1; i <= 12; i++) {
+            const active = i <= Math.round(derived.essence.remaining * 2);
+            segHtml += `<div class="meter-segment ${active ? "filled essence-segment" : ""}"></div>`;
+          }
+          essenceSegments.innerHTML = segHtml;
+        }
+      }
+      return;
+    }
 
     // 01 // Overview & Cues
     renderOverviewTab(char);
@@ -1035,7 +1309,9 @@
     const cuesContainer = document.getElementById("cues-list-container");
     if (cuesContainer) {
       const cues = char.cues || [];
-      if (cues.length === 0) {
+      if (cuesContainer.contains(document.activeElement) && cuesContainer.querySelectorAll(".cue-input").length === cues.length) {
+        // Usuário está digitando dentro do container de dicas: não recriar DOM
+      } else if (cues.length === 0) {
         cuesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DICA CADASTRADA. CLIQUE EM [+ DICA] PARA ADICIONAR.</div>`;
       } else {
         cuesContainer.innerHTML = cues.map((cue, idx) => `
@@ -1052,7 +1328,9 @@
     const dispContainer = document.getElementById("dispositions-list-container");
     if (dispContainer) {
       const disps = char.dispositions || [];
-      if (disps.length === 0) {
+      if (dispContainer.contains(document.activeElement) && dispContainer.querySelectorAll(".disp-input").length === disps.length) {
+        // Usuário está digitando dentro do container de disposições: não recriar DOM
+      } else if (disps.length === 0) {
         dispContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DISPOSIÇÃO CADASTRADA. CLIQUE EM [+ DISPOSIÇÃO].</div>`;
       } else {
         dispContainer.innerHTML = disps.map((disp, idx) => `
@@ -1124,51 +1402,75 @@
     const container = document.getElementById("skills-list-container");
     if (container) {
       const skills = char.skills || [];
-      container.innerHTML = skills.map((skill, idx) => {
-        const pool = calculateSkillDicePool(char, skill, true);
-        return `
-        <div class="skill-tactical-item" data-index="${idx}">
-          <div>
-            <div class="name">${escapeHtml(skill.name)}</div>
-            <span class="sys-tag" style="color: var(--term-green); font-size: 0.65rem;">// ${escapeHtml(skill.category)}</span>
-          </div>
-          <div class="attr-tag">[${escapeHtml(skill.attr)}]</div>
-          <div>
-            <input 
-              type="text" 
-              class="field-input field-input-mono skill-spec-input" 
-              data-index="${idx}" 
-              value="${escapeHtml(skill.spec || "")}" 
-              placeholder="Especialização (+2)..." 
-              style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
-            />
-          </div>
-          <div class="stepper-tactical">
-            <button class="btn-skill-dec" data-index="${idx}">-</button>
-            <span class="val">${skill.rating}</span>
-            <button class="btn-skill-inc" data-index="${idx}">+</button>
-          </div>
-          <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
-          <div>
-            <button 
-              class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
-              data-skill-name="${escapeHtml(skill.name)}" 
-              data-pool="${pool}"
-              data-attr="${escapeHtml(skill.attr)}"
-            >
-              ROLAR
-            </button>
-          </div>
-        </div>
-      `;
-      }).join("");
+      if (container.contains(document.activeElement) && container.querySelectorAll(".skill-tactical-item").length === skills.length) {
+        // Foco ativo mantido no container de perícias
+      } else {
+        let currentCategory = "";
+        let htmlOutput = "";
+
+        skills.forEach((skill, idx) => {
+          const pool = calculateSkillDicePool(char, skill, true);
+          const cat = skill.category || "Geral";
+
+          if (cat !== currentCategory) {
+            currentCategory = cat;
+            const attrUpper = (skill.attr || "").toUpperCase();
+            htmlOutput += `
+              <div class="skills-category-header category-${escapeHtml(skill.attr || 'default')}">
+                <span class="cat-title">// ${escapeHtml(currentCategory.toUpperCase())} (${escapeHtml(attrUpper)})</span>
+                <span class="cat-line"></span>
+              </div>
+            `;
+          }
+
+          htmlOutput += `
+            <div class="skill-tactical-item" data-index="${idx}">
+              <div class="skill-name-col">
+                <div class="name">${escapeHtml(skill.name)}</div>
+                ${skill.description ? `<div class="skill-desc">${escapeHtml(skill.description)}</div>` : ""}
+              </div>
+              <div class="attr-tag attr-tag-${escapeHtml(skill.attr)}">[${escapeHtml((skill.attr || "").toUpperCase())}]</div>
+              <div>
+                <input 
+                  type="text" 
+                  class="field-input field-input-mono skill-spec-input" 
+                  data-index="${idx}" 
+                  value="${escapeHtml(skill.spec || "")}" 
+                  placeholder="Especialização (+2)..." 
+                  style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                />
+              </div>
+              <div class="stepper-tactical">
+                <button class="btn-skill-dec" data-index="${idx}">-</button>
+                <span class="val">${skill.rating}</span>
+                <button class="btn-skill-inc" data-index="${idx}">+</button>
+              </div>
+              <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
+              <div>
+                <button 
+                  class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
+                  data-skill-name="${escapeHtml(skill.name)}" 
+                  data-pool="${pool}" 
+                  data-attr="${escapeHtml(skill.attr)}"
+                >
+                  🎲 ROLAR
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = htmlOutput;
+      }
     }
 
     // Knowledge Skills
     const ksContainer = document.getElementById("knowledge-skills-container");
     if (ksContainer) {
       const kSkills = char.knowledgeSkills || [];
-      if (kSkills.length === 0) {
+      if (ksContainer.contains(document.activeElement) && ksContainer.querySelectorAll(".ks-name-input").length === kSkills.length) {
+        // Foco ativo mantido nas perícias de conhecimento
+      } else if (kSkills.length === 0) {
         ksContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM CONHECIMENTO REGISTRADO. CLIQUE EM [+ CONHECIMENTO] PARA ADICIONAR IDIOMAS OU SABERES.</div>`;
       } else {
         ksContainer.innerHTML = kSkills.map((ks, idx) => `
@@ -1249,6 +1551,9 @@
     if (!container) return;
 
     const weapons = char.weapons || [];
+    if (container.contains(document.activeElement) && container.querySelectorAll(".weapon-tactical-card").length === weapons.length) {
+      return;
+    }
     if (weapons.length === 0) {
       container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// ARSENAL VAZIO. CLIQUE EM [+ REGISTRAR ARMA] PARA ADICIONAR SUAS ARMAS DE FOGO OU CORPO A CORPO.</div>`;
       return;
@@ -1322,6 +1627,9 @@
     if (!container) return;
 
     const amps = char.shadowAmps || [];
+    if (container.contains(document.activeElement) && container.querySelectorAll(".amp-diagnostic-item").length === amps.length) {
+      return;
+    }
     if (amps.length === 0) {
       container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// NENHUMA AMPLIFICAÇÃO INSTALADA (ESSÊNCIA 100% PURA: 6.00 / 6.00). CLIQUE EM [+ NOVA AMP] PARA INSTALAR CYBERWARE, BIOWARE, FEITIÇOS OU FORMAS.</div>`;
       return;
@@ -1384,7 +1692,9 @@
     const vehContainer = document.getElementById("vehicles-list-container");
     if (vehContainer) {
       const vehicles = char.vehicles || [];
-      if (vehicles.length === 0) {
+      if (vehContainer.contains(document.activeElement) && vehContainer.querySelectorAll(".veh-name-input").length === vehicles.length) {
+        // Preservar foco em veículos
+      } else if (vehicles.length === 0) {
         vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO. CLIQUE EM [+ VEÍCULO].</div>`;
       } else {
         vehContainer.innerHTML = vehicles.map((v, idx) => `
@@ -1422,7 +1732,9 @@
     const contactsContainer = document.getElementById("contacts-list-container");
     if (contactsContainer) {
       const contacts = char.contacts || [];
-      if (contacts.length === 0) {
+      if (contactsContainer.contains(document.activeElement) && contactsContainer.querySelectorAll(".contact-name-input").length === contacts.length) {
+        // Preservar foco em contatos
+      } else if (contacts.length === 0) {
         contactsContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM CONTATO REGISTRADO. CLIQUE EM [+ CONTATO] PARA ADICIONAR FIXERS OU MÉDICOS.</div>`;
       } else {
         contactsContainer.innerHTML = contacts.map((c, idx) => `
@@ -1462,7 +1774,9 @@
     const qualitiesContainer = document.getElementById("qualities-list-container");
     if (qualitiesContainer) {
       const qualities = char.qualities || [];
-      if (qualities.length === 0) {
+      if (qualitiesContainer.contains(document.activeElement) && qualitiesContainer.querySelectorAll(".quality-name-input").length === qualities.length) {
+        // Preservar foco em qualidades
+      } else if (qualities.length === 0) {
         qualitiesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA QUALIDADE REGISTRADA. CLIQUE EM [+ QUALIDADE].</div>`;
       } else {
         qualitiesContainer.innerHTML = qualities.map((q, idx) => `
@@ -1689,7 +2003,7 @@
         if (field) {
           store.update(char => {
             char.character[field] = e.target.value;
-          });
+          }, true, { isTyping: true, sourceTarget: e.target });
         }
       });
     });
@@ -1803,7 +2117,7 @@
     document.getElementById("char-notes")?.addEventListener("input", (e) => {
       store.update(char => {
         char.notes = e.target.value;
-      });
+      }, true, { isTyping: true, sourceTarget: e.target });
     });
 
     // Edge Stepper
@@ -2060,108 +2374,110 @@
       const idx = parseInt(target.getAttribute("data-index"), 10);
       if (isNaN(idx)) return;
 
+      const typingMeta = { isTyping: true, sourceTarget: target };
+
       if (target.classList.contains("skill-spec-input")) {
-        store.update(char => { if (char.skills?.[idx]) char.skills[idx].spec = target.value; });
+        store.update(char => { if (char.skills?.[idx]) char.skills[idx].spec = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("cue-input")) {
-        store.update(char => { if (char.cues) char.cues[idx] = target.value; });
+        store.update(char => { if (char.cues) char.cues[idx] = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("disp-input")) {
-        store.update(char => { if (char.dispositions) char.dispositions[idx] = target.value; });
+        store.update(char => { if (char.dispositions) char.dispositions[idx] = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("ks-name-input")) {
-        store.update(char => { if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].name = target.value; });
+        store.update(char => { if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("amp-name-input")) {
-        store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].name = target.value; });
+        store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("amp-ess-input")) {
-        store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].essenceCost = parseFloat(target.value) || 0; });
+        store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].essenceCost = parseFloat(target.value) || 0; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("amp-effect-input")) {
-        store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].effect = target.value; });
+        store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].effect = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-name-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].name = target.value; });
+        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-dmg-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].damage = target.value; });
+        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].damage = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-ap-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ap = target.value; });
+        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ap = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-range-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].range = target.value; });
+        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].range = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-ammo-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ammo = target.value; });
+        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ammo = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-notes-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].notes = target.value; });
+        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].notes = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("gear-name-input")) {
-        store.update(char => { if (char.gear?.[idx]) char.gear[idx].name = target.value; });
+        store.update(char => { if (char.gear?.[idx]) char.gear[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("gear-qty-input")) {
-        store.update(char => { if (char.gear?.[idx]) char.gear[idx].qty = parseInt(target.value, 10) || 1; });
+        store.update(char => { if (char.gear?.[idx]) char.gear[idx].qty = parseInt(target.value, 10) || 1; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("gear-notes-input")) {
-        store.update(char => { if (char.gear?.[idx]) char.gear[idx].notes = target.value; });
+        store.update(char => { if (char.gear?.[idx]) char.gear[idx].notes = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("veh-name-input")) {
-        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].name = target.value; });
+        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("veh-hand-input")) {
-        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].handling = parseInt(target.value, 10) || 0; });
+        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].handling = parseInt(target.value, 10) || 0; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("veh-spd-input")) {
-        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].speed = parseInt(target.value, 10) || 0; });
+        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].speed = parseInt(target.value, 10) || 0; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("veh-arm-input")) {
-        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].armor = parseInt(target.value, 10) || 0; });
+        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].armor = parseInt(target.value, 10) || 0; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("veh-type-input")) {
-        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].type = target.value; });
+        store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].type = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("contact-name-input")) {
-        store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].name = target.value; });
+        store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("contact-role-input")) {
-        store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].role = target.value; });
+        store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].role = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("contact-notes-input")) {
-        store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].notes = target.value; });
+        store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].notes = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("quality-name-input")) {
-        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].name = target.value; });
+        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].name = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("quality-effect-input")) {
-        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].effect = target.value; });
+        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].effect = target.value; }, true, typingMeta);
         return;
       }
     });

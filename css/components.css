@@ -453,9 +453,36 @@ select.field-input {
 /* ==========================================================================
    SKILLS TACTICAL LIST
    ========================================================================== */
+.skills-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.5rem 0;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.skills-category-header:first-child {
+  margin-top: 0.25rem;
+}
+
+.skills-category-header .cat-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-panel);
+}
+
+.skills-category-header.category-agi { color: var(--term-green); }
+.skills-category-header.category-wil { color: var(--term-purple); }
+.skills-category-header.category-log { color: var(--term-cyan); }
+.skills-category-header.category-cha { color: var(--term-amber); }
+.skills-category-header.category-str { color: var(--term-red); }
+
 .skill-tactical-item {
   display: grid;
-  grid-template-columns: 2fr 75px 1.5fr 100px 75px 80px;
+  grid-template-columns: 2.2fr 75px 1.4fr 100px 75px 80px;
   align-items: center;
   gap: 0.75rem;
   padding: 0.55rem 0.85rem;
@@ -471,18 +498,36 @@ select.field-input {
   background: var(--bg-elevated);
 }
 
+.skill-tactical-item .skill-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
 .skill-tactical-item .name {
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--text-bright);
 }
 
-.skill-tactical-item .attr-tag {
-  font-family: var(--font-mono);
+.skill-tactical-item .skill-desc {
   font-size: 0.72rem;
   color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.skill-tactical-item .attr-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
 }
+
+.skill-tactical-item .attr-tag-agi { color: var(--term-green); }
+.skill-tactical-item .attr-tag-wil { color: var(--term-purple); }
+.skill-tactical-item .attr-tag-log { color: var(--term-cyan); }
+.skill-tactical-item .attr-tag-cha { color: var(--term-amber); }
+.skill-tactical-item .attr-tag-str { color: var(--term-red); }
 
 .skill-tactical-item .pool-box {
   font-family: var(--font-mono);

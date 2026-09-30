@@ -54,11 +54,11 @@ class CharacterStore {
     }
   }
 
-  update(mutationFn, triggerSave = true) {
+  update(mutationFn, triggerSave = true, meta = { type: "mutation" }) {
     if (typeof mutationFn === "function") {
       mutationFn(this.character);
     }
-    this.notify({ type: "mutation" });
+    this.notify(meta);
     if (triggerSave) {
       this.triggerAutoSave();
     }
