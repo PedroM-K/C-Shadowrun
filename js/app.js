@@ -11,8 +11,8 @@ import { calculateSkillDicePool } from "./rules.js";
 function bootTerminal() {
   try {
     // Subscribe UI to store updates
-    store.subscribe((char, derived) => {
-      renderApp(char, derived);
+    store.subscribe((char, derived, eventMeta) => {
+      renderApp(char, derived, eventMeta);
     });
 
     store.init();
