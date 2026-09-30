@@ -1819,8 +1819,8 @@
   function bootTerminal() {
     try {
       // Subscribe UI to store updates
-      store.subscribe((char, derived) => {
-        renderApp(char, derived);
+      store.subscribe((char, derived, eventMeta) => {
+        renderApp(char, derived, eventMeta);
       });
 
       store.init();
@@ -2197,6 +2197,23 @@
         store.update(char => {
           if (char.skills[idx]) char.skills[idx].rating = Math.min(12, (char.skills[idx].rating || 0) + 1);
         });
+
+        // Atualiza somente a linha da perícia, preservando o foco do campo de especialização.
+        const row = target.closest(".skill-tactical-item");
+        const char = store.get();
+        const skill = char?.skills?.[idx];
+
+        if (row && skill) {
+          const val = row.querySelector(".stepper-tactical .val");
+          const poolBox = row.querySelector(".pool-box");
+          const rollBtn = row.querySelector(".btn-roll-skill");
+          const pool = calculateSkillDicePool(char, skill, true);
+
+          if (val) val.textContent = skill.rating;
+          if (poolBox) poolBox.textContent = `${pool}d6`;
+          if (rollBtn) rollBtn.setAttribute("data-pool", pool);
+        }
+
         return;
       }
       if (target.classList.contains("btn-skill-dec")) {
@@ -2204,6 +2221,23 @@
         store.update(char => {
           if (char.skills[idx]) char.skills[idx].rating = Math.max(0, (char.skills[idx].rating || 0) - 1);
         });
+
+        // Atualiza somente a linha da perícia, preservando o foco do campo de especialização.
+        const row = target.closest(".skill-tactical-item");
+        const char = store.get();
+        const skill = char?.skills?.[idx];
+
+        if (row && skill) {
+          const val = row.querySelector(".stepper-tactical .val");
+          const poolBox = row.querySelector(".pool-box");
+          const rollBtn = row.querySelector(".btn-roll-skill");
+          const pool = calculateSkillDicePool(char, skill, true);
+
+          if (val) val.textContent = skill.rating;
+          if (poolBox) poolBox.textContent = `${pool}d6`;
+          if (rollBtn) rollBtn.setAttribute("data-pool", pool);
+        }
+
         return;
       }
 
