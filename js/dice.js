@@ -73,14 +73,9 @@ export function rollD6Pool(poolSize, options = {}) {
   const isThresholdGlitch = onesCount > (dice.length / 2);
   const isAnarchyGlitch = useAnarchyDie && anarchyDieResult?.value === 1;
   const isGlitch = isAnarchyGlitch || isThresholdGlitch;
-  const isCriticalGlitch = isGlitch && hits === 0;
 
-  let glitchStatus = "none";
-  if (isCriticalGlitch) {
-    glitchStatus = "critical_glitch";
-  } else if (isGlitch) {
-    glitchStatus = "glitch";
-  }
+  let glitchStatus = isGlitch ? "glitch" : "none";
+
 
   return {
     poolSize,

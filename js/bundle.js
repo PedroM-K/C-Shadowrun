@@ -296,33 +296,85 @@
     }
   ];
 
+  const ATTRIBUTE_SKILL_PRESETS = {
+    agi: [
+      { name: "Atletismo", desc: "correr, saltar, nadar e acrobacia." },
+      { name: "Armas de Fogo", desc: "pistolas, escopetas, submetralhadoras e fuzis." },
+      { name: "Armas de Projéteis", desc: "arcos, bestas, armas de arremesso e certos ataques de criatura." },
+      { name: "Armas de Veículo", desc: "armas montadas em veículos, armas montadas em drones, e armas em suportes/tripés fixos." },
+      { name: "Armas Pesadas", desc: "metralhadoras, canhões de assalto, lança-mísseis e lança-granadas." },
+      { name: "Arte da Fuga", desc: "escapar de amarras e algemas, contorcionismo e despistar perseguidores." },
+      { name: "Combate Corpo a Corpo", desc: "combate corpo a corpo armado, combate corpo a corpo desarmado e artes marciais." },
+      { name: "Furtividade", desc: "esgueirar, empalmar e prestidigitação." },
+      { name: "Pilotar (Outros)", desc: "barcos, aviões e praticamente qualquer coisa que se mova em algo diferente do chão." },
+      { name: "Pilotar (Terrestres)", desc: "carros, caminhões, motos e até tanques. Drones com rodas e esteiras também." }
+    ],
+    wil: [
+      { name: "Convocação", desc: "a invocação e o banimento de espíritos. Apenas magistas. Impossível seu uso destreinado." },
+      { name: "Combate Astral", desc: "combate astral/de espíritos. Apenas plano astral. Apenas magistas." },
+      { name: "Combate Corpo a Corpo", desc: "apenas ao atacar espíritos." },
+      { name: "Feitiçaria", desc: "Conjuração, conjuração ritual, encantação e contramágica. Apenas magistas. Impossível seu uso destreinado." },
+      { name: "Sobrevivência", desc: "sobrevivência na natureza, navegação e jejuar." }
+    ],
+    log: [
+      { name: "Biotecnologia", desc: "primeiros socorros, medicina e cibertecnologia." },
+      { name: "Eletrônica", desc: "hardware e software de computadores, reparo de ciberdeck." },
+      { name: "Engenharia", desc: "reparo de automóveis, reparo de aeronaves e reparo de embarcações." },
+      { name: "Hackear", desc: "hackear computadores e cibercombate." },
+      { name: "Perícias de Conhecimento", desc: "idiomas, conhecimento de interesse e conhecimento profissional." },
+      { name: "Rastrear", desc: "rastreio físico, rastreio pela Matriz e perseguição." },
+      { name: "Tarefa", desc: "invocar sprites, tecer formas complexas e outras tarefas da Matriz. Apenas tecnomantes. Impossível seu uso destreinado." }
+    ],
+    cha: [
+      { name: "Disfarce", desc: "camuflagem, cosméticos, fantasias e alteração digital." },
+      { name: "Intimidação", desc: "influência, interrogatório e tortura." },
+      { name: "Negociação", desc: "barganha, contratos e diplomacia." },
+      { name: "Trapaça", desc: "trapaça e charlatanismo, atuação, performance e etiqueta." }
+    ]
+  };
+
+  const ACTION_SKILL_ATTRIBUTES = [
+    { key: "agi", name: "Agilidade", short: "AGI" },
+    { key: "wil", name: "Vontade", short: "WIL" },
+    { key: "log", name: "Lógica", short: "LOG" },
+    { key: "cha", name: "Carisma", short: "CHA" }
+  ];
+
+  const OFFICIAL_SKILL_DESCRIPTIONS = {};
+  Object.entries(ATTRIBUTE_SKILL_PRESETS).forEach(([attrKey, list]) => {
+    list.forEach(item => {
+      OFFICIAL_SKILL_DESCRIPTIONS[`${attrKey}_${item.name}`] = item.desc;
+      if (!OFFICIAL_SKILL_DESCRIPTIONS[item.name]) {
+        OFFICIAL_SKILL_DESCRIPTIONS[item.name] = item.desc;
+      }
+    });
+  });
+
+  function getSkillDescription(name, attr) {
+    if (attr && ATTRIBUTE_SKILL_PRESETS[attr]) {
+      const found = ATTRIBUTE_SKILL_PRESETS[attr].find(p => p.name === name);
+      if (found) return found.desc;
+    }
+    return OFFICIAL_SKILL_DESCRIPTIONS[name] || "";
+  }
+
+
   /**
-   * Normalizes character skills array to match DEFAULT_ANARCHY_SKILLS
-   * preserving existing ratings and specs while applying new attributes and descriptions.
+   * Normalizes character skills array.
+   * Cleans up old all-zero 25-skill arrays to allow clean user-added skills per attribute.
    */
   function normalizeCharacterSkills(char) {
     if (!char) return char;
     if (!Array.isArray(char.skills)) {
-      char.skills = DEFAULT_ANARCHY_SKILLS.map(s => ({ ...s, rating: 0, spec: "" }));
+      char.skills = [];
       return char;
     }
 
-    const existingMap = new Map();
-    for (const s of char.skills) {
-      if (s.id) existingMap.set(s.id, s);
-      if (s.id === "vehicle") {
-        existingMap.set("pilot_ground", s);
-      }
+    // Se o personagem tiver 20 ou mais perícias e todas com rating 0 e sem especialização
+    // (caso clássico da ficha padrão antiga que pré-populava 25 perícias), limpa para começar dinâmico
+    if (char.skills.length >= 20 && char.skills.every(s => (s.rating || 0) === 0 && !s.spec)) {
+      char.skills = [];
     }
-
-    char.skills = DEFAULT_ANARCHY_SKILLS.map(defaultSkill => {
-      const existing = existingMap.get(defaultSkill.id);
-      return {
-        ...defaultSkill,
-        rating: existing ? (Number(existing.rating) || 0) : 0,
-        spec: existing?.spec || ""
-      };
-    });
 
     return char;
   }
@@ -382,8 +434,8 @@
       // Empty narrative lists
       cues: [],
       dispositions: [],
-      // All skills zeroed
-      skills: DEFAULT_ANARCHY_SKILLS.map(s => ({ ...s, rating: 0, spec: "" })),
+      // Skills dynamically added by attribute
+      skills: [],
       knowledgeSkills: [],
       shadowAmps: [],
       qualities: [],
@@ -651,14 +703,8 @@
     const isThresholdGlitch = onesCount > (dice.length / 2);
     const isAnarchyGlitch = useAnarchyDie && anarchyDieResult?.value === 1;
     const isGlitch = isAnarchyGlitch || isThresholdGlitch;
-    const isCriticalGlitch = isGlitch && hits === 0;
 
-    let glitchStatus = "none";
-    if (isCriticalGlitch) {
-      glitchStatus = "critical_glitch";
-    } else if (isGlitch) {
-      glitchStatus = "glitch";
-    }
+    let glitchStatus = isGlitch ? "glitch" : "none";
 
     return {
       poolSize,
@@ -1147,15 +1193,13 @@
    */
   function executeModalRoll() {
     const poolInput = document.getElementById("dice-pool-input");
-    const ruleOfSixCb = document.getElementById("cb-rule-of-six");
     const anarchyDieCb = document.getElementById("cb-anarchy-die");
     const resultsContainer = document.getElementById("dice-modal-results");
 
     const pool = parseInt(poolInput.value, 10) || 1;
-    const useRuleOfSix = ruleOfSixCb?.checked || false;
     const useAnarchyDie = anarchyDieCb?.checked || false;
 
-    const roll = rollD6Pool(pool, { useRuleOfSix, useAnarchyDie });
+    const roll = rollD6Pool(pool, { useRuleOfSix: false, useAnarchyDie });
 
     // Render individual tactical dice boxes
     let diceHtml = `<div class="dice-results-grid">`;
@@ -1168,16 +1212,14 @@
     }
     diceHtml += `</div>`;
 
-    // Status Alerts
+    // Status Alerts (sem falha crítica e sem emojis)
     let statusBanner = "";
-    if (roll.glitchStatus === "critical_glitch") {
-      statusBanner = `<div style="background: var(--term-red-dim); border: 1px solid var(--term-red); color: #ff6b81; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; padding: 0.5rem; text-align: center; border-radius: var(--radius-xs);">⚠️ FALHA CRÍTICA (CRITICAL GLITCH): 0 Sucessos com Complicação Severa!</div>`;
-    } else if (roll.glitchStatus === "glitch") {
-      statusBanner = `<div style="background: var(--term-amber-dim); border: 1px solid var(--term-amber); color: var(--term-amber); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs);">⚠️ GLITCH DETECTADO </div>`;
+    if (roll.glitchStatus === "glitch") {
+      statusBanner = `<div style="background: var(--term-amber-dim); border: 1px solid var(--term-amber); color: var(--term-amber); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs);">GLITCH DETECTADO (DADO DE ANARQUIA: 1)</div>`;
     }
 
     if (roll.anarchyDieHit) {
-      statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">★ SEU DADO DE FALHA ACERTOU!</div>`;
+      statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">DADO DE ANARQUIA ACERTOU!</div>`;
     }
 
     resultsContainer.innerHTML = `
@@ -1326,7 +1368,7 @@
       if (cuesContainer.contains(document.activeElement) && cuesContainer.querySelectorAll(".cue-input").length === cues.length) {
         // Usuário está digitando dentro do container de dicas: não recriar DOM
       } else if (cues.length === 0) {
-        cuesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DICA CADASTRADA. CLIQUE EM [+ DICA] PARA ADICIONAR.</div>`;
+        cuesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;"></div>`;
       } else {
         cuesContainer.innerHTML = cues.map((cue, idx) => `
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
@@ -1345,7 +1387,7 @@
       if (dispContainer.contains(document.activeElement) && dispContainer.querySelectorAll(".disp-input").length === disps.length) {
         // Usuário está digitando dentro do container de disposições: não recriar DOM
       } else if (disps.length === 0) {
-        dispContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DISPOSIÇÃO CADASTRADA. CLIQUE EM [+ DISPOSIÇÃO].</div>`;
+        dispContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;"></div>`;
       } else {
         dispContainer.innerHTML = disps.map((disp, idx) => `
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
@@ -1359,10 +1401,13 @@
   }
 
   function renderAttributesTab(char, derived) {
-    const container = document.getElementById("attributes-grid-container");
-    if (!container) return;
+    const primaryContainer = document.getElementById("attributes-primary-container");
+    const specialContainer = document.getElementById("attributes-special-container");
+    const oldContainer = document.getElementById("attributes-grid-container");
 
-    container.innerHTML = ATTRIBUTES.map(attrDef => {
+    if (!primaryContainer && !specialContainer && !oldContainer) return;
+
+    const renderCard = (attrDef) => {
       const isEssence = attrDef.key === "ess";
       let baseVal = 0;
       let totalVal = 0;
@@ -1409,7 +1454,19 @@
         `}
       </div>
     `;
-    }).join("");
+    };
+
+    if (primaryContainer) {
+      const primaryAttrs = ATTRIBUTES.filter(a => a.key !== "edg" && a.key !== "ess");
+      primaryContainer.innerHTML = primaryAttrs.map(renderCard).join("");
+    }
+    if (specialContainer) {
+      const specialAttrs = ATTRIBUTES.filter(a => a.key === "edg" || a.key === "ess");
+      specialContainer.innerHTML = specialAttrs.map(renderCard).join("");
+    }
+    if (oldContainer && !primaryContainer) {
+      oldContainer.innerHTML = ATTRIBUTES.map(renderCard).join("");
+    }
   }
 
   function renderSkillsTab(char, derived) {
@@ -1419,98 +1476,149 @@
       if (container.contains(document.activeElement) && container.querySelectorAll(".skill-tactical-item").length === skills.length) {
         // Foco ativo mantido no container de perícias
       } else {
-        let currentCategory = "";
         let htmlOutput = "";
 
-        skills.forEach((skill, idx) => {
-          const pool = calculateSkillDicePool(char, skill, true);
-          const cat = skill.category || "Geral";
+        const attributesList = [...ACTION_SKILL_ATTRIBUTES];
+        if (skills.some(s => (s.attr || "").toLowerCase() === "str")) {
+          attributesList.push({ key: "str", name: "Força", short: "STR" });
+        }
 
-          if (cat !== currentCategory) {
-            currentCategory = cat;
-            const attrUpper = (skill.attr || "").toUpperCase();
-            htmlOutput += `
-              <div class="skills-category-header category-${escapeHtml(skill.attr || 'default')}">
-                <span class="cat-title">// ${escapeHtml(currentCategory.toUpperCase())} (${escapeHtml(attrUpper)})</span>
-                <span class="cat-line"></span>
-              </div>
-            `;
-          }
+        attributesList.forEach(attrDef => {
+          const attrKey = attrDef.key;
+          const attrSkills = skills
+            .map((skill, originalIndex) => ({ skill, originalIndex }))
+            .filter(({ skill }) => (skill.attr || "").toLowerCase() === attrKey);
+
+          const attrScore = char.attributes?.[attrKey]?.base || 1;
+          const presets = ATTRIBUTE_SKILL_PRESETS[attrKey] || [];
+          const addedNames = new Set(attrSkills.map(s => s.skill.name));
+          const availablePresets = presets.filter(p => !addedNames.has(p.name));
 
           htmlOutput += `
-            <div class="skill-tactical-item" data-index="${idx}">
-              <div class="skill-name-col">
-                <div class="name">${escapeHtml(skill.name)}</div>
-                ${skill.description ? `<div class="skill-desc">${escapeHtml(skill.description)}</div>` : ""}
+            <div class="skills-category-header category-${attrKey}">
+              <div class="cat-title-block">
+                <span class="cat-prefix">//</span>
+                <span class="cat-title">${attrDef.name.toUpperCase()}</span>
+                <span class="cat-attr-pill" title="Atributo ${attrDef.name}">[${attrDef.short}: ${attrScore}]</span>
               </div>
-              <div class="attr-tag attr-tag-${escapeHtml(skill.attr)}">[${escapeHtml((skill.attr || "").toUpperCase())}]</div>
-              <div>
-                <input 
-                  type="text" 
-                  class="field-input field-input-mono skill-spec-input" 
-                  data-index="${idx}" 
-                  value="${escapeHtml(skill.spec || "")}" 
-                  placeholder="Especialização (+2)..." 
-                  style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
-                />
-              </div>
-              <div class="stepper-tactical">
-                <button class="btn-skill-dec" data-index="${idx}">-</button>
-                <span class="val">${skill.rating}</span>
-                <button class="btn-skill-inc" data-index="${idx}">+</button>
-              </div>
-              <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
-              <div>
-                <button 
-                  class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
-                  data-skill-name="${escapeHtml(skill.name)}" 
-                  data-pool="${pool}" 
-                  data-attr="${escapeHtml(skill.attr)}"
-                >
-                  🎲 ROLAR
-                </button>
+              <div class="cat-line"></div>
+              <div class="cat-picker-wrap">
+                <select class="skill-picker-select" data-attr="${attrKey}" title="Selecionar e adicionar perícia de ${attrDef.name}">
+                  <option value="" disabled selected>+ ADICIONAR PERÍCIA...</option>
+                  ${availablePresets.map(p => `
+                    <option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>
+                  `).join("")}
+                  <option value="__custom__">+ Outra / Personalizada...</option>
+                </select>
               </div>
             </div>
           `;
+
+          if (attrSkills.length === 0) {
+            htmlOutput += `
+              <div class="skill-category-empty">
+                <span class="empty-icon">⬡</span> Nenhuma perícia de ${attrDef.name} adicionada. Selecione no menu acima para incluir.
+              </div>
+            `;
+          } else {
+            attrSkills.forEach(({ skill, originalIndex }) => {
+              const pool = calculateSkillDicePool(char, skill, true);
+              const isKnownPreset = presets.some(p => p.name === skill.name);
+              const isCustom = skill.isCustom || (!isKnownPreset && skill.name && skill.name !== "Nova Perícia");
+              const desc = skill.description || getSkillDescription(skill.name, attrKey);
+
+              htmlOutput += `
+                <div class="skill-tactical-item" data-index="${originalIndex}">
+                  <div class="skill-name-col">
+                    ${isCustom ? `
+                      <input 
+                        type="text" 
+                        class="field-input skill-custom-name-input" 
+                        data-index="${originalIndex}" 
+                        value="${escapeHtml(skill.name || "")}" 
+                        placeholder="Nome da perícia personalizada..." 
+                        style="font-size: 0.85rem; padding: 0.2rem 0.45rem;" 
+                      />
+                    ` : `
+                      <div class="name">${escapeHtml(skill.name)}</div>
+                    `}
+                    ${desc ? `<div class="skill-desc">${escapeHtml(desc)}</div>` : ""}
+                  </div>
+                  <div class="attr-tag attr-tag-${escapeHtml(skill.attr)}">[${escapeHtml(attrDef.short)}]</div>
+                  <div>
+                    <input 
+                      type="text" 
+                      class="field-input field-input-mono skill-spec-input" 
+                      data-index="${originalIndex}" 
+                      value="${escapeHtml(skill.spec || "")}" 
+                      placeholder="Especialização (+2)..." 
+                      style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                    />
+                  </div>
+                  <div class="stepper-tactical">
+                    <button type="button" class="btn-skill-dec" data-index="${originalIndex}">-</button>
+                    <span class="val">${skill.rating}</span>
+                    <button type="button" class="btn-skill-inc" data-index="${originalIndex}">+</button>
+                  </div>
+                  <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
+                  <div>
+                    <button 
+                      type="button"
+                      class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
+                      data-skill-name="${escapeHtml(skill.name)}" 
+                      data-pool="${pool}" 
+                      data-attr="${escapeHtml(attrDef.name)}"
+                    >
+                      🎲 ROLAR
+                    </button>
+                  </div>
+                  <div>
+                    <button type="button" class="btn-term btn-term-sm btn-remove-skill" data-index="${originalIndex}" title="Remover Perícia">✕</button>
+                  </div>
+                </div>
+              `;
+            });
+          }
         });
 
         container.innerHTML = htmlOutput;
       }
     }
 
-    // Knowledge Skills
+    // Knowledge Skills (Sem rolagem)
     const ksContainer = document.getElementById("knowledge-skills-container");
     if (ksContainer) {
       const kSkills = char.knowledgeSkills || [];
       if (ksContainer.contains(document.activeElement) && ksContainer.querySelectorAll(".ks-name-input").length === kSkills.length) {
         // Foco ativo mantido nas perícias de conhecimento
       } else if (kSkills.length === 0) {
-        ksContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM CONHECIMENTO REGISTRADO. CLIQUE EM [+ CONHECIMENTO] PARA ADICIONAR IDIOMAS OU SABERES.</div>`;
+        ksContainer.innerHTML = `
+          <div class="skill-category-empty">
+            <span class="empty-icon">⬡</span> Nenhum idioma ou conhecimento registrado. Clique em [+ CONHECIMENTO] para adicionar.
+          </div>
+        `;
       } else {
         ksContainer.innerHTML = kSkills.map((ks, idx) => `
-        <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
-          <input type="text" class="field-input ks-name-input" data-index="${idx}" value="${escapeHtml(ks.name)}" placeholder="Perícia de Conhecimento / Idioma..." style="flex: 2;" />
-          <div class="stepper-tactical">
-            <button class="btn-ks-dec" data-index="${idx}">-</button>
-            <span class="val">${ks.rating || 1}</span>
-            <button class="btn-ks-inc" data-index="${idx}">+</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
+            <input 
+              type="text" 
+              class="field-input ks-name-input" 
+              data-index="${idx}" 
+              value="${escapeHtml(ks.name)}" 
+              placeholder="Perícia de Conhecimento / Idioma..." 
+              style="flex: 1;" 
+            />
+            <button type="button" class="btn-term btn-term-sm btn-remove-ks" data-index="${idx}" title="Remover Conhecimento">✕</button>
           </div>
-          <button class="btn-term btn-term-primary btn-term-sm btn-roll-ks" data-name="${escapeHtml(ks.name)}" data-rating="${ks.rating || 1}">🎲 ROLAR</button>
-          <button class="btn-term btn-term-sm btn-remove-ks" data-index="${idx}">✕</button>
-        </div>
-      `).join("");
+        `).join("");
       }
+
     }
   }
 
   function renderCombatTab(char, derived) {
     // Metric numbers
-    const defVal = document.getElementById("val-defense-pool");
-    const spellDefVal = document.getElementById("val-spell-defense-pool");
     const woundVal = document.getElementById("wound-penalty-display");
-
-    if (defVal) defVal.textContent = derived.defense.total;
-    if (spellDefVal) spellDefVal.textContent = derived.mentalDefense.total;
     if (woundVal) {
       const penalty = derived.woundPenalty;
       woundVal.textContent = penalty === 0 ? "0" : `${penalty} DADOS`;
@@ -1529,9 +1637,8 @@
     // Edge
     const edgeVal = document.getElementById("val-edge-count");
     if (edgeVal) {
-      const currentEdge = char.condition.edgeCurrent ?? (char.attributes.edg?.base || 1);
-      const maxEdge = char.attributes.edg?.base || 1;
-      edgeVal.textContent = `${currentEdge} / ${maxEdge}`;
+      const currentEdge = char.condition.edgeCurrent ?? 1;
+      edgeVal.textContent = currentEdge;
     }
   }
 
@@ -1573,7 +1680,7 @@
       return;
     }
     if (weapons.length === 0) {
-      container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// ARSENAL VAZIO. CLIQUE EM [+ REGISTRAR ARMA] PARA ADICIONAR SUAS ARMAS DE FOGO OU CORPO A CORPO.</div>`;
+      container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// ARSENAL VAZIO.</div>`;
       return;
     }
 
@@ -1585,9 +1692,6 @@
           <input type="text" class="field-input wep-name-input" data-index="${idx}" value="${escapeHtml(w.name)}" style="font-weight: 700; color: var(--term-green); flex: 1;" placeholder="Nome da Arma..." />
         </div>
         <div style="display: flex; gap: 0.4rem;">
-          <button class="btn-term btn-term-primary btn-term-sm btn-roll-weapon" data-index="${idx}" data-name="${escapeHtml(w.name)}">
-            🎲 TESTE DE DISPARO
-          </button>
           <button class="btn-term btn-term-danger btn-term-sm btn-remove-weapon" data-index="${idx}">
             ✕ EXCLUIR
           </button>
@@ -1600,16 +1704,8 @@
           <input type="text" class="field-input field-input-mono wep-dmg-input" data-index="${idx}" value="${escapeHtml(w.damage || "")}" placeholder="Ex: 8P" />
         </div>
         <div>
-          <div class="field-label">PENETRAÇÃO (AP)</div>
-          <input type="text" class="field-input field-input-mono wep-ap-input" data-index="${idx}" value="${escapeHtml(w.ap || "0")}" placeholder="Ex: -1" />
-        </div>
-        <div>
           <div class="field-label">ALCANCE</div>
           <input type="text" class="field-input wep-range-input" data-index="${idx}" value="${escapeHtml(w.range || "")}" placeholder="Ex: Perto / Médio" />
-        </div>
-        <div>
-          <div class="field-label">MUNIÇÃO</div>
-          <input type="text" class="field-input field-input-mono wep-ammo-input" data-index="${idx}" value="${escapeHtml(w.ammo || "")}" placeholder="Ex: 15 / 15" />
         </div>
       </div>
 
@@ -1649,7 +1745,7 @@
       return;
     }
     if (amps.length === 0) {
-      container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// NENHUMA AMPLIFICAÇÃO INSTALADA (ESSÊNCIA 100% PURA: 6.00 / 6.00). CLIQUE EM [+ NOVA AMP] PARA INSTALAR CYBERWARE, BIOWARE, FEITIÇOS OU FORMAS.</div>`;
+      container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// NENHUMA AMPLIFICAÇÃO INSTALADA (ESSÊNCIA 100% PURA). CLIQUE EM [+ NOVA AMP] PARA INSTALAR CYBERWARE, BIOWARE, FEITIÇOS OU FORMAS.</div>`;
       return;
     }
 
@@ -1692,7 +1788,7 @@
     if (gearContainer) {
       const gear = char.gear || [];
       if (gear.length === 0) {
-        gearContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// INVENTÁRIO VAZIO. CLIQUE EM [+ ITEM] PARA ADICIONAR.</div>`;
+        gearContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// INVENTÁRIO VAZIO.</div>`;
       } else {
         gearContainer.innerHTML = gear.map((g, idx) => `
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
@@ -1713,7 +1809,7 @@
       if (vehContainer.contains(document.activeElement) && vehContainer.querySelectorAll(".veh-name-input").length === vehicles.length) {
         // Preservar foco em veículos
       } else if (vehicles.length === 0) {
-        vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO. CLIQUE EM [+ VEÍCULO].</div>`;
+        vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO.</div>`;
       } else {
         vehContainer.innerHTML = vehicles.map((v, idx) => `
         <div class="weapon-tactical-card bracket-box">
@@ -1960,7 +2056,7 @@
     });
 
     // Create New Runner
-    document.getElementById("btn-data-new")?.addEventListener("click", () => {
+    const handleNewRunner = () => {
       const confirmed = window.confirm(
         "CONFIRMAR CRIAÇÃO DE NOVO RUNNER:\n\nOs dados atuais serão arquivados em backup de segurança e a ficha será reiniciada com o perfil padrão."
       );
@@ -1968,7 +2064,9 @@
         store.resetToDefault();
         showToast("NOVO RUNNER INICIALIZADO", "success");
       }
-    });
+    };
+    document.getElementById("btn-header-new")?.addEventListener("click", handleNewRunner);
+    document.getElementById("btn-data-new")?.addEventListener("click", handleNewRunner);
 
     // Wipe Local Cache
     document.getElementById("btn-data-wipe")?.addEventListener("click", () => {
@@ -2067,7 +2165,7 @@
     document.getElementById("btn-add-ks")?.addEventListener("click", () => {
       store.update(char => {
         if (!char.knowledgeSkills) char.knowledgeSkills = [];
-        char.knowledgeSkills.push({ id: `ks_${Date.now()}`, name: "Novo Conhecimento / Idioma", rating: 2 });
+        char.knowledgeSkills.push({ id: `ks_${Date.now()}`, name: "Novo Conhecimento / Idioma" });
       });
     });
 
@@ -2079,9 +2177,7 @@
           id: `wep_${Date.now()}`,
           name: "Nova Arma Registrada",
           damage: "6P",
-          ap: "0",
           range: "Perto",
-          ammo: "10 / 10",
           notes: ""
         });
       });
@@ -2141,35 +2237,14 @@
     // Edge Stepper
     document.getElementById("btn-edge-dec")?.addEventListener("click", () => {
       store.update(char => {
-        const cur = char.condition.edgeCurrent ?? 3;
+        const cur = char.condition.edgeCurrent ?? 1;
         char.condition.edgeCurrent = Math.max(0, cur - 1);
       });
     });
     document.getElementById("btn-edge-inc")?.addEventListener("click", () => {
       store.update(char => {
-        const max = char.attributes.edg?.base || 3;
-        const cur = char.condition.edgeCurrent ?? 3;
-        char.condition.edgeCurrent = Math.min(max, cur + 1);
-      });
-    });
-
-    // Quick Defense Rolls
-    document.getElementById("btn-roll-defense")?.addEventListener("click", () => {
-      const derived = store.getDerived();
-      openDiceModal({
-        title: "DEFESA FÍSICA (AGI + LOG)",
-        pool: derived.defense.total,
-        skillName: "Defesa Tática",
-        attributeName: `Ferimentos: ${derived.defense.wounds}`
-      });
-    });
-
-    document.getElementById("btn-roll-spell-defense")?.addEventListener("click", () => {
-      const derived = store.getDerived();
-      openDiceModal({
-        title: "DEFESA MENTAL / FEITIÇOS",
-        pool: derived.mentalDefense.total,
-        skillName: "Defesa Arcana (WIL + LOG)"
+        const cur = char.condition.edgeCurrent ?? 1;
+        char.condition.edgeCurrent = cur + 1;
       });
     });
 
@@ -2277,6 +2352,19 @@
         return;
       }
 
+      // Action Skills Remove
+      const removeSkillBtn = target.closest(".btn-remove-skill");
+      if (removeSkillBtn) {
+        const idx = parseInt(removeSkillBtn.getAttribute("data-index"), 10);
+        store.update(char => {
+          if (char.skills && char.skills[idx] !== undefined) {
+            char.skills.splice(idx, 1);
+          }
+        });
+        return;
+      }
+
+
       const rollSkillBtn = target.closest(".btn-roll-skill");
       if (rollSkillBtn) {
         const skillName = rollSkillBtn.getAttribute("data-skill-name");
@@ -2291,39 +2379,11 @@
         return;
       }
 
-      // Knowledge Skills Steppers & Rolls
-      if (target.classList.contains("btn-ks-inc")) {
-        const idx = parseInt(target.getAttribute("data-index"), 10);
-        store.update(char => {
-          if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].rating = (char.knowledgeSkills[idx].rating || 1) + 1;
-        });
-        return;
-      }
-      if (target.classList.contains("btn-ks-dec")) {
-        const idx = parseInt(target.getAttribute("data-index"), 10);
-        store.update(char => {
-          if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].rating = Math.max(1, (char.knowledgeSkills[idx].rating || 1) - 1);
-        });
-        return;
-      }
+      // Knowledge Skills Removal
       if (target.classList.contains("btn-remove-ks")) {
+
         const idx = parseInt(target.getAttribute("data-index"), 10);
         store.update(char => char.knowledgeSkills?.splice(idx, 1));
-        return;
-      }
-      const rollKsBtn = target.closest(".btn-roll-ks");
-      if (rollKsBtn) {
-        const name = rollKsBtn.getAttribute("data-name");
-        const rating = parseInt(rollKsBtn.getAttribute("data-rating"), 10) || 1;
-        const log = store.get()?.attributes?.log?.base || 3;
-        const wounds = store.getDerived().woundPenalty;
-        const pool = Math.max(1, rating + log + wounds);
-        openDiceModal({
-          title: `CONHECIMENTO // ${name.toUpperCase()}`,
-          pool,
-          skillName: name,
-          attributeName: "Lógica"
-        });
         return;
       }
 
@@ -2339,25 +2399,7 @@
         return;
       }
 
-      // Weapons Attacks & Remove
-      const rollWepBtn = target.closest(".btn-roll-weapon");
-      if (rollWepBtn) {
-        const idx = parseInt(rollWepBtn.getAttribute("data-index"), 10);
-        const wep = store.get()?.weapons?.[idx];
-        const char = store.get();
-        const isMelee = (wep?.range || "").toLowerCase().includes("corpo") || (wep?.range || "").toLowerCase().includes("melee");
-        const skillId = isMelee ? "close_combat" : "firearms";
-        const skill = char.skills.find(s => s.id === skillId);
-        const pool = calculateSkillDicePool(char, skill, true);
-
-        openDiceModal({
-          title: `DISPARO // ${wep?.name?.toUpperCase() || "ARMA"}`,
-          pool,
-          skillName: skill?.name || "Armas de Fogo",
-          attributeName: `DANO: ${wep?.damage || "DV"} | PA: ${wep?.ap || "0"}`
-        });
-        return;
-      }
+      // Weapons Remove
       if (target.classList.contains("btn-remove-weapon")) {
         const idx = parseInt(target.getAttribute("data-index"), 10);
         store.update(char => char.weapons?.splice(idx, 1));
@@ -2498,6 +2540,10 @@
         store.update(char => { if (char.skills?.[idx]) char.skills[idx].spec = target.value; }, true, typingMeta);
         return;
       }
+      if (target.classList.contains("skill-custom-name-input")) {
+        store.update(char => { if (char.skills?.[idx]) char.skills[idx].name = target.value; }, true, typingMeta);
+        return;
+      }
       if (target.classList.contains("cue-input")) {
         store.update(char => { if (char.cues) char.cues[idx] = target.value; }, true, typingMeta);
         return;
@@ -2530,16 +2576,8 @@
         store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].damage = target.value; }, true, typingMeta);
         return;
       }
-      if (target.classList.contains("wep-ap-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ap = target.value; }, true, typingMeta);
-        return;
-      }
       if (target.classList.contains("wep-range-input")) {
         store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].range = target.value; }, true, typingMeta);
-        return;
-      }
-      if (target.classList.contains("wep-ammo-input")) {
-        store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ammo = target.value; }, true, typingMeta);
         return;
       }
       if (target.classList.contains("wep-notes-input")) {
@@ -2602,6 +2640,55 @@
 
     mainDeck.addEventListener("change", (e) => {
       const target = e.target;
+
+      const picker = target.closest(".skill-picker-select");
+      if (picker) {
+        const attrKey = picker.getAttribute("data-attr") || "agi";
+        const selectedVal = picker.value;
+        if (!selectedVal) return;
+
+        const attrPresets = ATTRIBUTE_SKILL_PRESETS[attrKey] || [];
+        const presetObj = attrPresets.find(p => p.name === selectedVal);
+
+        const attrNames = {
+          str: "Força",
+          agi: "Agilidade",
+          wil: "Vontade",
+          log: "Lógica",
+          cha: "Carisma"
+        };
+
+        store.update(char => {
+          if (!char.skills) char.skills = [];
+
+          if (selectedVal === "__custom__") {
+            char.skills.push({
+              id: `skill_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+              name: "Nova Perícia",
+              attr: attrKey,
+              category: attrNames[attrKey] || attrKey,
+              rating: 1,
+              spec: "",
+              description: "Perícia personalizada",
+              isCustom: true
+            });
+          } else {
+            char.skills.push({
+              id: `skill_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+              name: selectedVal,
+              attr: attrKey,
+              category: attrNames[attrKey] || attrKey,
+              rating: 1,
+              spec: "",
+              description: presetObj ? presetObj.desc : (getSkillDescription(selectedVal, attrKey) || ""),
+              isCustom: false
+            });
+          }
+        });
+        picker.selectedIndex = 0;
+        return;
+      }
+
       const idx = parseInt(target.getAttribute("data-index"), 10);
       if (isNaN(idx)) return;
 

@@ -4,7 +4,7 @@
  */
 
 import { store } from "./state.js";
-import { METATYPES, ATTRIBUTES, SHADOW_AMP_TYPES } from "./constants.js";
+import { METATYPES, ATTRIBUTES, SHADOW_AMP_TYPES, ATTRIBUTE_SKILL_PRESETS, ACTION_SKILL_ATTRIBUTES, OFFICIAL_SKILL_DESCRIPTIONS, getSkillDescription } from "./constants.js";
 import { calculateSkillDicePool } from "./rules.js";
 import { rollD6Pool } from "./dice.js";
 
@@ -81,15 +81,13 @@ export function closeDiceModal() {
  */
 export function executeModalRoll() {
   const poolInput = document.getElementById("dice-pool-input");
-  const ruleOfSixCb = document.getElementById("cb-rule-of-six");
   const anarchyDieCb = document.getElementById("cb-anarchy-die");
   const resultsContainer = document.getElementById("dice-modal-results");
 
   const pool = parseInt(poolInput.value, 10) || 1;
-  const useRuleOfSix = ruleOfSixCb?.checked || false;
   const useAnarchyDie = anarchyDieCb?.checked || false;
 
-  const roll = rollD6Pool(pool, { useRuleOfSix, useAnarchyDie });
+  const roll = rollD6Pool(pool, { useRuleOfSix: false, useAnarchyDie });
 
   // Render individual tactical dice boxes
   let diceHtml = `<div class="dice-results-grid">`;
@@ -102,17 +100,16 @@ export function executeModalRoll() {
   }
   diceHtml += `</div>`;
 
-  // Status Alerts
+  // Status Alerts (sem falha crítica e sem emojis)
   let statusBanner = "";
-  if (roll.glitchStatus === "critical_glitch") {
-    statusBanner = `<div style="background: var(--term-red-dim); border: 1px solid var(--term-red); color: #ff6b81; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; padding: 0.5rem; text-align: center; border-radius: var(--radius-xs);">⚠️ FALHA CRÍTICA (CRITICAL GLITCH): 0 Sucessos com Complicação Severa!</div>`;
-  } else if (roll.glitchStatus === "glitch") {
-    statusBanner = `<div style="background: var(--term-amber-dim); border: 1px solid var(--term-amber); color: var(--term-amber); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs);">⚠️ GLITCH DETECTADO </div>`;
+  if (roll.glitchStatus === "glitch") {
+    statusBanner = `<div style="background: var(--term-amber-dim); border: 1px solid var(--term-amber); color: var(--term-amber); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs);">GLITCH DETECTADO (DADO DE ANARQUIA: 1)</div>`;
   }
 
   if (roll.anarchyDieHit) {
-    statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">★  SEU DADO DE FALHA ACERTOU!</div>`;
+    statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">DADO DE ANARQUIA ACERTOU!</div>`;
   }
+
 
   resultsContainer.innerHTML = `
     <div style="display: flex; justify-content: space-around; align-items: center; background: var(--bg-elevated); padding: 0.85rem; border-radius: var(--radius-xs); border: 1px solid var(--border-panel); margin-bottom: 0.75rem;">
@@ -266,7 +263,6 @@ function renderOverviewTab(char) {
     if (dispContainer.contains(document.activeElement) && dispContainer.querySelectorAll(".disp-input").length === disps.length) {
       // Usuário está digitando dentro do container de disposições: não recriar DOM
     } else if (disps.length === 0) {
-      dispContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA DISPOSIÇÃO CADASTRADA. CLIQUE EM [+ DISPOSIÇÃO].</div>`;
     } else {
       dispContainer.innerHTML = disps.map((disp, idx) => `
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
@@ -280,10 +276,13 @@ function renderOverviewTab(char) {
 }
 
 function renderAttributesTab(char, derived) {
-  const container = document.getElementById("attributes-grid-container");
-  if (!container) return;
+  const primaryContainer = document.getElementById("attributes-primary-container");
+  const specialContainer = document.getElementById("attributes-special-container");
+  const oldContainer = document.getElementById("attributes-grid-container");
 
-  container.innerHTML = ATTRIBUTES.map(attrDef => {
+  if (!primaryContainer && !specialContainer && !oldContainer) return;
+
+  const renderCard = (attrDef) => {
     const isEssence = attrDef.key === "ess";
     let baseVal = 0;
     let totalVal = 0;
@@ -330,7 +329,19 @@ function renderAttributesTab(char, derived) {
         `}
       </div>
     `;
-  }).join("");
+  };
+
+  if (primaryContainer) {
+    const primaryAttrs = ATTRIBUTES.filter(a => a.key !== "edg" && a.key !== "ess");
+    primaryContainer.innerHTML = primaryAttrs.map(renderCard).join("");
+  }
+  if (specialContainer) {
+    const specialAttrs = ATTRIBUTES.filter(a => a.key === "edg" || a.key === "ess");
+    specialContainer.innerHTML = specialAttrs.map(renderCard).join("");
+  }
+  if (oldContainer && !primaryContainer) {
+    oldContainer.innerHTML = ATTRIBUTES.map(renderCard).join("");
+  }
 }
 
 function renderSkillsTab(char, derived) {
@@ -340,98 +351,149 @@ function renderSkillsTab(char, derived) {
     if (container.contains(document.activeElement) && container.querySelectorAll(".skill-tactical-item").length === skills.length) {
       // Foco ativo mantido no container de perícias
     } else {
-      let currentCategory = "";
       let htmlOutput = "";
 
-      skills.forEach((skill, idx) => {
-        const pool = calculateSkillDicePool(char, skill, true);
-        const cat = skill.category || "Geral";
+      const attributesList = [...ACTION_SKILL_ATTRIBUTES];
+      if (skills.some(s => (s.attr || "").toLowerCase() === "str")) {
+        attributesList.push({ key: "str", name: "Força", short: "STR" });
+      }
 
-        if (cat !== currentCategory) {
-          currentCategory = cat;
-          const attrUpper = (skill.attr || "").toUpperCase();
-          htmlOutput += `
-            <div class="skills-category-header category-${escapeHtml(skill.attr || 'default')}">
-              <span class="cat-title">// ${escapeHtml(currentCategory.toUpperCase())} (${escapeHtml(attrUpper)})</span>
-              <span class="cat-line"></span>
-            </div>
-          `;
-        }
+      attributesList.forEach(attrDef => {
+        const attrKey = attrDef.key;
+        const attrSkills = skills
+          .map((skill, originalIndex) => ({ skill, originalIndex }))
+          .filter(({ skill }) => (skill.attr || "").toLowerCase() === attrKey);
+
+        const attrScore = char.attributes?.[attrKey]?.base || 1;
+        const presets = ATTRIBUTE_SKILL_PRESETS[attrKey] || [];
+        const addedNames = new Set(attrSkills.map(s => s.skill.name));
+        const availablePresets = presets.filter(p => !addedNames.has(p.name));
 
         htmlOutput += `
-          <div class="skill-tactical-item" data-index="${idx}">
-            <div class="skill-name-col">
-              <div class="name">${escapeHtml(skill.name)}</div>
-              ${skill.description ? `<div class="skill-desc">${escapeHtml(skill.description)}</div>` : ""}
+          <div class="skills-category-header category-${attrKey}">
+            <div class="cat-title-block">
+              <span class="cat-prefix">//</span>
+              <span class="cat-title">${attrDef.name.toUpperCase()}</span>
+              <span class="cat-attr-pill" title="Atributo ${attrDef.name}">[${attrDef.short}: ${attrScore}]</span>
             </div>
-            <div class="attr-tag attr-tag-${escapeHtml(skill.attr)}">[${escapeHtml((skill.attr || "").toUpperCase())}]</div>
-            <div>
-              <input 
-                type="text" 
-                class="field-input field-input-mono skill-spec-input" 
-                data-index="${idx}" 
-                value="${escapeHtml(skill.spec || "")}" 
-                placeholder="Especialização (+2)..." 
-                style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
-              />
-            </div>
-            <div class="stepper-tactical">
-              <button class="btn-skill-dec" data-index="${idx}">-</button>
-              <span class="val">${skill.rating}</span>
-              <button class="btn-skill-inc" data-index="${idx}">+</button>
-            </div>
-            <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
-            <div>
-              <button 
-                class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
-                data-skill-name="${escapeHtml(skill.name)}" 
-                data-pool="${pool}" 
-                data-attr="${escapeHtml(skill.attr)}"
-              >
-                🎲 ROLAR
-              </button>
+            <div class="cat-line"></div>
+            <div class="cat-picker-wrap">
+              <select class="skill-picker-select" data-attr="${attrKey}" title="Selecionar e adicionar perícia de ${attrDef.name}">
+                <option value="" disabled selected>+ ADICIONAR PERÍCIA...</option>
+                ${availablePresets.map(p => `
+                  <option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>
+                `).join("")}
+                <option value="__custom__">+ Outra / Personalizada...</option>
+              </select>
             </div>
           </div>
         `;
+
+        if (attrSkills.length === 0) {
+          htmlOutput += `
+            <div class="skill-category-empty">
+              <span class="empty-icon">⬡</span> Nenhuma perícia de ${attrDef.name} adicionada. Selecione no menu acima para incluir.
+            </div>
+          `;
+        } else {
+          attrSkills.forEach(({ skill, originalIndex }) => {
+            const pool = calculateSkillDicePool(char, skill, true);
+            const isKnownPreset = presets.some(p => p.name === skill.name);
+            const isCustom = skill.isCustom || (!isKnownPreset && skill.name && skill.name !== "Nova Perícia");
+            const desc = skill.description || getSkillDescription(skill.name, attrKey);
+
+            htmlOutput += `
+              <div class="skill-tactical-item" data-index="${originalIndex}">
+                <div class="skill-name-col">
+                  ${isCustom ? `
+                    <input 
+                      type="text" 
+                      class="field-input skill-custom-name-input" 
+                      data-index="${originalIndex}" 
+                      value="${escapeHtml(skill.name || "")}" 
+                      placeholder="Nome da perícia personalizada..." 
+                      style="font-size: 0.85rem; padding: 0.2rem 0.45rem;" 
+                    />
+                  ` : `
+                    <div class="name">${escapeHtml(skill.name)}</div>
+                  `}
+                  ${desc ? `<div class="skill-desc">${escapeHtml(desc)}</div>` : ""}
+                </div>
+                <div class="attr-tag attr-tag-${escapeHtml(skill.attr)}">[${escapeHtml(attrDef.short)}]</div>
+                <div>
+                  <input 
+                    type="text" 
+                    class="field-input field-input-mono skill-spec-input" 
+                    data-index="${originalIndex}" 
+                    value="${escapeHtml(skill.spec || "")}" 
+                    placeholder="Especialização (+2)..." 
+                    style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                  />
+                </div>
+                <div class="stepper-tactical">
+                  <button type="button" class="btn-skill-dec" data-index="${originalIndex}">-</button>
+                  <span class="val">${skill.rating}</span>
+                  <button type="button" class="btn-skill-inc" data-index="${originalIndex}">+</button>
+                </div>
+                <div class="pool-box" title="Reserva Final de D6">${pool}d6</div>
+                <div>
+                  <button 
+                    type="button"
+                    class="btn-term btn-term-primary btn-term-sm btn-roll-skill" 
+                    data-skill-name="${escapeHtml(skill.name)}" 
+                    data-pool="${pool}" 
+                    data-attr="${escapeHtml(attrDef.name)}"
+                  >
+                    🎲 ROLAR
+                  </button>
+                </div>
+                <div>
+                  <button type="button" class="btn-term btn-term-sm btn-remove-skill" data-index="${originalIndex}" title="Remover Perícia">✕</button>
+                </div>
+              </div>
+            `;
+          });
+        }
       });
 
       container.innerHTML = htmlOutput;
     }
   }
 
-  // Knowledge Skills
+  // Knowledge Skills (Sem rolagem)
   const ksContainer = document.getElementById("knowledge-skills-container");
   if (ksContainer) {
     const kSkills = char.knowledgeSkills || [];
     if (ksContainer.contains(document.activeElement) && ksContainer.querySelectorAll(".ks-name-input").length === kSkills.length) {
       // Foco ativo mantido nas perícias de conhecimento
     } else if (kSkills.length === 0) {
-      ksContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM CONHECIMENTO REGISTRADO. CLIQUE EM [+ CONHECIMENTO] PARA ADICIONAR IDIOMAS OU SABERES.</div>`;
+      ksContainer.innerHTML = `
+        <div class="skill-category-empty">
+          <span class="empty-icon">⬡</span> Nenhum idioma ou conhecimento registrado. Clique em [+ CONHECIMENTO] para adicionar.
+        </div>
+      `;
     } else {
       ksContainer.innerHTML = kSkills.map((ks, idx) => `
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
-          <input type="text" class="field-input ks-name-input" data-index="${idx}" value="${escapeHtml(ks.name)}" placeholder="Perícia de Conhecimento / Idioma..." style="flex: 2;" />
-          <div class="stepper-tactical">
-            <button class="btn-ks-dec" data-index="${idx}">-</button>
-            <span class="val">${ks.rating || 1}</span>
-            <button class="btn-ks-inc" data-index="${idx}">+</button>
-          </div>
-          <button class="btn-term btn-term-primary btn-term-sm btn-roll-ks" data-name="${escapeHtml(ks.name)}" data-rating="${ks.rating || 1}">🎲 ROLAR</button>
-          <button class="btn-term btn-term-sm btn-remove-ks" data-index="${idx}">✕</button>
+          <input 
+            type="text" 
+            class="field-input ks-name-input" 
+            data-index="${idx}" 
+            value="${escapeHtml(ks.name)}" 
+            placeholder="Perícia de Conhecimento / Idioma..." 
+            style="flex: 1;" 
+          />
+          <button type="button" class="btn-term btn-term-sm btn-remove-ks" data-index="${idx}" title="Remover Conhecimento">✕</button>
         </div>
       `).join("");
     }
   }
 }
 
+
 function renderCombatTab(char, derived) {
   // Metric numbers
-  const defVal = document.getElementById("val-defense-pool");
-  const spellDefVal = document.getElementById("val-spell-defense-pool");
   const woundVal = document.getElementById("wound-penalty-display");
-
-  if (defVal) defVal.textContent = derived.defense.total;
-  if (spellDefVal) spellDefVal.textContent = derived.mentalDefense.total;
   if (woundVal) {
     const penalty = derived.woundPenalty;
     woundVal.textContent = penalty === 0 ? "0" : `${penalty} DADOS`;
@@ -446,9 +508,8 @@ function renderCombatTab(char, derived) {
   // Edge
   const edgeVal = document.getElementById("val-edge-count");
   if (edgeVal) {
-    const currentEdge = char.condition.edgeCurrent ?? (char.attributes.edg?.base || 1);
-    const maxEdge = char.attributes.edg?.base || 1;
-    edgeVal.textContent = `${currentEdge} / ${maxEdge}`;
+    const currentEdge = char.condition.edgeCurrent ?? 1;
+    edgeVal.textContent = currentEdge;
   }
 }
 
@@ -490,7 +551,7 @@ function renderWeaponsTab(char) {
     return;
   }
   if (weapons.length === 0) {
-    container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// ARSENAL VAZIO. CLIQUE EM [+ REGISTRAR ARMA] PARA ADICIONAR SUAS ARMAS DE FOGO OU CORPO A CORPO.</div>`;
+    container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// ARSENAL VAZIO.</div>`;
     return;
   }
 
@@ -502,9 +563,6 @@ function renderWeaponsTab(char) {
           <input type="text" class="field-input wep-name-input" data-index="${idx}" value="${escapeHtml(w.name)}" style="font-weight: 700; color: var(--term-green); flex: 1;" placeholder="Nome da Arma..." />
         </div>
         <div style="display: flex; gap: 0.4rem;">
-          <button class="btn-term btn-term-primary btn-term-sm btn-roll-weapon" data-index="${idx}" data-name="${escapeHtml(w.name)}">
-            🎲 TESTE DE DISPARO
-          </button>
           <button class="btn-term btn-term-danger btn-term-sm btn-remove-weapon" data-index="${idx}">
             ✕ EXCLUIR
           </button>
@@ -517,16 +575,8 @@ function renderWeaponsTab(char) {
           <input type="text" class="field-input field-input-mono wep-dmg-input" data-index="${idx}" value="${escapeHtml(w.damage || "")}" placeholder="Ex: 8P" />
         </div>
         <div>
-          <div class="field-label">PENETRAÇÃO (AP)</div>
-          <input type="text" class="field-input field-input-mono wep-ap-input" data-index="${idx}" value="${escapeHtml(w.ap || "0")}" placeholder="Ex: -1" />
-        </div>
-        <div>
           <div class="field-label">ALCANCE</div>
           <input type="text" class="field-input wep-range-input" data-index="${idx}" value="${escapeHtml(w.range || "")}" placeholder="Ex: Perto / Médio" />
-        </div>
-        <div>
-          <div class="field-label">MUNIÇÃO</div>
-          <input type="text" class="field-input field-input-mono wep-ammo-input" data-index="${idx}" value="${escapeHtml(w.ammo || "")}" placeholder="Ex: 15 / 15" />
         </div>
       </div>
 
@@ -566,7 +616,7 @@ function renderShadowAmpsTab(char, derived) {
     return;
   }
   if (amps.length === 0) {
-    container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// NENHUMA AMPLIFICAÇÃO INSTALADA (ESSÊNCIA 100% PURA: 6.00 / 6.00). CLIQUE EM [+ NOVA AMP] PARA INSTALAR CYBERWARE, BIOWARE, FEITIÇOS OU FORMAS.</div>`;
+    container.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); padding: 2rem; text-align: center; border: 1px dashed var(--border-panel); border-radius: var(--radius-xs);">// NENHUMA AMPLIFICAÇÃO INSTALADA (ESSÊNCIA 100% PURA). CLIQUE EM [+ NOVA AMP] PARA INSTALAR CYBERWARE, BIOWARE, FEITIÇOS OU FORMAS.</div>`;
     return;
   }
 
@@ -611,7 +661,7 @@ function renderGearTab(char) {
     if (gearContainer.contains(document.activeElement) && gearContainer.querySelectorAll(".gear-name-input").length === gear.length) {
       // Preservar foco em itens
     } else if (gear.length === 0) {
-      gearContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// INVENTÁRIO VAZIO. CLIQUE EM [+ ITEM] PARA ADICIONAR.</div>`;
+      gearContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// INVENTÁRIO VAZIO.</div>`;
     } else {
       gearContainer.innerHTML = gear.map((g, idx) => `
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem;">
@@ -632,7 +682,7 @@ function renderGearTab(char) {
     if (vehContainer.contains(document.activeElement) && vehContainer.querySelectorAll(".veh-name-input").length === vehicles.length) {
       // Preservar foco em veículos
     } else if (vehicles.length === 0) {
-      vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO. CLIQUE EM [+ VEÍCULO].</div>`;
+      vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO.</div>`;
     } else {
       vehContainer.innerHTML = vehicles.map((v, idx) => `
         <div class="weapon-tactical-card bracket-box">

@@ -288,33 +288,85 @@ export const DEFAULT_ANARCHY_SKILLS = [
   }
 ];
 
+export const ATTRIBUTE_SKILL_PRESETS = {
+  agi: [
+    { name: "Atletismo", desc: "correr, saltar, nadar e acrobacia." },
+    { name: "Armas de Fogo", desc: "pistolas, escopetas, submetralhadoras e fuzis." },
+    { name: "Armas de Projéteis", desc: "arcos, bestas, armas de arremesso e certos ataques de criatura." },
+    { name: "Armas de Veículo", desc: "armas montadas em veículos, armas montadas em drones, e armas em suportes/tripés fixos." },
+    { name: "Armas Pesadas", desc: "metralhadoras, canhões de assalto, lança-mísseis e lança-granadas." },
+    { name: "Arte da Fuga", desc: "escapar de amarras e algemas, contorcionismo e despistar perseguidores." },
+    { name: "Combate Corpo a Corpo", desc: "combate corpo a corpo armado, combate corpo a corpo desarmado e artes marciais." },
+    { name: "Furtividade", desc: "esgueirar, empalmar e prestidigitação." },
+    { name: "Pilotar (Outros)", desc: "barcos, aviões e praticamente qualquer coisa que se mova em algo diferente do chão." },
+    { name: "Pilotar (Terrestres)", desc: "carros, caminhões, motos e até tanques. Drones com rodas e esteiras também." }
+  ],
+  wil: [
+    { name: "Convocação", desc: "a invocação e o banimento de espíritos. Apenas magistas. Impossível seu uso destreinado." },
+    { name: "Combate Astral", desc: "combate astral/de espíritos. Apenas plano astral. Apenas magistas." },
+    { name: "Combate Corpo a Corpo", desc: "apenas ao atacar espíritos." },
+    { name: "Feitiçaria", desc: "Conjuração, conjuração ritual, encantação e contramágica. Apenas magistas. Impossível seu uso destreinado." },
+    { name: "Sobrevivência", desc: "sobrevivência na natureza, navegação e jejuar." }
+  ],
+  log: [
+    { name: "Biotecnologia", desc: "primeiros socorros, medicina e cibertecnologia." },
+    { name: "Eletrônica", desc: "hardware e software de computadores, reparo de ciberdeck." },
+    { name: "Engenharia", desc: "reparo de automóveis, reparo de aeronaves e reparo de embarcações." },
+    { name: "Hackear", desc: "hackear computadores e cibercombate." },
+    { name: "Perícias de Conhecimento", desc: "idiomas, conhecimento de interesse e conhecimento profissional." },
+    { name: "Rastrear", desc: "rastreio físico, rastreio pela Matriz e perseguição." },
+    { name: "Tarefa", desc: "invocar sprites, tecer formas complexas e outras tarefas da Matriz. Apenas tecnomantes. Impossível seu uso destreinado." }
+  ],
+  cha: [
+    { name: "Disfarce", desc: "camuflagem, cosméticos, fantasias e alteração digital." },
+    { name: "Intimidação", desc: "influência, interrogatório e tortura." },
+    { name: "Negociação", desc: "barganha, contratos e diplomacia." },
+    { name: "Trapaça", desc: "trapaça e charlatanismo, atuação, performance e etiqueta." }
+  ]
+};
+
+export const ACTION_SKILL_ATTRIBUTES = [
+  { key: "agi", name: "Agilidade", short: "AGI" },
+  { key: "wil", name: "Vontade", short: "WIL" },
+  { key: "log", name: "Lógica", short: "LOG" },
+  { key: "cha", name: "Carisma", short: "CHA" }
+];
+
+export const OFFICIAL_SKILL_DESCRIPTIONS = {};
+Object.entries(ATTRIBUTE_SKILL_PRESETS).forEach(([attrKey, list]) => {
+  list.forEach(item => {
+    OFFICIAL_SKILL_DESCRIPTIONS[`${attrKey}_${item.name}`] = item.desc;
+    if (!OFFICIAL_SKILL_DESCRIPTIONS[item.name]) {
+      OFFICIAL_SKILL_DESCRIPTIONS[item.name] = item.desc;
+    }
+  });
+});
+
+export function getSkillDescription(name, attr) {
+  if (attr && ATTRIBUTE_SKILL_PRESETS[attr]) {
+    const found = ATTRIBUTE_SKILL_PRESETS[attr].find(p => p.name === name);
+    if (found) return found.desc;
+  }
+  return OFFICIAL_SKILL_DESCRIPTIONS[name] || "";
+}
+
+
 /**
- * Normalizes character skills array to match DEFAULT_ANARCHY_SKILLS
- * preserving existing ratings and specs while applying new attributes and descriptions.
+ * Normalizes character skills array.
+ * Cleans up old all-zero 25-skill arrays to allow clean user-added skills per attribute.
  */
 export function normalizeCharacterSkills(char) {
   if (!char) return char;
   if (!Array.isArray(char.skills)) {
-    char.skills = DEFAULT_ANARCHY_SKILLS.map(s => ({ ...s, rating: 0, spec: "" }));
+    char.skills = [];
     return char;
   }
 
-  const existingMap = new Map();
-  for (const s of char.skills) {
-    if (s.id) existingMap.set(s.id, s);
-    if (s.id === "vehicle") {
-      existingMap.set("pilot_ground", s);
-    }
+  // Se o personagem tiver 20 ou mais perícias e todas com rating 0 e sem especialização
+  // (caso clássico da ficha padrão antiga que pré-populava 25 perícias), limpa para começar dinâmico
+  if (char.skills.length >= 20 && char.skills.every(s => (s.rating || 0) === 0 && !s.spec)) {
+    char.skills = [];
   }
-
-  char.skills = DEFAULT_ANARCHY_SKILLS.map(defaultSkill => {
-    const existing = existingMap.get(defaultSkill.id);
-    return {
-      ...defaultSkill,
-      rating: existing ? (Number(existing.rating) || 0) : 0,
-      spec: existing?.spec || ""
-    };
-  });
 
   return char;
 }
@@ -374,8 +426,8 @@ export function createDefaultCharacter() {
     // Empty narrative lists
     cues: [],
     dispositions: [],
-    // All skills zeroed
-    skills: DEFAULT_ANARCHY_SKILLS.map(s => ({ ...s, rating: 0, spec: "" })),
+    // Skills dynamically added by attribute
+    skills: [],
     knowledgeSkills: [],
     shadowAmps: [],
     qualities: [],

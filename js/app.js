@@ -7,6 +7,7 @@ import { store } from "./state.js";
 import { renderApp, showToast, openDiceModal, closeDiceModal, executeModalRoll } from "./ui.js";
 import { exportCharacterToFile, readJsonFile } from "./importer-exporter.js";
 import { calculateSkillDicePool } from "./rules.js";
+import { ATTRIBUTE_SKILL_PRESETS, OFFICIAL_SKILL_DESCRIPTIONS, getSkillDescription } from "./constants.js";
 
 function bootTerminal() {
   try {
@@ -134,7 +135,7 @@ function setupHeaderAndDataControls() {
   });
 
   // Create New Runner
-  document.getElementById("btn-data-new")?.addEventListener("click", () => {
+  const handleNewRunner = () => {
     const confirmed = window.confirm(
       "CONFIRMAR CRIAÇÃO DE NOVO RUNNER:\n\nOs dados atuais serão arquivados em backup de segurança e a ficha será reiniciada com o perfil padrão."
     );
@@ -142,7 +143,9 @@ function setupHeaderAndDataControls() {
       store.resetToDefault();
       showToast("NOVO RUNNER INICIALIZADO", "success");
     }
-  });
+  };
+  document.getElementById("btn-header-new")?.addEventListener("click", handleNewRunner);
+  document.getElementById("btn-data-new")?.addEventListener("click", handleNewRunner);
 
   // Wipe Local Cache
   document.getElementById("btn-data-wipe")?.addEventListener("click", () => {
@@ -241,9 +244,10 @@ function setupDelegatedEvents() {
   document.getElementById("btn-add-ks")?.addEventListener("click", () => {
     store.update(char => {
       if (!char.knowledgeSkills) char.knowledgeSkills = [];
-      char.knowledgeSkills.push({ id: `ks_${Date.now()}`, name: "Novo Conhecimento / Idioma", rating: 2 });
+      char.knowledgeSkills.push({ id: `ks_${Date.now()}`, name: "Novo Conhecimento / Idioma" });
     });
   });
+
 
   // Weapons Add
   document.getElementById("btn-add-weapon")?.addEventListener("click", () => {
@@ -253,9 +257,7 @@ function setupDelegatedEvents() {
         id: `wep_${Date.now()}`,
         name: "Nova Arma Registrada",
         damage: "6P",
-        ap: "0",
         range: "Perto",
-        ammo: "10 / 10",
         notes: ""
       });
     });
@@ -315,35 +317,14 @@ function setupDelegatedEvents() {
   // Edge Stepper
   document.getElementById("btn-edge-dec")?.addEventListener("click", () => {
     store.update(char => {
-      const cur = char.condition.edgeCurrent ?? 3;
+      const cur = char.condition.edgeCurrent ?? 1;
       char.condition.edgeCurrent = Math.max(0, cur - 1);
     });
   });
   document.getElementById("btn-edge-inc")?.addEventListener("click", () => {
     store.update(char => {
-      const max = char.attributes.edg?.base || 3;
-      const cur = char.condition.edgeCurrent ?? 3;
-      char.condition.edgeCurrent = Math.min(max, cur + 1);
-    });
-  });
-
-  // Quick Defense Rolls
-  document.getElementById("btn-roll-defense")?.addEventListener("click", () => {
-    const derived = store.getDerived();
-    openDiceModal({
-      title: "DEFESA FÍSICA (AGI + LOG)",
-      pool: derived.defense.total,
-      skillName: "Defesa Tática",
-      attributeName: `Ferimentos: ${derived.defense.wounds}`
-    });
-  });
-
-  document.getElementById("btn-roll-spell-defense")?.addEventListener("click", () => {
-    const derived = store.getDerived();
-    openDiceModal({
-      title: "DEFESA MENTAL / FEITIÇOS",
-      pool: derived.mentalDefense.total,
-      skillName: "Defesa Arcana (WIL + LOG)"
+      const cur = char.condition.edgeCurrent ?? 1;
+      char.condition.edgeCurrent = cur + 1;
     });
   });
 
@@ -399,6 +380,19 @@ function setupDelegatedEvents() {
       return;
     }
 
+    // Action Skills Remove
+    const removeSkillBtn = target.closest(".btn-remove-skill");
+    if (removeSkillBtn) {
+      const idx = parseInt(removeSkillBtn.getAttribute("data-index"), 10);
+      store.update(char => {
+        if (char.skills && char.skills[idx] !== undefined) {
+          char.skills.splice(idx, 1);
+        }
+      });
+      return;
+    }
+
+
     const rollSkillBtn = target.closest(".btn-roll-skill");
     if (rollSkillBtn) {
       const skillName = rollSkillBtn.getAttribute("data-skill-name");
@@ -413,39 +407,11 @@ function setupDelegatedEvents() {
       return;
     }
 
-    // Knowledge Skills Steppers & Rolls
-    if (target.classList.contains("btn-ks-inc")) {
-      const idx = parseInt(target.getAttribute("data-index"), 10);
-      store.update(char => {
-        if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].rating = (char.knowledgeSkills[idx].rating || 1) + 1;
-      });
-      return;
-    }
-    if (target.classList.contains("btn-ks-dec")) {
-      const idx = parseInt(target.getAttribute("data-index"), 10);
-      store.update(char => {
-        if (char.knowledgeSkills?.[idx]) char.knowledgeSkills[idx].rating = Math.max(1, (char.knowledgeSkills[idx].rating || 1) - 1);
-      });
-      return;
-    }
+    // Knowledge Skills Removal
     if (target.classList.contains("btn-remove-ks")) {
+
       const idx = parseInt(target.getAttribute("data-index"), 10);
       store.update(char => char.knowledgeSkills?.splice(idx, 1));
-      return;
-    }
-    const rollKsBtn = target.closest(".btn-roll-ks");
-    if (rollKsBtn) {
-      const name = rollKsBtn.getAttribute("data-name");
-      const rating = parseInt(rollKsBtn.getAttribute("data-rating"), 10) || 1;
-      const log = store.get()?.attributes?.log?.base || 3;
-      const wounds = store.getDerived().woundPenalty;
-      const pool = Math.max(1, rating + log + wounds);
-      openDiceModal({
-        title: `CONHECIMENTO // ${name.toUpperCase()}`,
-        pool,
-        skillName: name,
-        attributeName: "Lógica"
-      });
       return;
     }
 
@@ -461,25 +427,7 @@ function setupDelegatedEvents() {
       return;
     }
 
-    // Weapons Attacks & Remove
-    const rollWepBtn = target.closest(".btn-roll-weapon");
-    if (rollWepBtn) {
-      const idx = parseInt(rollWepBtn.getAttribute("data-index"), 10);
-      const wep = store.get()?.weapons?.[idx];
-      const char = store.get();
-      const isMelee = (wep?.range || "").toLowerCase().includes("corpo") || (wep?.range || "").toLowerCase().includes("melee");
-      const skillId = isMelee ? "close_combat" : "firearms";
-      const skill = char.skills.find(s => s.id === skillId);
-      const pool = calculateSkillDicePool(char, skill, true);
-
-      openDiceModal({
-        title: `DISPARO // ${wep?.name?.toUpperCase() || "ARMA"}`,
-        pool,
-        skillName: skill?.name || "Armas de Fogo",
-        attributeName: `DANO: ${wep?.damage || "DV"} | PA: ${wep?.ap || "0"}`
-      });
-      return;
-    }
+    // Weapons Remove
     if (target.classList.contains("btn-remove-weapon")) {
       const idx = parseInt(target.getAttribute("data-index"), 10);
       store.update(char => char.weapons?.splice(idx, 1));
@@ -572,6 +520,10 @@ function setupDelegatedEvents() {
       store.update(char => { if (char.skills?.[idx]) char.skills[idx].spec = target.value; }, true, typingMeta);
       return;
     }
+    if (target.classList.contains("skill-custom-name-input")) {
+      store.update(char => { if (char.skills?.[idx]) char.skills[idx].name = target.value; }, true, typingMeta);
+      return;
+    }
     if (target.classList.contains("cue-input")) {
       store.update(char => { if (char.cues) char.cues[idx] = target.value; }, true, typingMeta);
       return;
@@ -604,16 +556,8 @@ function setupDelegatedEvents() {
       store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].damage = target.value; }, true, typingMeta);
       return;
     }
-    if (target.classList.contains("wep-ap-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ap = target.value; }, true, typingMeta);
-      return;
-    }
     if (target.classList.contains("wep-range-input")) {
       store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].range = target.value; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("wep-ammo-input")) {
-      store.update(char => { if (char.weapons?.[idx]) char.weapons[idx].ammo = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("wep-notes-input")) {
@@ -676,6 +620,55 @@ function setupDelegatedEvents() {
 
   mainDeck.addEventListener("change", (e) => {
     const target = e.target;
+
+    const picker = target.closest(".skill-picker-select");
+    if (picker) {
+      const attrKey = picker.getAttribute("data-attr") || "agi";
+      const selectedVal = picker.value;
+      if (!selectedVal) return;
+
+      const attrPresets = ATTRIBUTE_SKILL_PRESETS[attrKey] || [];
+      const presetObj = attrPresets.find(p => p.name === selectedVal);
+
+      const attrNames = {
+        str: "Força",
+        agi: "Agilidade",
+        wil: "Vontade",
+        log: "Lógica",
+        cha: "Carisma"
+      };
+
+      store.update(char => {
+        if (!char.skills) char.skills = [];
+
+        if (selectedVal === "__custom__") {
+          char.skills.push({
+            id: `skill_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: "Nova Perícia",
+            attr: attrKey,
+            category: attrNames[attrKey] || attrKey,
+            rating: 1,
+            spec: "",
+            description: "Perícia personalizada",
+            isCustom: true
+          });
+        } else {
+          char.skills.push({
+            id: `skill_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: selectedVal,
+            attr: attrKey,
+            category: attrNames[attrKey] || attrKey,
+            rating: 1,
+            spec: "",
+            description: presetObj ? presetObj.desc : (getSkillDescription(selectedVal, attrKey) || ""),
+            isCustom: false
+          });
+        }
+      });
+      picker.selectedIndex = 0;
+      return;
+    }
+
     const idx = parseInt(target.getAttribute("data-index"), 10);
     if (isNaN(idx)) return;
 
