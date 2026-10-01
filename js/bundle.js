@@ -376,7 +376,7 @@
         physicalDamage: 0,
         stunDamage: 0,
         armorDamage: 0,
-        armorRating: 0,
+        armorRating: 9,
         edgeCurrent: 1
       },
       // Empty narrative lists
@@ -458,7 +458,8 @@
    * Base armor equipped + metatype bonus (Troll +1 Dermal) + Cyberware dermal plating
    */
   function calculateArmorTrackMax(charData) {
-    let baseArmor = Number(charData?.condition?.armorRating) || 9;
+    const storedArmor = Number(charData?.condition?.armorRating);
+    let baseArmor = Number.isFinite(storedArmor) && storedArmor > 0 ? storedArmor : 9;
 
     // Troll bonus (+1 Dermal Armor)
     if (charData?.character?.metatype === "Troll") {
@@ -1223,6 +1224,19 @@
     // Se o usuário está digitando ativamente, NÃO recriar elementos DOM para não perder foco
     if (eventMeta?.isTyping) {
       const target = eventMeta.sourceTarget;
+
+      // Se estiver editando o máximo da armadura, atualiza o track imediatamente
+      // sem reconstruir o restante da aba nem roubar o foco do campo.
+      if (target && target.classList.contains("armor-max-input")) {
+        const armorMax = Math.max(1, Math.min(30, parseInt(target.value, 10) || 1));
+        const armorDamage = Math.min(
+          Math.max(0, Number(char.condition?.armorDamage) || 0),
+          armorMax
+        );
+        renderTacticalTrack("armor", armorMax, armorDamage, "armor-cell", "val-armor-count");
+        target.value = armorMax;
+      }
+
       // Se digitou especialização de perícia, atualiza cirurgicamente a pool da linha
       if (target && target.classList.contains("skill-spec-input")) {
         const row = target.closest(".skill-tactical-item");
@@ -1504,6 +1518,10 @@
     }
 
     // Damage Tracks
+    const armorRatingInput = document.getElementById("armor-rating-input");
+    if (armorRatingInput && document.activeElement !== armorRatingInput) {
+      armorRatingInput.value = Math.max(1, Number(char.condition?.armorRating) || 9);
+    }
     renderTacticalTrack("armor", derived.armorMax, char.condition.armorDamage || 0, "armor-cell", "val-armor-count");
     renderTacticalTrack("physical", derived.physMax, char.condition.physicalDamage || 0, "phys-cell", "val-phys-count");
     renderTacticalTrack("stun", derived.stunMax, char.condition.stunDamage || 0, "stun-cell", "val-stun-count");
@@ -2159,6 +2177,24 @@
     mainDeck.addEventListener("click", (e) => {
       const target = e.target;
 
+      // Armor maximum steppers
+      if (target.classList.contains("btn-armor-max-inc") || target.classList.contains("btn-armor-max-dec")) {
+        const current = Math.max(1, Math.min(30, Number(store.get()?.condition?.armorRating) || 9));
+        const delta = target.classList.contains("btn-armor-max-inc") ? 1 : -1;
+        const value = Math.max(1, Math.min(30, current + delta));
+
+        store.update(char => {
+          if (!char.condition) char.condition = {};
+          char.condition.armorRating = value;
+          char.condition.armorDamage = Math.min(
+            Math.max(0, Number(char.condition.armorDamage) || 0),
+            value
+          );
+        });
+
+        return;
+      }
+
       // Track damage cell click
       const cell = target.closest(".track-cell");
       if (cell) {
@@ -2334,6 +2370,9 @@
         store.update(char => {
           if (char.shadowAmps?.[idx]) char.shadowAmps[idx].level = (char.shadowAmps[idx].level || 1) + 1;
         });
+        const amp = store.get()?.shadowAmps?.[idx];
+        const value = target.closest(".stepper-tactical")?.querySelector(".val");
+        if (value && amp) value.textContent = `Nv ${amp.level || 1}`;
         return;
       }
       if (target.classList.contains("btn-amp-lvl-dec")) {
@@ -2341,6 +2380,9 @@
         store.update(char => {
           if (char.shadowAmps?.[idx]) char.shadowAmps[idx].level = Math.max(1, (char.shadowAmps[idx].level || 1) - 1);
         });
+        const amp = store.get()?.shadowAmps?.[idx];
+        const value = target.closest(".stepper-tactical")?.querySelector(".val");
+        if (value && amp) value.textContent = `Nv ${amp.level || 1}`;
         return;
       }
       if (target.classList.contains("btn-remove-amp")) {
@@ -2355,6 +2397,9 @@
         store.update(char => {
           if (char.contacts?.[idx]) char.contacts[idx].connection = Math.min(6, (char.contacts[idx].connection || 1) + 1);
         });
+        const contact = store.get()?.contacts?.[idx];
+        const value = target.closest(".stepper-tactical")?.querySelector(".val");
+        if (value && contact) value.textContent = contact.connection ?? 1;
         return;
       }
       if (target.classList.contains("btn-conn-dec")) {
@@ -2362,6 +2407,9 @@
         store.update(char => {
           if (char.contacts?.[idx]) char.contacts[idx].connection = Math.max(1, (char.contacts[idx].connection || 1) - 1);
         });
+        const contact = store.get()?.contacts?.[idx];
+        const value = target.closest(".stepper-tactical")?.querySelector(".val");
+        if (value && contact) value.textContent = contact.connection ?? 1;
         return;
       }
       if (target.classList.contains("btn-loy-inc")) {
@@ -2369,6 +2417,9 @@
         store.update(char => {
           if (char.contacts?.[idx]) char.contacts[idx].loyalty = Math.min(6, (char.contacts[idx].loyalty || 1) + 1);
         });
+        const contact = store.get()?.contacts?.[idx];
+        const value = target.closest(".stepper-tactical")?.querySelector(".val");
+        if (value && contact) value.textContent = contact.loyalty ?? 1;
         return;
       }
       if (target.classList.contains("btn-loy-dec")) {
@@ -2376,6 +2427,9 @@
         store.update(char => {
           if (char.contacts?.[idx]) char.contacts[idx].loyalty = Math.max(1, (char.contacts[idx].loyalty || 1) - 1);
         });
+        const contact = store.get()?.contacts?.[idx];
+        const value = target.closest(".stepper-tactical")?.querySelector(".val");
+        if (value && contact) value.textContent = contact.loyalty ?? 1;
         return;
       }
       if (target.classList.contains("btn-remove-contact")) {
@@ -2405,6 +2459,36 @@
     // Delegated Input/Change Handlers
     mainDeck.addEventListener("input", (e) => {
       const target = e.target;
+
+      if (target.classList.contains("armor-max-input")) {
+        const value = Math.max(1, Math.min(30, parseInt(target.value, 10) || 1));
+        target.value = value;
+        store.update(char => {
+          if (!char.condition) char.condition = {};
+          char.condition.armorRating = value;
+          char.condition.armorDamage = Math.min(
+            Math.max(0, Number(char.condition.armorDamage) || 0),
+            value
+          );
+        }, true, { isTyping: true, sourceTarget: target });
+        return;
+      }
+
+      // Compatibilidade com fichas antigas que ainda tenham a classe anterior.
+      if (target.classList.contains("armor-rating-input")) {
+        const value = Math.max(1, Math.min(30, parseInt(target.value, 10) || 1));
+        target.value = value;
+        store.update(char => {
+          if (!char.condition) char.condition = {};
+          char.condition.armorRating = value;
+          char.condition.armorDamage = Math.min(
+            Math.max(0, Number(char.condition.armorDamage) || 0),
+            value
+          );
+        }, true, { isTyping: true, sourceTarget: target });
+        return;
+      }
+
       const idx = parseInt(target.getAttribute("data-index"), 10);
       if (isNaN(idx)) return;
 

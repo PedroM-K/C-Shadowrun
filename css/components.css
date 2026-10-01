@@ -199,6 +199,69 @@ select.field-input {
   padding: 0 0.25rem;
 }
 
+
+/* Compact armor maximum control */
+.armor-max-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  flex-wrap: nowrap;
+}
+
+.armor-max-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.armor-max-stepper {
+  border-color: rgba(255, 193, 7, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(255, 193, 7, 0.04);
+}
+
+.armor-max-stepper button {
+  width: 23px;
+  height: 24px;
+  color: var(--term-amber);
+}
+
+.armor-max-stepper button:hover {
+  background: var(--term-amber);
+  color: #000;
+}
+
+.armor-max-input {
+  width: 34px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--term-amber);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-weight: 800;
+  appearance: textfield;
+}
+
+.armor-max-input::-webkit-outer-spin-button,
+.armor-max-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.armor-max-input:focus {
+  background: rgba(255, 193, 7, 0.06);
+}
+
+.armor-max-count {
+  min-width: 3.3rem;
+  text-align: right;
+}
+
 /* ==========================================================================
    ANARCHY POINTS HERO COMPONENT
    ========================================================================== */

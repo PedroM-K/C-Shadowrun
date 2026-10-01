@@ -4,7 +4,7 @@
  * Character data is kept separate in browser localStorage.
  */
 
-const CACHE_NAME = "sr-anarchy-sheet-v2";
+const CACHE_NAME = "sr-anarchy-sheet-v4";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

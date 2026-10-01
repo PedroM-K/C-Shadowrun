@@ -328,8 +328,7 @@
             <div class="term-panel-body">
               <div
                 style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.85rem;">
-                // IDIOMAS, CONHECIMENTO DE INTERESSE E CONHECIMENTO PROFISSIONAL. TESTES BASEADOS NO ATRIBUTO LÓGICA
-                (LOG).
+                // IDIOMAS, CONHECIMENTO DE INTERESSE E CONHECIMENTO PROFISSIONAL. TESTES BASEADOS NO ATRIBUTO LÓGICA (LOG).
               </div>
               <div id="knowledge-skills-container"></div>
             </div>
@@ -375,11 +374,21 @@
                     <span class="monitor-name-tag" style="color: var(--term-amber);">
                       🛡️ MONITOR DE ARMADURA (ARMOR TRACK)
                     </span>
-                    <span id="val-armor-count" class="sys-tag" style="color: var(--term-amber);">0 / 9</span>
+                    <span class="armor-max-control">
+                      <span class="armor-max-label">MÁX</span>
+                      <span class="stepper-tactical armor-max-stepper" title="Ajustar o número máximo de caixas de armadura">
+                        <button type="button" class="btn-armor-max-dec" aria-label="Diminuir máximo de armadura">−</button>
+                        <input id="armor-rating-input" class="armor-max-input" type="number"
+                          min="1" max="30" step="1" value="9" inputmode="numeric"
+                          aria-label="Máximo de caixas do Monitor de Armadura" />
+                        <button type="button" class="btn-armor-max-inc" aria-label="Aumentar máximo de armadura">+</button>
+                      </span>
+                      <span id="val-armor-count" class="sys-tag armor-max-count" style="color: var(--term-amber);">0 / 9</span>
+                    </span>
                   </div>
                   <div
                     style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.5rem;">
-                    // Em Anarchy, a armadura absorve dano físico até se esgotar.
+                  
                   </div>
                   <div id="track-armor-boxes" class="cell-track-grid"></div>
                 </div>

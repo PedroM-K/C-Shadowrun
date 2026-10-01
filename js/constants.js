@@ -368,7 +368,7 @@ export function createDefaultCharacter() {
       physicalDamage: 0,
       stunDamage: 0,
       armorDamage: 0,
-      armorRating: 0,
+      armorRating: 9,
       edgeCurrent: 1
     },
     // Empty narrative lists
