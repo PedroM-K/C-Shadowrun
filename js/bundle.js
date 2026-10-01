@@ -57,7 +57,7 @@
     { key: "wil", label: "Vontade (WIL)", short: "WIL", description: "Resistência mental, conjuração e monitor de atordoamento" },
     { key: "log", label: "Lógica (LOG)", short: "LOG", description: "Intelecto, hacking, eletrônica, engenharia e defesa" },
     { key: "cha", label: "Carisma (CHA)", short: "CHA", description: "Presença social, lábia, liderança e negociação" },
-    { key: "edg", label: "Edge (EDG)", short: "EDG", description: "Sorte, determinação e reroll de dados nas sombras" },
+    { key: "edg", label: "Trunfo (EDG)", short: "EDG", description: "Sorte, determinação e reroll de dados nas sombras" },
     { key: "ess", label: "Essência (ESS)", short: "ESS", readOnly: true, description: "Integridade biológica (6.00 reduzida por Cyberware/Bioware)" }
   ];
 

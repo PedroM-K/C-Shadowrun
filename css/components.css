@@ -1,8 +1,3 @@
-/* ==========================================================================
-   SHADOWRUN: ANARCHY - CLANDESTINE OS TACTICAL COMPONENTS
-   Diegetic 2080 Tactical Terminal // No SaaS // No RGB
-   ========================================================================== */
-
 /* Terminal Tactical Panel Frame */
 .term-panel {
   background: var(--bg-card);
