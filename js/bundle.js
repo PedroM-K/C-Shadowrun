@@ -1177,7 +1177,7 @@
     }
 
     if (roll.anarchyDieHit) {
-      statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">★ DADO DE ANARQUIA ACERTOU (5/6): Ganhe +1 Ponto de Trama!</div>`;
+      statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">★ SEU DADO DE FALHA ACERTOU!</div>`;
     }
 
     resultsContainer.innerHTML = `
