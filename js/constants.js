@@ -372,12 +372,14 @@ export function normalizeCharacterSkills(char) {
 }
 
 export const SHADOW_AMP_TYPES = [
-  { id: "cyberware", label: "Cyberware (Cibernético)" },
-  { id: "bioware", label: "Bioware (Biológico)" },
   { id: "spell", label: "Feitiço (Spell)" },
+  { id: "telesma", label: "Telesma (Foco / Item Mágico)" },
   { id: "adept_power", label: "Poder de Adepto (Adept Power)" },
-  { id: "complex_form", label: "Forma Complexa (Complex Form)" },
-  { id: "gear_amp", label: "Equipamento Especial (Amp)" }
+  { id: "cyberware", label: "Cibernético (Cyberware)" },
+  { id: "bioware", label: "Biônico (Bioware)" },
+  { id: "cyberdeck", label: "Ciberdeck (Hardware de Matriz)" },
+  { id: "program", label: "Programa (Software de Matriz)" },
+  { id: "creature_power", label: "Poder de Criatura (Espírito / PDM)" }
 ];
 
 /**

@@ -380,12 +380,14 @@
   }
 
   const SHADOW_AMP_TYPES = [
-    { id: "cyberware", label: "Cyberware (Cibernético)" },
-    { id: "bioware", label: "Bioware (Biológico)" },
     { id: "spell", label: "Feitiço (Spell)" },
+    { id: "telesma", label: "Telesma (Foco / Item Mágico)" },
     { id: "adept_power", label: "Poder de Adepto (Adept Power)" },
-    { id: "complex_form", label: "Forma Complexa (Complex Form)" },
-    { id: "gear_amp", label: "Equipamento Especial (Amp)" }
+    { id: "cyberware", label: "Cibernético (Cyberware)" },
+    { id: "bioware", label: "Biônico (Bioware)" },
+    { id: "cyberdeck", label: "Ciberdeck (Hardware de Matriz)" },
+    { id: "program", label: "Programa (Software de Matriz)" },
+    { id: "creature_power", label: "Poder de Criatura (Espírito / PDM)" }
   ];
 
   /**
@@ -1883,33 +1885,6 @@
       `).join("");
       }
     }
-
-    // Qualities
-    const qualitiesContainer = document.getElementById("qualities-list-container");
-    if (qualitiesContainer) {
-      const qualities = char.qualities || [];
-      if (qualitiesContainer.contains(document.activeElement) && qualitiesContainer.querySelectorAll(".quality-name-input").length === qualities.length) {
-        // Preservar foco em qualidades
-      } else if (qualities.length === 0) {
-        qualitiesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA QUALIDADE REGISTRADA. CLIQUE EM [+ QUALIDADE].</div>`;
-      } else {
-        qualitiesContainer.innerHTML = qualities.map((q, idx) => `
-        <div class="weapon-tactical-card bracket-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <input type="text" class="field-input quality-name-input" data-index="${idx}" value="${escapeHtml(q.name)}" style="font-weight: 700; color: var(--term-green); flex: 2;" placeholder="Qualidade..." />
-            <select class="field-input quality-type-select" data-index="${idx}" style="width: 130px; margin-left: 0.5rem;">
-              <option value="positive" ${q.type === "positive" ? "selected" : ""}>Positiva (+)</option>
-              <option value="negative" ${q.type === "negative" ? "selected" : ""}>Negativa (-)</option>
-            </select>
-            <button class="btn-term btn-term-danger btn-term-sm btn-remove-quality" data-index="${idx}" style="margin-left: 0.5rem;">✕</button>
-          </div>
-          <div>
-            <textarea class="field-input quality-effect-input" data-index="${idx}" placeholder="Descrição das regras da qualidade...">${escapeHtml(q.effect || "")}</textarea>
-          </div>
-        </div>
-      `).join("");
-      }
-    }
   }
 
   function renderNotesTab(char) {
@@ -1944,6 +1919,7 @@
       setupHeaderAndDataControls();
       setupModals();
       setupDelegatedEvents();
+      setupMatrixRain();
       registerServiceWorker();
       console.log("[SRA Terminal] Clandestine OS online and fully interactive.");
     } catch (err) {
@@ -2220,12 +2196,7 @@
       });
     });
 
-    document.getElementById("btn-add-quality")?.addEventListener("click", () => {
-      store.update(char => {
-        if (!char.qualities) char.qualities = [];
-        char.qualities.push({ id: `q_${Date.now()}`, name: "Nova Qualidade", type: "positive", effect: "Regras..." });
-      });
-    });
+
 
     // Notes Field
     document.getElementById("char-notes")?.addEventListener("input", (e) => {
@@ -2491,11 +2462,6 @@
         store.update(char => char.vehicles?.splice(idx, 1));
         return;
       }
-      if (target.classList.contains("btn-remove-quality")) {
-        const idx = parseInt(target.getAttribute("data-index"), 10);
-        store.update(char => char.qualities?.splice(idx, 1));
-        return;
-      }
     });
 
     // Delegated Input/Change Handlers
@@ -2628,14 +2594,7 @@
         store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].notes = target.value; }, true, typingMeta);
         return;
       }
-      if (target.classList.contains("quality-name-input")) {
-        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].name = target.value; }, true, typingMeta);
-        return;
-      }
-      if (target.classList.contains("quality-effect-input")) {
-        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].effect = target.value; }, true, typingMeta);
-        return;
-      }
+
     });
 
     mainDeck.addEventListener("change", (e) => {
@@ -2696,11 +2655,79 @@
         store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].type = target.value; });
         return;
       }
-      if (target.classList.contains("quality-type-select")) {
-        store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].type = target.value; });
-        return;
-      }
+
     });
+  }
+
+  /**
+   * Matrix Binary Rain Background Animation
+   * Lightweight, high-performance canvas loop rendering falling binary (0 & 1) and hex fragments
+   */
+  function setupMatrixRain() {
+    const canvas = document.getElementById("matrix-rain-canvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const chars = "0101010101100101ABCDEF01";
+    const fontSize = 14;
+    let columns = Math.floor(width / fontSize);
+    let drops = Array(columns).fill(1).map(() => Math.floor(Math.random() * -50));
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      columns = Math.floor(width / fontSize);
+      drops = Array(columns).fill(1).map(() => Math.floor(Math.random() * -50));
+    }
+
+    window.addEventListener("resize", resize);
+
+    let lastTime = 0;
+    const fpsInterval = 1000 / 30; // 30 FPS para estabilidade e baixo consumo
+
+    function draw(currentTime) {
+      requestAnimationFrame(draw);
+
+      const elapsed = currentTime - lastTime;
+      if (elapsed < fpsInterval) return;
+      lastTime = currentTime - (elapsed % fpsInterval);
+
+      // Efeito de rastro translúcido escuro
+      ctx.fillStyle = "rgba(5, 6, 8, 0.08)";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        if (y > 0) {
+          // Cabeça da coluna mais brilhante, cauda verde fosforescente
+          if (Math.random() > 0.88) {
+            ctx.fillStyle = "#ffffff";
+          } else if (Math.random() > 0.5) {
+            ctx.fillStyle = "#00ff66";
+          } else {
+            ctx.fillStyle = "#009933";
+          }
+          ctx.fillText(text, x, y);
+        }
+
+        if (y > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    requestAnimationFrame(draw);
   }
 
   function registerServiceWorker() {
@@ -2712,7 +2739,6 @@
       });
     }
   }
-
 
   console.log("[SRA Terminal] Clandestine OS active and initialized successfully.");
 })();

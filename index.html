@@ -22,6 +22,9 @@
 </head>
 
 <body>
+  <!-- Matrix Binary Rain Background Stream -->
+  <canvas id="matrix-rain-canvas" aria-hidden="true"></canvas>
+
   <div class="terminal-shell">
 
     <!-- ===================================================================
@@ -91,7 +94,7 @@
           </div>
         </div>
 
-        <!-- 6 Technical Sections -->
+        <!-- 4 Technical Sections -->
         <nav class="sidebar-nav-list" aria-label="Navegação do Terminal">
           <button class="nav-link-btn active" data-tab="overview">
             <span class="nav-idx">01</span> // PERFIL & ATRIBUTOS
@@ -100,16 +103,10 @@
             <span class="nav-idx">02</span> // PERÍCIAS DE AÇÃO
           </button>
           <button class="nav-link-btn" data-tab="gear">
-            <span class="nav-idx">03</span> // ARSENAL & INVENTÁRIO
-          </button>
-          <button class="nav-link-btn" data-tab="amps">
-            <span class="nav-idx">04</span> // SHADOW AMPS
-          </button>
-          <button class="nav-link-btn" data-tab="contacts">
-            <span class="nav-idx">05</span> // REDE DE CONTATOS
+            <span class="nav-idx">03</span> // ARSENAL, AMPS & ITENS
           </button>
           <button class="nav-link-btn" data-tab="notes">
-            <span class="nav-idx">06</span> // DOSSIÊ DE MISSÃO
+            <span class="nav-idx">04</span> // CONTATOS & DOSSIÊ
           </button>
         </nav>
       </aside>
@@ -154,7 +151,8 @@
             </div>
 
             <div class="hud-metric" style="align-items: flex-end; justify-content: center;">
-              <button type="button" id="btn-heal-all" class="btn-term btn-term-primary btn-term-sm" title="Restaurar todos os monitores de dano">
+              <button type="button" id="btn-heal-all" class="btn-term btn-term-primary btn-term-sm"
+                title="Restaurar todos os monitores de dano">
                 RESTAURAR TUDO
               </button>
             </div>
@@ -217,7 +215,8 @@
                     </div>
                   </div>
 
-                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; margin-bottom: 0.55rem;">
+                  <div
+                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; margin-bottom: 0.55rem;">
                     <div class="field-block" style="margin-bottom: 0;">
                       <div class="field-label">GÊNERO</div>
                       <input type="text" id="char-gender" class="field-input identity-field" data-field="gender" />
@@ -237,7 +236,8 @@
                   </div>
 
                   <!-- Financial & Karma Block -->
-                  <div style="background: var(--bg-elevated); border: 1px solid var(--border-panel); padding: 0.45rem 0.65rem; border-radius: var(--radius-xs);">
+                  <div
+                    style="background: var(--bg-elevated); border: 1px solid var(--border-panel); padding: 0.45rem 0.65rem; border-radius: var(--radius-xs);">
                     <div class="deck-grid-2" style="gap: 0.65rem;">
                       <div class="field-block" style="margin-bottom: 0;">
                         <div class="field-label">KARMA DISPONÍVEL</div>
@@ -266,7 +266,8 @@
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                     <!-- Cues Section -->
                     <div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                      <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                         <div class="field-label" style="margin-bottom: 0;">FRASES DE EFEITO</div>
                         <button id="btn-add-cue" class="btn-term btn-term-sm">+</button>
                       </div>
@@ -275,7 +276,8 @@
 
                     <!-- Dispositions Section -->
                     <div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                      <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                         <div class="field-label" style="margin-bottom: 0;">DISPOSIÇÕES & ATITUDE</div>
                         <button id="btn-add-disp" class="btn-term btn-term-sm">+</button>
                       </div>
@@ -312,7 +314,8 @@
                         <button type="button" class="btn-armor-max-inc"
                           aria-label="Aumentar máximo de armadura">+</button>
                       </span>
-                      <span id="val-armor-count" class="sys-tag armor-max-count" style="color: var(--term-amber);">0 / 9</span>
+                      <span id="val-armor-count" class="sys-tag armor-max-count" style="color: var(--term-amber);">0 /
+                        9</span>
                     </span>
                   </div>
                   <div id="track-armor-boxes" class="cell-track-grid"></div>
@@ -353,8 +356,10 @@
                 </div>
                 <span class="sys-tag" style="color: var(--term-green);">PHYSICAL_MENTAL</span>
               </div>
-              <div class="term-panel-body" style="padding: 0.55rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
-                <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.45rem;">
+              <div class="term-panel-body"
+                style="padding: 0.55rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+                <div
+                  style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.45rem;">
                 </div>
                 <div id="attributes-primary-container" class="attr-primary-grid"></div>
               </div>
@@ -368,8 +373,10 @@
                 </div>
                 <span class="sys-tag" style="color: var(--term-cyan);">SPECIAL_RESOURCES</span>
               </div>
-              <div class="term-panel-body" style="padding: 0.55rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
-                <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.45rem;">
+              <div class="term-panel-body"
+                style="padding: 0.55rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+                <div
+                  style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.45rem;">
                 </div>
                 <div id="attributes-special-container" class="attr-special-grid"></div>
               </div>
@@ -413,7 +420,7 @@
         </section>
 
         <!-- =================================================================
-             03 // ARSENAL REGISTRADO, EQUIPAMENTOS & VEÍCULOS
+             03 // ARSENAL REGISTRADO, SHADOW AMPS & INVENTÁRIO
              ================================================================= -->
         <section id="tab-gear" class="tab-pane">
           <!-- Arsenal Registrado -->
@@ -429,44 +436,11 @@
             </div>
           </div>
 
-          <!-- Equipamentos & Veículos (2 colunas) -->
-          <div class="deck-grid-2">
-            <!-- Gear items -->
-            <div class="term-panel bracket-box">
-              <div class="term-panel-header">
-                <div class="term-panel-title">
-                  <span class="prefix">03.2 //</span> EQUIPAMENTOS & ITENS
-                </div>
-                <button id="btn-add-gear" class="btn-term btn-term-sm">+ ITEM</button>
-              </div>
-              <div class="term-panel-body">
-                <div id="gear-list-container"></div>
-              </div>
-            </div>
-
-            <!-- Vehicles & Drones -->
-            <div class="term-panel bracket-box">
-              <div class="term-panel-header">
-                <div class="term-panel-title">
-                  <span class="prefix">03.3 //</span> VEÍCULOS & DRONES
-                </div>
-                <button id="btn-add-veh" class="btn-term btn-term-sm">+ VEÍCULO</button>
-              </div>
-              <div class="term-panel-body">
-                <div id="vehicles-list-container"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- =================================================================
-             04 // SHADOW AMPS (DIAGNÓSTICO MÉDICO & CYBERWARE)
-             ================================================================= -->
-        <section id="tab-amps" class="tab-pane">
-          <div class="term-panel bracket-box">
+          <!-- Shadow Amps (Amplificações & Cyberware) -->
+          <div class="term-panel bracket-box" style="margin-bottom: 1.25rem;">
             <div class="term-panel-header">
               <div class="term-panel-title">
-                <span class="prefix">04 //</span> SISTEMA DE AMPLIFICAÇÕES (SHADOW AMPS)
+                <span class="prefix">03.2 //</span> AMPLIFICAÇÕES (SHADOW AMPS)
               </div>
               <div style="display: flex; align-items: center; gap: 1rem;">
                 <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
@@ -490,49 +464,59 @@
               <div id="shadow-amps-container"></div>
             </div>
           </div>
-        </section>
 
-        <!-- =================================================================
-             05 // REDE DE CONTATOS & QUALIDADES
-             ================================================================= -->
-        <section id="tab-contacts" class="tab-pane">
+          <!-- Equipamentos & Veículos (2 colunas) -->
           <div class="deck-grid-2">
-            <!-- Contacts -->
+            <!-- Gear items -->
             <div class="term-panel bracket-box">
               <div class="term-panel-header">
                 <div class="term-panel-title">
-                  <span class="prefix">05.1 //</span> REDE DE CONTATOS (FIXERS & DOCS)
+                  <span class="prefix">03.3 //</span> EQUIPAMENTOS & ITENS
                 </div>
-                <button id="btn-add-contact" class="btn-term btn-term-sm">+ CONTATO</button>
+                <button id="btn-add-gear" class="btn-term btn-term-sm">+ ITEM</button>
               </div>
               <div class="term-panel-body">
-                <div id="contacts-list-container"></div>
+                <div id="gear-list-container"></div>
               </div>
             </div>
 
-            <!-- Qualities -->
+            <!-- Vehicles & Drones -->
             <div class="term-panel bracket-box">
               <div class="term-panel-header">
                 <div class="term-panel-title">
-                  <span class="prefix">05.2 //</span> QUALIDADES (TRAÇOS & DEFEITOS)
+                  <span class="prefix">03.4 //</span> VEÍCULOS & DRONES
                 </div>
-                <button id="btn-add-quality" class="btn-term btn-term-sm">+ QUALIDADE</button>
+                <button id="btn-add-veh" class="btn-term btn-term-sm">+ VEÍCULO</button>
               </div>
               <div class="term-panel-body">
-                <div id="qualities-list-container"></div>
+                <div id="vehicles-list-container"></div>
               </div>
             </div>
           </div>
         </section>
 
         <!-- =================================================================
-             06 // DOSSIÊ DE MISSÃO & ANOTAÇÕES
+             04 // REDE DE CONTATOS & DOSSIÊ DE MISSÃO
              ================================================================= -->
         <section id="tab-notes" class="tab-pane">
+          <!-- Rede de Contatos -->
+          <div class="term-panel bracket-box" style="margin-bottom: 1.25rem;">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">04.1 //</span> REDE DE CONTATOS (FIXERS, RUNNERS & DOCS)
+              </div>
+              <button id="btn-add-contact" class="btn-term btn-term-sm">+ CONTATO</button>
+            </div>
+            <div class="term-panel-body">
+              <div id="contacts-list-container"></div>
+            </div>
+          </div>
+
+          <!-- Dossiê de Missão & Anotações -->
           <div class="term-panel bracket-box">
             <div class="term-panel-header">
               <div class="term-panel-title">
-                <span class="prefix">06 //</span> DIÁRIO DE OPERAÇÕES & NOTAS CLANDESTINAS
+                <span class="prefix">04.2 //</span> DIÁRIO DE OPERAÇÕES & NOTAS CLANDESTINAS
               </div>
               <span class="sys-tag" style="color: var(--term-green);">ENCRYPTED_LOG</span>
             </div>

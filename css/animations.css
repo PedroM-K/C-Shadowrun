@@ -74,3 +74,30 @@
 .fast-transition {
   transition: all 0.12s ease-in-out;
 }
+
+/* ==========================================================================
+   MATRIX BINARY RAIN BACKGROUND
+   Diegetic ambient falling binary stream for cyberpunk immersion
+   ========================================================================== */
+#matrix-rain-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+.terminal-shell {
+  position: relative;
+  z-index: 1;
+}
+
+/* Semi-transparent panel depth to highlight matrix stream beneath */
+.terminal-workspace {
+  position: relative;
+  z-index: 1;
+}
+

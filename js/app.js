@@ -23,6 +23,7 @@ function bootTerminal() {
     setupHeaderAndDataControls();
     setupModals();
     setupDelegatedEvents();
+    setupMatrixRain();
     registerServiceWorker();
     console.log("[SRA Terminal] Clandestine OS online and fully interactive.");
   } catch (err) {
@@ -300,12 +301,7 @@ function setupDelegatedEvents() {
     });
   });
 
-  document.getElementById("btn-add-quality")?.addEventListener("click", () => {
-    store.update(char => {
-      if (!char.qualities) char.qualities = [];
-      char.qualities.push({ id: `q_${Date.now()}`, name: "Nova Qualidade", type: "positive", effect: "Regras..." });
-    });
-  });
+
 
   // Notes Field
   document.getElementById("char-notes")?.addEventListener("input", (e) => {
@@ -501,11 +497,7 @@ function setupDelegatedEvents() {
       store.update(char => char.vehicles?.splice(idx, 1));
       return;
     }
-    if (target.classList.contains("btn-remove-quality")) {
-      const idx = parseInt(target.getAttribute("data-index"), 10);
-      store.update(char => char.qualities?.splice(idx, 1));
-      return;
-    }
+
   });
 
   // Delegated Input/Change Handlers
@@ -608,14 +600,7 @@ function setupDelegatedEvents() {
       store.update(char => { if (char.contacts?.[idx]) char.contacts[idx].notes = target.value; }, true, typingMeta);
       return;
     }
-    if (target.classList.contains("quality-name-input")) {
-      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].name = target.value; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("quality-effect-input")) {
-      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].effect = target.value; }, true, typingMeta);
-      return;
-    }
+
   });
 
   mainDeck.addEventListener("change", (e) => {
@@ -676,10 +661,7 @@ function setupDelegatedEvents() {
       store.update(char => { if (char.shadowAmps?.[idx]) char.shadowAmps[idx].type = target.value; });
       return;
     }
-    if (target.classList.contains("quality-type-select")) {
-      store.update(char => { if (char.qualities?.[idx]) char.qualities[idx].type = target.value; });
-      return;
-    }
+
   });
 }
 
@@ -692,3 +674,75 @@ function registerServiceWorker() {
     });
   }
 }
+
+/**
+ * Matrix Binary Rain Background Animation
+ * Lightweight, high-performance canvas loop rendering falling binary (0 & 1) and hex fragments
+ */
+function setupMatrixRain() {
+  const canvas = document.getElementById("matrix-rain-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  const chars = "0101010101100101ABCDEF01";
+  const fontSize = 14;
+  let columns = Math.floor(width / fontSize);
+  let drops = Array(columns).fill(1).map(() => Math.floor(Math.random() * -50));
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    drops = Array(columns).fill(1).map(() => Math.floor(Math.random() * -50));
+  }
+
+  window.addEventListener("resize", resize);
+
+  let lastTime = 0;
+  const fpsInterval = 1000 / 30; // 30 FPS para manter fluidez com baixíssimo uso de CPU
+
+  function draw(currentTime) {
+    requestAnimationFrame(draw);
+
+    const elapsed = currentTime - lastTime;
+    if (elapsed < fpsInterval) return;
+    lastTime = currentTime - (elapsed % fpsInterval);
+
+    // Efeito de rastro translúcido escuro
+    ctx.fillStyle = "rgba(5, 6, 8, 0.08)";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      if (y > 0) {
+        // Cabeça da coluna mais brilhante, cauda verde fosforescente
+        if (Math.random() > 0.88) {
+          ctx.fillStyle = "#ffffff";
+        } else if (Math.random() > 0.5) {
+          ctx.fillStyle = "#00ff66";
+        } else {
+          ctx.fillStyle = "#009933";
+        }
+        ctx.fillText(text, x, y);
+      }
+
+      if (y > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  requestAnimationFrame(draw);
+}
+

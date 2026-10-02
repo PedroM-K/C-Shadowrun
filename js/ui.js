@@ -757,32 +757,7 @@ function renderContactsTab(char) {
     }
   }
 
-  // Qualities
-  const qualitiesContainer = document.getElementById("qualities-list-container");
-  if (qualitiesContainer) {
-    const qualities = char.qualities || [];
-    if (qualitiesContainer.contains(document.activeElement) && qualitiesContainer.querySelectorAll(".quality-name-input").length === qualities.length) {
-      // Preservar foco em qualidades
-    } else if (qualities.length === 0) {
-      qualitiesContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUMA QUALIDADE REGISTRADA. CLIQUE EM [+ QUALIDADE].</div>`;
-    } else {
-      qualitiesContainer.innerHTML = qualities.map((q, idx) => `
-        <div class="weapon-tactical-card bracket-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <input type="text" class="field-input quality-name-input" data-index="${idx}" value="${escapeHtml(q.name)}" style="font-weight: 700; color: var(--term-green); flex: 2;" placeholder="Qualidade..." />
-            <select class="field-input quality-type-select" data-index="${idx}" style="width: 130px; margin-left: 0.5rem;">
-              <option value="positive" ${q.type === "positive" ? "selected" : ""}>Positiva (+)</option>
-              <option value="negative" ${q.type === "negative" ? "selected" : ""}>Negativa (-)</option>
-            </select>
-            <button class="btn-term btn-term-danger btn-term-sm btn-remove-quality" data-index="${idx}" style="margin-left: 0.5rem;">✕</button>
-          </div>
-          <div>
-            <textarea class="field-input quality-effect-input" data-index="${idx}" placeholder="Descrição das regras da qualidade...">${escapeHtml(q.effect || "")}</textarea>
-          </div>
-        </div>
-      `).join("");
-    }
-  }
+
 }
 
 function renderNotesTab(char) {
