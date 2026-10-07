@@ -1,9 +1,19 @@
 /**
  * SHADOWRUN: ANARCHY - REACTIVE STATE STORE
- * Central reactive store with debounced auto-save and subscriber broadcasts
+ * Central reactive store with debounced auto-save, multi-sheet collection operations, and subscriber broadcasts
  */
 
-import { loadCharacter, saveCharacter, backupCharacter } from "./storage.js";
+import {
+  loadCharacter,
+  saveCharacter,
+  backupCharacter,
+  loadRoster,
+  getActiveCharacterId,
+  setActiveCharacterId,
+  createCharacterInRoster,
+  duplicateCharacterInRoster,
+  deleteCharacterFromRoster
+} from "./storage.js";
 import { createDefaultCharacter } from "./constants.js";
 import { calculateDerivedStats } from "./rules.js";
 
@@ -24,6 +34,14 @@ class CharacterStore {
 
   get() {
     return this.character;
+  }
+
+  getRoster() {
+    return loadRoster();
+  }
+
+  getActiveId() {
+    return this.character?.id || getActiveCharacterId();
   }
 
   getDerived() {
@@ -105,12 +123,74 @@ class CharacterStore {
     );
   }
 
+  /**
+   * Switches active sheet to the character with given id
+   */
+  switchCharacter(charId) {
+    if (this.character && this.character.id === charId) {
+      return this.character;
+    }
+    // Save current sheet before switching
+    this.forceSaveNow();
+
+    setActiveCharacterId(charId);
+    this.character = loadCharacter();
+    this.notify({ type: "switch_character", characterId: charId });
+    return this.character;
+  }
+
+  /**
+   * Creates a new independent character and makes it active
+   */
+  createCharacter(nameOrAlias = "Novo Runner") {
+    // Save current active character first
+    this.forceSaveNow();
+
+    const newChar = createCharacterInRoster(nameOrAlias);
+    this.character = newChar;
+    this.notify({ type: "roster_change", action: "create", characterId: newChar.id });
+    return newChar;
+  }
+
+  /**
+   * Duplicates a character and switches to the copy
+   */
+  duplicateCharacter(charId, switchToCopy = true) {
+    // Save current active character first
+    this.forceSaveNow();
+
+    const targetId = charId || this.character?.id;
+    const copy = duplicateCharacterInRoster(targetId);
+    if (switchToCopy) {
+      setActiveCharacterId(copy.id);
+      this.character = copy;
+      saveCharacter(copy);
+    }
+    this.notify({ type: "roster_change", action: "duplicate", characterId: copy.id });
+    return copy;
+  }
+
+  /**
+   * Deletes a character from the roster
+   */
+  deleteCharacter(charId) {
+    const targetId = charId || this.character?.id;
+    const result = deleteCharacterFromRoster(targetId);
+    if (this.character && this.character.id === targetId) {
+      this.character = loadCharacter();
+    }
+    this.notify({ type: "roster_change", action: "delete", characterId: targetId });
+    return result;
+  }
+
   resetToDefault() {
     if (this.character) {
       backupCharacter(this.character);
     }
-    const fresh = createDefaultCharacter();
-    this.set(fresh, true);
+    const fresh = createDefaultCharacter("Novo Runner");
+    saveCharacter(fresh);
+    this.character = fresh;
+    this.notify({ type: "full_replace" });
     return fresh;
   }
 }

@@ -4,7 +4,8 @@
  */
 
 import { store } from "./state.js";
-import { renderApp, showToast, openDiceModal, closeDiceModal, executeModalRoll } from "./ui.js";
+import { saveCharacter } from "./storage.js";
+import { renderApp, renderSheetsModal, showToast, openDiceModal, closeDiceModal, executeModalRoll } from "./ui.js";
 import { exportCharacterToFile, readJsonFile } from "./importer-exporter.js";
 import { calculateSkillDicePool } from "./rules.js";
 import { ATTRIBUTE_SKILL_PRESETS, OFFICIAL_SKILL_DESCRIPTIONS, getSkillDescription } from "./constants.js";
@@ -45,6 +46,7 @@ function setupNavigation() {
   const tabPanes = document.querySelectorAll(".tab-pane");
   const sidebar = document.getElementById("terminal-sidebar");
   const mobileToggle = document.getElementById("btn-mobile-nav");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
 
   navButtons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -60,6 +62,7 @@ function setupNavigation() {
       // Close mobile drawer if open
       if (sidebar && sidebar.classList.contains("open")) {
         sidebar.classList.remove("open");
+        sidebarBackdrop?.classList.remove("active");
       }
 
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -67,12 +70,20 @@ function setupNavigation() {
   });
 
   mobileToggle?.addEventListener("click", () => {
-    sidebar?.classList.toggle("open");
+    const isOpen = sidebar?.classList.toggle("open");
+    if (sidebarBackdrop) {
+      sidebarBackdrop.classList.toggle("active", !!isOpen);
+    }
+  });
+
+  sidebarBackdrop?.addEventListener("click", () => {
+    sidebar?.classList.remove("open");
+    sidebarBackdrop.classList.remove("active");
   });
 }
 
 /**
- * Header Controls & Data Management Panel
+ * Header Controls & Multi-Sheet Data Management
  */
 function setupHeaderAndDataControls() {
   const footerStatus = document.getElementById("footer-save-status");
@@ -91,6 +102,20 @@ function setupHeaderAndDataControls() {
     }
   });
 
+  // Manual Save Action
+  const handleSaveSheet = () => {
+    const res = store.forceSaveNow();
+    if (res.success) {
+      const char = store.get();
+      const alias = char.character?.alias || char.character?.name || "Runner";
+      showToast(`FICHA SALVA COM SUCESSO // ${alias}`, "success");
+      renderSheetsModal(store.getRoster(), store.getActiveId());
+    } else {
+      showToast("ERRO AO SALVAR FICHA LOCALMENTE", "error");
+    }
+  };
+  document.getElementById("btn-header-save")?.addEventListener("click", handleSaveSheet);
+
   // Export JSON triggers
   const triggerExport = () => {
     const char = store.get();
@@ -104,6 +129,7 @@ function setupHeaderAndDataControls() {
 
   document.getElementById("btn-header-export")?.addEventListener("click", triggerExport);
   document.getElementById("btn-data-export")?.addEventListener("click", triggerExport);
+  document.getElementById("btn-modal-export")?.addEventListener("click", triggerExport);
 
   // Import JSON triggers
   const fileInput = document.getElementById("file-import-input");
@@ -111,6 +137,7 @@ function setupHeaderAndDataControls() {
 
   document.getElementById("btn-header-import")?.addEventListener("click", triggerImportClick);
   document.getElementById("btn-data-import")?.addEventListener("click", triggerImportClick);
+  document.getElementById("btn-modal-import")?.addEventListener("click", triggerImportClick);
 
   fileInput?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
@@ -118,7 +145,7 @@ function setupHeaderAndDataControls() {
 
     try {
       const confirmed = window.confirm(
-        "CONFIRMAR IMPORTAÇÃO DE FICHA:\n\nA ficha ativa no terminal será substituída pelos dados do arquivo.\n(Um snapshot de segurança será gravado localmente)."
+        "CONFIRMAR IMPORTAÇÃO DE FICHA:\n\nA ficha do arquivo será adicionada à sua coleção de fichas sem apagar suas outras fichas."
       );
       if (!confirmed) {
         fileInput.value = "";
@@ -126,8 +153,12 @@ function setupHeaderAndDataControls() {
       }
 
       const parsedData = await readJsonFile(file);
-      store.set(parsedData, true);
-      showToast(`RUNNER CARREGADO // ${parsedData.character.alias || parsedData.character.name}`, "success");
+      if (!parsedData.id) {
+        parsedData.id = `char_imp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      }
+      saveCharacter(parsedData);
+      store.switchCharacter(parsedData.id);
+      showToast(`RUNNER IMPORTADO // ${parsedData.character.alias || parsedData.character.name}`, "success");
     } catch (err) {
       showToast(`ERRO: ${err.message}`, "error");
     } finally {
@@ -137,12 +168,10 @@ function setupHeaderAndDataControls() {
 
   // Create New Runner
   const handleNewRunner = () => {
-    const confirmed = window.confirm(
-      "CONFIRMAR CRIAÇÃO DE NOVO RUNNER:\n\nOs dados atuais serão arquivados em backup de segurança e a ficha será reiniciada com o perfil padrão."
-    );
-    if (confirmed) {
-      store.resetToDefault();
-      showToast("NOVO RUNNER INICIALIZADO", "success");
+    const alias = window.prompt("CRIAR NOVA FICHA // Digite o nome ou Nom de Guerre do Runner:", "Novo Runner");
+    if (alias !== null) {
+      const newChar = store.createCharacter(alias.trim() || "Novo Runner");
+      showToast(`NOVA FICHA CRIADA // ${newChar.character.alias || newChar.character.name}`, "success");
     }
   };
   document.getElementById("btn-header-new")?.addEventListener("click", handleNewRunner);
@@ -166,12 +195,103 @@ function setupHeaderAndDataControls() {
 }
 
 /**
- * Modal Controllers (Dice Roller, Backdrop Click, Esc Key)
+ * Modal Controllers (Dice Roller, Sheets Manager, Backdrop Click, Esc Key)
  */
 function setupModals() {
+  // Dice Modal
   document.getElementById("btn-close-dice-modal")?.addEventListener("click", closeDiceModal);
   document.getElementById("btn-modal-roll-action")?.addEventListener("click", executeModalRoll);
 
+  // Sheets Manager Modal
+  const sheetsModal = document.getElementById("modal-sheets-manager");
+  const openSheetsModal = () => {
+    if (sheetsModal) {
+      renderSheetsModal(store.getRoster(), store.getActiveId());
+      sheetsModal.classList.add("active");
+      setTimeout(() => {
+        document.getElementById("input-new-sheet-name")?.focus();
+      }, 50);
+    }
+  };
+
+  const closeSheetsModal = () => {
+    sheetsModal?.classList.remove("active");
+  };
+
+  document.getElementById("btn-header-sheets")?.addEventListener("click", openSheetsModal);
+  document.getElementById("btn-sidebar-sheets")?.addEventListener("click", openSheetsModal);
+  document.getElementById("btn-close-sheets-modal")?.addEventListener("click", closeSheetsModal);
+
+  // Create sheet in modal
+  document.getElementById("btn-modal-create-sheet")?.addEventListener("click", () => {
+    const input = document.getElementById("input-new-sheet-name");
+    const val = input ? input.value.trim() : "";
+    const newChar = store.createCharacter(val || "Novo Runner");
+    if (input) input.value = "";
+    showToast(`NOVA FICHA CRIADA // ${newChar.character.alias || newChar.character.name}`, "success");
+    renderSheetsModal(store.getRoster(), store.getActiveId());
+  });
+
+  document.getElementById("input-new-sheet-name")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById("btn-modal-create-sheet")?.click();
+    }
+  });
+
+  // Delegated events for cards inside Sheets Modal
+  sheetsModal?.addEventListener("click", (e) => {
+    const target = e.target.closest("button");
+    if (!target) return;
+
+    if (target.id === "btn-modal-save-now") {
+      const res = store.forceSaveNow();
+      if (res.success) {
+        showToast("FICHA SALVA COM SUCESSO", "success");
+        renderSheetsModal(store.getRoster(), store.getActiveId());
+      }
+      return;
+    }
+
+    if (target.classList.contains("btn-open-sheet")) {
+      const charId = target.getAttribute("data-id");
+      if (charId) {
+        store.switchCharacter(charId);
+        const char = store.get();
+        showToast(`FICHA ABERTA // ${char.character?.alias || char.character?.name}`, "success");
+        closeSheetsModal();
+      }
+      return;
+    }
+
+    if (target.classList.contains("btn-duplicate-sheet")) {
+      const charId = target.getAttribute("data-id");
+      if (charId) {
+        const copy = store.duplicateCharacter(charId, true);
+        showToast(`FICHA DUPLICADA COM SUCESSO // ${copy.character?.alias}`, "success");
+        renderSheetsModal(store.getRoster(), store.getActiveId());
+      }
+      return;
+    }
+
+    if (target.classList.contains("btn-delete-sheet")) {
+      const charId = target.getAttribute("data-id");
+      const roster = store.getRoster();
+      const targetChar = roster.find(c => c.id === charId);
+      const targetName = targetChar ? (targetChar.character?.alias || targetChar.character?.name || "Runner") : "este Runner";
+      const confirmed = window.confirm(
+        `CONFIRMAR EXCLUSÃO DA FICHA:\n\nDeseja excluir permanentemente a ficha "${targetName}"?\nEsta ação não poderá ser desfeita.`
+      );
+      if (confirmed && charId) {
+        store.deleteCharacter(charId);
+        showToast(`FICHA "${targetName}" EXCLUÍDA`, "info");
+        renderSheetsModal(store.getRoster(), store.getActiveId());
+      }
+      return;
+    }
+  });
+
+  // Universal backdrop and ESC handling
   document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) backdrop.classList.remove("active");
@@ -301,7 +421,21 @@ function setupDelegatedEvents() {
     });
   });
 
-
+  // Qualidades Add (SRA)
+  document.getElementById("btn-add-quality")?.addEventListener("click", () => {
+    store.update(char => {
+      if (!char.qualities) char.qualities = [];
+      const posCount = char.qualities.filter(q => q.type === "positive").length;
+      const negCount = char.qualities.filter(q => q.type === "negative").length;
+      const defaultType = posCount < 2 ? "positive" : (negCount < 1 ? "negative" : "positive");
+      char.qualities.push({
+        id: `q_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        name: "",
+        type: defaultType,
+        effect: ""
+      });
+    });
+  });
 
   // Notes Field
   document.getElementById("char-notes")?.addEventListener("input", (e) => {
@@ -497,6 +631,61 @@ function setupDelegatedEvents() {
       store.update(char => char.vehicles?.splice(idx, 1));
       return;
     }
+    if (target.classList.contains("btn-remove-quality")) {
+      const idx = parseInt(target.getAttribute("data-index"), 10);
+      store.update(char => char.qualities?.splice(idx, 1));
+      return;
+    }
+
+    // Condition Track Quick Actions
+    if (target.classList.contains("btn-track-inc")) {
+      const track = target.getAttribute("data-track");
+      store.update(char => {
+        const key = `${track}Damage`;
+        const derived = store.getDerived();
+        const maxKey = track === "armor" ? "armorMax" : (track === "physical" ? "physMax" : "stunMax");
+        const max = derived[maxKey] || 10;
+        char.condition[key] = Math.min(max, (char.condition[key] || 0) + 1);
+      });
+      return;
+    }
+    if (target.classList.contains("btn-track-dec")) {
+      const track = target.getAttribute("data-track");
+      store.update(char => {
+        const key = `${track}Damage`;
+        char.condition[key] = Math.max(0, (char.condition[key] || 0) - 1);
+      });
+      return;
+    }
+    if (target.classList.contains("btn-track-clear")) {
+      const track = target.getAttribute("data-track");
+      store.update(char => {
+        char.condition[`${track}Damage`] = 0;
+      });
+      return;
+    }
+
+    // Armor Rating Steppers
+    if (target.classList.contains("btn-armor-max-inc")) {
+      store.update(char => {
+        if (!char.condition) char.condition = {};
+        const cur = Math.max(1, Number(char.condition.armorRating) || 9);
+        char.condition.armorRating = Math.min(30, cur + 1);
+      });
+      return;
+    }
+    if (target.classList.contains("btn-armor-max-dec")) {
+      store.update(char => {
+        if (!char.condition) char.condition = {};
+        const cur = Math.max(1, Number(char.condition.armorRating) || 9);
+        const newVal = Math.max(1, cur - 1);
+        char.condition.armorRating = newVal;
+        if ((char.condition.armorDamage || 0) > newVal) {
+          char.condition.armorDamage = newVal;
+        }
+      });
+      return;
+    }
 
   });
 
@@ -601,10 +790,53 @@ function setupDelegatedEvents() {
       return;
     }
 
+    // Qualidades Fields (Texto Livre)
+    if (target.classList.contains("quality-name-input")) {
+      store.update(char => {
+        if (char.qualities?.[idx]) {
+          char.qualities[idx].name = target.value;
+        }
+      }, true, typingMeta);
+      return;
+    }
+
+    if (target.classList.contains("quality-effect-input")) {
+      store.update(char => {
+        if (char.qualities?.[idx]) {
+          char.qualities[idx].effect = target.value;
+        }
+      }, true, typingMeta);
+      return;
+    }
+
+    // Armor Rating input
+    if (target.id === "armor-rating-input" || target.classList.contains("armor-max-input")) {
+      const val = Math.max(1, Math.min(30, parseInt(target.value, 10) || 1));
+      store.update(char => {
+        if (!char.condition) char.condition = {};
+        char.condition.armorRating = val;
+        char.condition.armorDamage = Math.min(Math.max(0, Number(char.condition.armorDamage) || 0), val);
+      }, true, typingMeta);
+      return;
+    }
+
   });
 
   mainDeck.addEventListener("change", (e) => {
     const target = e.target;
+
+    // Quality Type Select
+    if (target.classList.contains("quality-type-select")) {
+      const idx = parseInt(target.getAttribute("data-index"), 10);
+      if (!isNaN(idx)) {
+        store.update(char => {
+          if (char.qualities?.[idx]) {
+            char.qualities[idx].type = target.value;
+          }
+        });
+      }
+      return;
+    }
 
     const picker = target.closest(".skill-picker-select");
     if (picker) {

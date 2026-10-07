@@ -444,14 +444,239 @@ select.field-input {
 }
 
 /* ==========================================================================
-   CONDITION MONITORS: SEGMENTED CELL TRACKS
+   CONDITION MONITORS: CYBERNETIC BIOMETRIC TELEMETRY
    ========================================================================== */
+.monitors-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.condition-monitor-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.75rem 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.condition-monitor-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+}
+
+.condition-monitor-card.track-armor::before {
+  background: var(--term-amber);
+}
+
+.condition-monitor-card.track-phys::before {
+  background: var(--term-red);
+}
+
+.condition-monitor-card.track-stun::before {
+  background: var(--term-cyan);
+}
+
+.condition-monitor-card:hover {
+  border-color: var(--text-muted);
+}
+
+.condition-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.condition-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.condition-icon-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.track-armor .condition-icon-badge {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--term-amber);
+  border: 1px solid var(--term-amber);
+}
+
+.track-phys .condition-icon-badge {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--term-red);
+  border: 1px solid var(--term-red);
+}
+
+.track-stun .condition-icon-badge {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--term-cyan);
+  border: 1px solid var(--term-cyan);
+}
+
+.condition-title-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.condition-title-text .name {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.75px;
+}
+
+.condition-title-text .formula {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.condition-metrics {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.condition-status-pill {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.pill-status-ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--term-green);
+  border: 1px solid var(--term-green-border);
+}
+
+.pill-status-warn {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--term-amber);
+  border: 1px solid var(--term-amber);
+}
+
+.pill-status-danger {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--term-red);
+  border: 1px solid var(--term-red);
+  animation: pulseTermGlow 1.8s infinite;
+}
+
+/* Triplet Grid for Tracks */
+.track-triplets-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin: 0.35rem 0;
+}
+
+.track-triplet {
+  display: flex;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px;
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+.track-cell {
+  width: 30px;
+  height: 32px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.track-cell:hover {
+  border-color: var(--text-bright);
+  transform: translateY(-1px);
+}
+
+/* Marked damage cells */
+.track-cell.marked.armor-cell {
+  background: var(--term-amber);
+  border-color: #fcd34d;
+  color: #000;
+  box-shadow: 0 0 8px var(--term-amber-glow);
+}
+
+.track-cell.marked.phys-cell {
+  background: var(--term-red);
+  border-color: #fda4af;
+  color: #fff;
+  box-shadow: 0 0 8px var(--term-red-glow);
+}
+
+.track-cell.marked.stun-cell {
+  background: var(--term-cyan);
+  border-color: #67e8f9;
+  color: #000;
+  box-shadow: 0 0 8px var(--term-cyan-glow);
+}
+
+/* Penalty tag attached on threshold cell */
+.track-cell .cell-penalty-sub {
+  font-size: 0.52rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--term-red);
+  margin-top: 2px;
+}
+
+.track-cell.marked .cell-penalty-sub {
+  color: #fff;
+}
+
+.track-cell.marked.stun-cell .cell-penalty-sub {
+  color: #000;
+}
+
+/* Legacy fallback support */
 .monitor-deck-card {
   background: var(--bg-card);
   border: 1px solid var(--border-panel);
   border-radius: var(--radius-xs);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 0.85rem;
+  margin-bottom: 0.85rem;
 }
 
 .monitor-deck-header {
@@ -477,62 +702,199 @@ select.field-input {
   gap: 4px;
 }
 
-.track-cell {
-  width: 28px;
-  height: 28px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-panel);
-  border-radius: var(--radius-xs);
+/* Track Quick Action Controls Footer */
+.condition-track-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.track-quick-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.35rem;
+}
+
+.btn-track-action {
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-dim);
+  font-size: 0.65rem;
+  padding: 0.18rem 0.45rem;
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  user-select: none;
-  position: relative;
   transition: all 0.1s ease;
 }
 
-.track-cell:hover {
+.btn-track-action:hover {
+  color: var(--text-bright);
   border-color: var(--text-muted);
-  transform: scale(1.08);
+  background: var(--bg-elevated);
 }
 
-/* Wound penalty marker indicator (-1, -2, -3) */
-.track-cell.threshold-penalty::after {
-  content: attr(data-penalty);
-  position: absolute;
-  top: -15px;
-  font-size: 0.62rem;
-  font-weight: 800;
-  color: var(--term-red);
+/* ==========================================================================
+   QUALITIES: SRA PERSONALITY & ACTION RULES (2 POSITIVAS / 1 NEGATIVA)
+   ========================================================================== */
+.quality-info-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.75rem;
+}
+
+.quality-info-icon {
+  font-size: 1.1rem;
+  color: var(--term-purple);
+  flex-shrink: 0;
+}
+
+.quality-info-text {
   font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
-/* Marked damage cells */
-.track-cell.marked.armor-cell {
-  background: var(--term-amber);
-  border-color: #fcd34d;
-  color: #000;
-  box-shadow: 0 0 6px var(--term-amber-glow);
+.quality-info-text strong {
+  color: var(--term-purple);
 }
 
-.track-cell.marked.phys-cell {
-  background: var(--term-red);
-  border-color: #fda4af;
-  color: #fff;
-  box-shadow: 0 0 6px var(--term-red-glow);
+.qualities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
 }
 
-.track-cell.marked.stun-cell {
-  background: var(--term-cyan);
-  border-color: #67e8f9;
-  color: #000;
-  box-shadow: 0 0 6px var(--term-cyan-glow);
+@media (max-width: 1080px) {
+  .qualities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
 }
+
+.quality-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  position: relative;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.quality-card.quality-positive {
+  border-left: 3px solid var(--term-green);
+  border-top-color: rgba(16, 185, 129, 0.2);
+}
+
+.quality-card.quality-positive:focus-within,
+.quality-card.quality-positive:hover {
+  border-color: var(--term-green);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
+}
+
+.quality-card.quality-negative {
+  border-left: 3px solid var(--term-red);
+  border-top-color: rgba(239, 68, 68, 0.2);
+}
+
+.quality-card.quality-negative:focus-within,
+.quality-card.quality-negative:hover {
+  border-color: var(--term-red);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.12);
+}
+
+.quality-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.quality-slot-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.quality-type-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.quality-card.quality-positive .quality-type-select {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--term-green);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.quality-card.quality-negative .quality-type-select {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--term-red);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.quality-type-select:hover,
+.quality-type-select:focus {
+  border-color: currentColor;
+}
+
+.quality-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.quality-effect-input {
+  width: 100%;
+  min-height: 68px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius-xs);
+  resize: vertical;
+  line-height: 1.35;
+}
+
+.quality-effect-input:focus {
+  border-color: var(--term-green);
+  outline: none;
+}
+
+.quality-card.quality-negative .quality-effect-input:focus {
+  border-color: var(--term-red);
+}
+
 
 /* Tactical HUD Defense & Wound Strip */
 .tactical-hud-strip {
@@ -974,3 +1336,190 @@ select.field-input {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
   pointer-events: auto;
 }
+
+/* ==========================================================================
+   MULTI-SHEET MANAGER MODAL STYLES
+   ========================================================================== */
+.modal-window-sheets {
+  max-width: 740px;
+  max-height: 88vh;
+}
+
+.active-sheet-banner {
+  background: rgba(0, 255, 102, 0.05);
+  border: 1px solid var(--term-green-border);
+  border-left: 4px solid var(--term-green);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-xs);
+}
+
+.active-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed rgba(0, 255, 102, 0.2);
+  margin-bottom: 0.5rem;
+}
+
+.active-sheet-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.active-sheet-stats .label {
+  color: var(--text-dim);
+  margin-right: 0.25rem;
+}
+
+.active-sheet-stats strong {
+  color: var(--text-bright);
+}
+
+.new-sheet-bar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-panel);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-xs);
+}
+
+@media (max-width: 580px) {
+  .new-sheet-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.sheets-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-panel);
+  margin-top: 0.25rem;
+}
+
+.sheets-roster-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.sheet-roster-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.15s ease;
+}
+
+.sheet-roster-card:hover {
+  border-color: var(--border-bright);
+}
+
+.sheet-roster-card.active-roster-card {
+  border-left: 3px solid var(--term-green);
+  border-color: var(--term-green-border);
+  background: rgba(0, 255, 102, 0.04);
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.08);
+}
+
+.sheet-roster-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.sheet-roster-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sheet-roster-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.sheet-roster-alias {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  letter-spacing: 0.75px;
+  color: var(--text-bright);
+}
+
+.sheet-roster-alias.text-green {
+  color: var(--term-green);
+}
+
+.sheet-roster-real {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.sheet-active-badge {
+  font-size: 0.65rem;
+  color: var(--term-green);
+  border-color: var(--term-green-border);
+  background: var(--term-green-dim);
+}
+
+.sheet-roster-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.sheet-roster-date {
+  color: var(--text-dim);
+}
+
+.sheet-roster-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .sheet-roster-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .sheet-roster-actions {
+    justify-content: flex-end;
+  }
+}
+

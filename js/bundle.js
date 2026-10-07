@@ -14,6 +14,8 @@
   const SCHEMA_VERSION = 1;
   const SYSTEM_NAME = "Shadowrun: Anarchy";
   const STORAGE_KEY = "sra_sheet_active_char_v2";
+  const STORAGE_ROSTER_KEY = "sra_characters_roster_v2";
+  const STORAGE_ACTIVE_ID_KEY = "sra_active_character_id_v2";
   const STORAGE_BACKUP_PREFIX = "sra_sheet_backup_";
 
   const METATYPES = {
@@ -390,19 +392,53 @@
     { id: "creature_power", label: "Poder de Criatura (Espírito / PDM)" }
   ];
 
+  const SRA_QUALITIES_PRESETS = [
+    // Qualidades Positivas
+    { name: "Ambidestro", type: "positive", effect: "+1 dado ao atacar com armas em ambas as mãos." },
+    { name: "Ás do Volante", type: "positive", effect: "+2 dados em testes de pilotagem em perseguições ou manobras evasivas." },
+    { name: "Calar a Boca", type: "positive", effect: "Gaste 1 Ponto de Trama para interromper a Narração de um oponente." },
+    { name: "Código de Honra", type: "positive", effect: "+1 dado em testes sociais com indivíduos que respeitam seu código moral." },
+    { name: "Durão", type: "positive", effect: "+1 caixa de dano adicional no Monitor Físico ou de Atordoamento." },
+    { name: "Firme Sob Fogo", type: "positive", effect: "Ignora a primeira penalidade de -1 dado de ferimento durante tiroteios." },
+    { name: "Guerreiro Nato", type: "positive", effect: "+1 dado em testes de Combate Corpo a Corpo." },
+    { name: "Mente Blindada", type: "positive", effect: "+2 dados para resistir a manipulações mentais e invasões da Matriz." },
+    { name: "Primeiros Socorros Rápidos", type: "positive", effect: "Pode estabilizar ferimentos graves sem kit médico cirúrgico completo." },
+    { name: "Reflexos Rápidos", type: "positive", effect: "Ganha +1 ação narrativa preventiva ou bônus na iniciativa de combate." },
+    { name: "Resistência a Toxinas", type: "positive", effect: "+2 dados em testes para resistir a patógenos, drogas e venenos." },
+    { name: "Sentidos Aguçados", type: "positive", effect: "+2 dados em testes de Percepção para um sentido específico (visão/audição)." },
+    { name: "Sorte Grande", type: "positive", effect: "Recupera 1 Ponto de Trunfo (Edge) adicional após descansar." },
+    { name: "Visão Astral", type: "positive", effect: "Capacidade de perceber o plano astral e auras sem conjuração ativa." },
+
+    // Qualidades Negativas
+    { name: "Alvo Marcado", type: "negative", effect: "Rosto notório e procurado; -2 dados em disfarce e discrição pública." },
+    { name: "Código Rígido", type: "negative", effect: "Incapaz de agir de forma desonrosa, atacar pelas costas ou ferir inocentes." },
+    { name: "Dívida Pesada", type: "negative", effect: "Deve grande soma a agiotas ou sindicatos do crime; cobranças constantes." },
+    { name: "Fobia", type: "negative", effect: "Sofre -2 dados em todas as ações na presença imediata do objeto do seu pavor." },
+    { name: "Inimigo Jurado", type: "negative", effect: "Uma corporação, gangue ou fixer rival persegue você ativamente." },
+    { name: "Pavio Curto", type: "negative", effect: "Deve ser bem-sucedido em teste de Vontade para não reagir com violência a ofensas." },
+    { name: "Problemas com a Lei", type: "negative", effect: "Atenção constante de patrulhas policiais e seguranças corporativos." },
+    { name: "Reputação Ruim", type: "negative", effect: "-2 dados em testes de Negociação e primeiros contatos com novos fixers." },
+    { name: "Sensível à Matriz", type: "negative", effect: "Sofre +1 de dano de atordoamento adicional em ataques de biofeedback." },
+    { name: "SINner (Cidadão Legal)", type: "negative", effect: "Possui registro civil e biometria na rede; muito mais fácil de rastrear." },
+    { name: "Vício / Dependência", type: "negative", effect: "-2 dados em todas as paradas de dados se passar 24h sem a substância." }
+  ];
+
   /**
    * Creates a completely blank, zeroed character sheet
    * ready for full custom player creation.
    */
-  function createDefaultCharacter() {
+  function createDefaultCharacter(customAlias = "") {
+    const charId = `char_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const initialName = customAlias || "";
     return {
+      id: charId,
       version: SCHEMA_VERSION,
       system: SYSTEM_NAME,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       character: {
-        name: "",
-        alias: "",
+        name: initialName,
+        alias: initialName,
         metatype: "Human",
         archetype: "",
         awakenedType: "mundane",
@@ -440,7 +476,12 @@
       skills: [],
       knowledgeSkills: [],
       shadowAmps: [],
-      qualities: [],
+      // 3 Qualidades Padrão SRA (2 positivas e 1 negativa)
+      qualities: [
+        { id: "q_pos_1", name: "", type: "positive", effect: "" },
+        { id: "q_pos_2", name: "", type: "positive", effect: "" },
+        { id: "q_neg_1", name: "", type: "negative", effect: "" }
+      ],
       weapons: [],
       armor: [],
       gear: [],
@@ -723,48 +764,142 @@
   }
 
 
-  // --- 4. LOCAL PERSISTENCE ---
+  // --- 4. LOCAL PERSISTENCE & MULTI-SHEET ROSTER ---
   /**
- * SHADOWRUN: ANARCHY - LOCAL STORAGE PERSISTENCE
- * 100% Client-side local storage with automatic fallback and safety snapshots
- */
-
-
-  /**
-   * Loads the active character from localStorage.
-   * If none exists, creates and returns the default character.
+   * SHADOWRUN: ANARCHY - LOCAL STORAGE PERSISTENCE & MULTI-SHEET ROSTER
+   * 100% Client-side local storage with automatic fallback, multi-sheet collection, and safety snapshots
    */
-  function loadCharacter() {
+
+  function loadRoster() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        const defaultChar = createDefaultCharacter();
-        saveCharacter(defaultChar);
-        return defaultChar;
+      const rawRoster = localStorage.getItem(STORAGE_ROSTER_KEY);
+      if (rawRoster) {
+        const parsed = JSON.parse(rawRoster);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(c => {
+            if (!c.id) {
+              c.id = `char_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+            }
+            return normalizeCharacterSkills(c);
+          });
+        }
       }
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== "object" || parsed === null) {
-        console.warn("Corrupted character data in localStorage, using default template.");
-        return createDefaultCharacter();
+
+      // Migration fallback: check legacy single-character storage
+      const rawSingle = localStorage.getItem(STORAGE_KEY);
+      if (rawSingle) {
+        const singleChar = JSON.parse(rawSingle);
+        if (typeof singleChar === "object" && singleChar !== null) {
+          if (!singleChar.id) {
+            singleChar.id = `char_migrated_${Date.now()}`;
+          }
+          const normalized = normalizeCharacterSkills(singleChar);
+          const roster = [normalized];
+          saveRoster(roster);
+          setActiveCharacterId(normalized.id);
+          return roster;
+        }
       }
-      return normalizeCharacterSkills(parsed);
+
+      // Default first character if nothing stored yet
+      const initialChar = createDefaultCharacter("Kage");
+      const initialRoster = [initialChar];
+      saveRoster(initialRoster);
+      setActiveCharacterId(initialChar.id);
+      return initialRoster;
     } catch (err) {
-      console.error("Failed to load character from localStorage:", err);
-      return createDefaultCharacter();
+      console.error("Failed to load character roster from localStorage:", err);
+      const fallback = [createDefaultCharacter("Kage")];
+      return fallback;
     }
   }
 
-  /**
-   * Persists character data into localStorage
-   */
+  function saveRoster(roster) {
+    try {
+      if (!Array.isArray(roster)) {
+        throw new Error("Invalid roster array provided to saveRoster.");
+      }
+      localStorage.setItem(STORAGE_ROSTER_KEY, JSON.stringify(roster));
+      return true;
+    } catch (err) {
+      console.error("Failed to save roster to localStorage:", err);
+      return false;
+    }
+  }
+
+  function getActiveCharacterId() {
+    try {
+      const roster = loadRoster();
+      const storedId = localStorage.getItem(STORAGE_ACTIVE_ID_KEY);
+      if (storedId && roster.some(c => c.id === storedId)) {
+        return storedId;
+      }
+      if (roster.length > 0) {
+        const defaultId = roster[0].id;
+        localStorage.setItem(STORAGE_ACTIVE_ID_KEY, defaultId);
+        return defaultId;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  function setActiveCharacterId(id) {
+    try {
+      if (id) {
+        localStorage.setItem(STORAGE_ACTIVE_ID_KEY, id);
+      }
+    } catch (err) {
+      console.warn("Could not set active character ID:", err);
+    }
+  }
+
+  function loadCharacter() {
+    try {
+      const roster = loadRoster();
+      const activeId = getActiveCharacterId();
+      const activeChar = roster.find(c => c.id === activeId) || roster[0];
+      if (activeChar) {
+        return normalizeCharacterSkills(activeChar);
+      }
+      const fresh = createDefaultCharacter("Novo Runner");
+      saveCharacter(fresh);
+      return fresh;
+    } catch (err) {
+      console.error("Failed to load active character:", err);
+      return createDefaultCharacter("Novo Runner");
+    }
+  }
+
   function saveCharacter(charData) {
     try {
       if (!charData || typeof charData !== "object") {
         throw new Error("Invalid character object provided to saveCharacter.");
       }
+
+      if (!charData.id) {
+        charData.id = `char_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      }
+
       charData.updatedAt = new Date().toISOString();
-      const serialized = JSON.stringify(charData);
-      localStorage.setItem(STORAGE_KEY, serialized);
+      const roster = loadRoster();
+      const index = roster.findIndex(c => c.id === charData.id);
+
+      if (index >= 0) {
+        roster[index] = charData;
+      } else {
+        roster.push(charData);
+      }
+
+      saveRoster(roster);
+      setActiveCharacterId(charData.id);
+
+      // Save mirror of active sheet to legacy key for compatibility
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(charData));
+      } catch {}
+
       return { success: true, timestamp: charData.updatedAt };
     } catch (err) {
       console.error("Failed to save character to localStorage:", err);
@@ -772,9 +907,74 @@
     }
   }
 
-  /**
-   * Backs up character snapshot before destructive operations
-   */
+  function createCharacterInRoster(nameOrAlias) {
+    const newChar = createDefaultCharacter(nameOrAlias || "Novo Runner");
+    const roster = loadRoster();
+    roster.push(newChar);
+    saveRoster(roster);
+    setActiveCharacterId(newChar.id);
+    saveCharacter(newChar);
+    return newChar;
+  }
+
+  function duplicateCharacterInRoster(charId) {
+    const roster = loadRoster();
+    const source = roster.find(c => c.id === charId);
+    if (!source) {
+      throw new Error("Ficha de origem não encontrada para duplicação.");
+    }
+
+    const copy = JSON.parse(JSON.stringify(source));
+    copy.id = `char_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    
+    const currentAlias = copy.character?.alias || copy.character?.name || "Runner";
+    copy.character.alias = `${currentAlias} (Cópia)`;
+    copy.character.name = copy.character.alias;
+    copy.createdAt = new Date().toISOString();
+    copy.updatedAt = new Date().toISOString();
+
+    if (Array.isArray(copy.qualities)) {
+      copy.qualities = copy.qualities.map((q, i) => ({
+        ...q,
+        id: `q_dup_${Date.now()}_${i}`
+      }));
+    }
+
+    roster.push(copy);
+    saveRoster(roster);
+    return copy;
+  }
+
+  function deleteCharacterFromRoster(charId) {
+    let roster = loadRoster();
+    const activeId = getActiveCharacterId();
+    
+    roster = roster.filter(c => c.id !== charId);
+
+    if (roster.length === 0) {
+      const fresh = createDefaultCharacter("Novo Runner");
+      roster.push(fresh);
+    }
+
+    saveRoster(roster);
+
+    let newActiveId = activeId;
+    if (activeId === charId) {
+      newActiveId = roster[0].id;
+      setActiveCharacterId(newActiveId);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(roster[0]));
+      } catch {}
+    }
+
+    return {
+      success: true,
+      deletedId: charId,
+      activeId: newActiveId,
+      roster
+    };
+  }
+
   function backupCharacter(charData) {
     try {
       const name = (charData?.character?.alias || charData?.character?.name || "runner")
@@ -789,12 +989,11 @@
     }
   }
 
-  /**
-   * Clears active character from localStorage
-   */
   function clearLocalData() {
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_ROSTER_KEY);
+      localStorage.removeItem(STORAGE_ACTIVE_ID_KEY);
       return true;
     } catch (err) {
       console.error("Failed to clear local storage:", err);
@@ -802,12 +1001,9 @@
     }
   }
 
-  /**
-   * Checks if saved data exists
-   */
   function hasSavedData() {
     try {
-      return !!localStorage.getItem(STORAGE_KEY);
+      return !!(localStorage.getItem(STORAGE_ROSTER_KEY) || localStorage.getItem(STORAGE_KEY));
     } catch {
       return false;
     }
@@ -1020,6 +1216,14 @@
       return this.character;
     }
 
+    getRoster() {
+      return loadRoster();
+    }
+
+    getActiveId() {
+      return this.character?.id || getActiveCharacterId();
+    }
+
     getDerived() {
       return calculateDerivedStats(this.character);
     }
@@ -1099,17 +1303,63 @@
       );
     }
 
+    switchCharacter(charId) {
+      if (this.character && this.character.id === charId) {
+        return this.character;
+      }
+      this.forceSaveNow();
+      setActiveCharacterId(charId);
+      this.character = loadCharacter();
+      this.notify({ type: "switch_character", characterId: charId });
+      return this.character;
+    }
+
+    createCharacter(nameOrAlias = "Novo Runner") {
+      this.forceSaveNow();
+      const newChar = createCharacterInRoster(nameOrAlias);
+      this.character = newChar;
+      this.notify({ type: "roster_change", action: "create", characterId: newChar.id });
+      return newChar;
+    }
+
+    duplicateCharacter(charId, switchToCopy = true) {
+      this.forceSaveNow();
+      const targetId = charId || this.character?.id;
+      const copy = duplicateCharacterInRoster(targetId);
+      if (switchToCopy) {
+        setActiveCharacterId(copy.id);
+        this.character = copy;
+        saveCharacter(copy);
+      }
+      this.notify({ type: "roster_change", action: "duplicate", characterId: copy.id });
+      return copy;
+    }
+
+    deleteCharacter(charId) {
+      const targetId = charId || this.character?.id;
+      const result = deleteCharacterFromRoster(targetId);
+      if (this.character && this.character.id === targetId) {
+        this.character = loadCharacter();
+      }
+      this.notify({ type: "roster_change", action: "delete", characterId: targetId });
+      return result;
+    }
+
     resetToDefault() {
       if (this.character) {
         backupCharacter(this.character);
       }
-      const fresh = createDefaultCharacter();
-      this.set(fresh, true);
+      const fresh = createDefaultCharacter("Novo Runner");
+      saveCharacter(fresh);
+      this.character = fresh;
+      this.notify({ type: "full_replace" });
       return fresh;
     }
   }
 
   const store = new CharacterStore();
+  window.SRA_STORE = store;
+  window.SRA_STATE = store;
 
 
   // --- 7. TACTICAL UI RENDERING ---
@@ -1245,6 +1495,108 @@
   }
 
   /**
+   * Renders the multi-sheet manager modal and header indicator
+   */
+  function renderSheetsModal(roster = [], activeId = "") {
+    const countHeaderEl = document.getElementById("header-sheets-count");
+    if (countHeaderEl) {
+      countHeaderEl.textContent = roster.length;
+    }
+    const countSidebarEl = document.getElementById("sidebar-sheets-count");
+    if (countSidebarEl) {
+      countSidebarEl.textContent = roster.length;
+    }
+
+    const modalList = document.getElementById("modal-roster-list");
+    if (!modalList) return;
+
+    const activeChar = roster.find(c => c.id === activeId) || roster[0];
+    const activeSummary = document.getElementById("modal-active-sheet-summary");
+    if (activeSummary && activeChar) {
+      const alias = activeChar.character?.alias || activeChar.character?.name || "Sem Nome";
+      const meta = METATYPES[activeChar.character?.metatype]?.name || activeChar.character?.metatype || "Humano";
+      const arch = activeChar.character?.archetype || "Shadowrunner";
+      const karma = activeChar.character?.karma ?? 0;
+      const nuyen = activeChar.character?.nuyen ?? 0;
+      const updateTime = activeChar.updatedAt ? new Date(activeChar.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--";
+
+      activeSummary.innerHTML = `
+        <div class="active-sheet-banner bracket-box">
+          <div class="active-sheet-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="sys-tag" style="color: var(--term-green); border-color: var(--term-green-border); background: var(--term-green-dim);">● FICHA ATIVA NO TERMINAL</span>
+              <strong style="color: var(--term-green); font-size: 1.15rem; font-family: var(--font-heading); letter-spacing: 1px;">${escapeHtml(alias.toUpperCase())}</strong>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button type="button" id="btn-modal-save-now" class="btn-term btn-term-primary btn-term-sm" title="Salvar alterações desta ficha">💾 SALVAR AGORA</button>
+            </div>
+          </div>
+          <div class="active-sheet-stats">
+            <div><span class="label">METATIPO:</span> <strong>${escapeHtml(meta)}</strong></div>
+            <div><span class="label">ARQUÉTIPO:</span> <strong>${escapeHtml(arch)}</strong></div>
+            <div><span class="label">KARMA:</span> <strong style="color: var(--term-purple);">${karma}</strong></div>
+            <div><span class="label">NUYEN:</span> <strong style="color: var(--term-amber);">¥${nuyen}</strong></div>
+            <div><span class="label">ÚLTIMA ATUALIZAÇÃO:</span> <span>${updateTime}</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (roster.length === 0) {
+      modalList.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-family: var(--font-mono); padding: 1.5rem;">// NENHUMA FICHA ENCONTRADA.</div>`;
+      return;
+    }
+
+    modalList.innerHTML = roster.map((charItem, idx) => {
+      const isActive = charItem.id === activeId;
+      const itemAlias = charItem.character?.alias || charItem.character?.name || `Runner #${idx + 1}`;
+      const itemReal = charItem.character?.name && charItem.character?.name !== itemAlias ? `(${escapeHtml(charItem.character.name)})` : "";
+      const itemMeta = METATYPES[charItem.character?.metatype]?.name || charItem.character?.metatype || "Humano";
+      const itemArch = charItem.character?.archetype || "Shadowrunner";
+      const itemUpdated = charItem.updatedAt ? new Date(charItem.updatedAt).toLocaleDateString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : "---";
+      const qualCount = Array.isArray(charItem.qualities) ? charItem.qualities.filter(q => q.name?.trim()).length : 0;
+
+      return `
+        <div class="sheet-roster-card bracket-box ${isActive ? "active-roster-card" : ""}" data-id="${charItem.id}">
+          <div class="sheet-roster-info">
+            <div class="sheet-roster-title-row">
+              <span class="sheet-roster-num">#${String(idx + 1).padStart(2, "0")}</span>
+              <strong class="sheet-roster-alias ${isActive ? "text-green" : ""}">${escapeHtml(itemAlias)}</strong>
+              ${itemReal ? `<span class="sheet-roster-real">${itemReal}</span>` : ""}
+              ${isActive ? `<span class="sys-tag sheet-active-badge">ATIVA</span>` : ""}
+            </div>
+            <div class="sheet-roster-meta-row">
+              <span>${escapeHtml(itemMeta)}</span>
+              <span>//</span>
+              <span>${escapeHtml(itemArch)}</span>
+              <span>//</span>
+              <span>${qualCount} Qualidade(s)</span>
+              <span>//</span>
+              <span class="sheet-roster-date">Salvo: ${itemUpdated}</span>
+            </div>
+          </div>
+
+          <div class="sheet-roster-actions">
+            ${!isActive ? `
+              <button type="button" class="btn-term btn-term-primary btn-term-sm btn-open-sheet" data-id="${charItem.id}" title="Abrir esta ficha no terminal">
+                ABRIR
+              </button>
+            ` : `
+              <span class="sys-tag" style="color: var(--term-green); font-size: 0.72rem;">ABERTA</span>
+            `}
+            <button type="button" class="btn-term btn-term-sm btn-duplicate-sheet" data-id="${charItem.id}" title="Duplicar esta ficha">
+              DUPLICAR
+            </button>
+            <button type="button" class="btn-term btn-term-danger btn-term-sm btn-delete-sheet" data-id="${charItem.id}" title="Excluir esta ficha"${roster.length <= 1 ? " disabled style='opacity: 0.4; cursor: not-allowed;'" : ""}>
+              EXCLUIR
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  /**
    * Main UI Render function invoked on store state change
    */
   function renderApp(char, derived, eventMeta = {}) {
@@ -1264,6 +1616,12 @@
     if (sidebarAlias) sidebarAlias.textContent = alias.toUpperCase();
     if (sidebarMeta) sidebarMeta.textContent = metatype.toUpperCase();
     if (sidebarArch) sidebarArch.textContent = archetype;
+
+    // Sync multi-sheet roster modal & counts
+    if (typeof store.getRoster === "function") {
+      const roster = store.getRoster();
+      renderSheetsModal(roster, char.id);
+    }
 
     // Se o usuário está digitando ativamente, NÃO recriar elementos DOM para não perder foco
     if (eventMeta?.isTyping) {
@@ -1400,6 +1758,92 @@
       `).join("");
       }
     }
+
+    // Qualidades do Runner (SRA)
+    renderQualities(char);
+  }
+
+  function renderQualities(char) {
+    const container = document.getElementById("qualities-list-container");
+    const statusBadge = document.getElementById("qualities-status-badge");
+
+    if (!container) return;
+
+    // Garante que o array exista e inicie com os 3 slots canônicos do SRA se estiver vazio
+    if (!Array.isArray(char.qualities) || char.qualities.length === 0) {
+      char.qualities = [
+        { id: "q_pos_1", name: "", type: "positive", effect: "" },
+        { id: "q_pos_2", name: "", type: "positive", effect: "" },
+        { id: "q_neg_1", name: "", type: "negative", effect: "" }
+      ];
+    }
+
+    // Atualiza badge de contagem de qualidades
+    const posCount = char.qualities.filter(q => q.type === "positive").length;
+    const negCount = char.qualities.filter(q => q.type === "negative").length;
+    if (statusBadge) {
+      if (posCount === 2 && negCount === 1) {
+        statusBadge.textContent = "✓ SRA EQUILIBRADO (2 POSITIVAS // 1 NEGATIVA)";
+        statusBadge.style.color = "var(--term-green)";
+      } else {
+        statusBadge.textContent = `SRA: 2 POS / 1 NEG (ATUAL: ${posCount}P / ${negCount}N)`;
+        statusBadge.style.color = "var(--term-amber)";
+      }
+    }
+
+    // Preserva foco apenas se o usuário estiver ativamente digitando em um input de texto ou textarea
+    const activeEl = document.activeElement;
+    if (container.contains(activeEl) && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA")) {
+      const inputCount = container.querySelectorAll(".quality-name-input").length;
+      if (inputCount === char.qualities.length) {
+        return;
+      }
+    }
+
+    container.innerHTML = char.qualities.map((q, idx) => {
+      const isPos = q.type !== "negative";
+      const slotNum = String(idx + 1).padStart(2, "0");
+
+      return `
+        <div class="quality-card ${isPos ? "quality-positive" : "quality-negative"} bracket-box">
+          <div class="quality-card-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <select class="quality-type-select" data-index="${idx}" title="Alternar tipo de qualidade SRA">
+                <option value="positive" ${isPos ? "selected" : ""}>+ POSITIVA</option>
+                <option value="negative" ${!isPos ? "selected" : ""}>- NEGATIVA</option>
+              </select>
+              <span class="quality-slot-label">// SLOT ${slotNum}</span>
+            </div>
+            <button type="button" class="btn-term btn-term-danger btn-term-sm btn-remove-quality" data-index="${idx}" title="Remover Qualidade">✕</button>
+          </div>
+
+          <div class="quality-card-body">
+            <div class="field-block" style="margin-bottom: 0.15rem;">
+              <div class="field-label" style="font-size: 0.65rem;">NOME DA QUALIDADE</div>
+              <input 
+                type="text" 
+                class="field-input quality-name-input" 
+                data-index="${idx}" 
+                autocomplete="off" 
+                spellcheck="false"
+                value="${escapeHtml(q.name || "")}" 
+                placeholder="${isPos ? "Nome da qualidade positiva..." : "Nome da qualidade negativa..."}" 
+                style="font-weight: 700; color: ${isPos ? "var(--term-green)" : "var(--term-red)"}; font-size: 0.88rem;"
+              />
+            </div>
+
+            <div class="field-block" style="margin-bottom: 0;">
+              <div class="field-label" style="font-size: 0.65rem;">REGRA CONCRETA / EFEITO MECÂNICO</div>
+              <textarea 
+                class="field-input quality-effect-input" 
+                data-index="${idx}" 
+                placeholder="Descreva a regra concreta (ex: +2 dados em testes de percepção, ou penalidade ao sofrer dano)..."
+              >${escapeHtml(q.effect || "")}</textarea>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
   function renderAttributesTab(char, derived) {
@@ -1636,11 +2080,76 @@
     renderTacticalTrack("physical", derived.physMax, char.condition.physicalDamage || 0, "phys-cell", "val-phys-count");
     renderTacticalTrack("stun", derived.stunMax, char.condition.stunDamage || 0, "stun-cell", "val-stun-count");
 
+    // Atualiza status pills e dicas contextuais
+    updateConditionPills(char, derived);
+
     // Edge
     const edgeVal = document.getElementById("val-edge-count");
     if (edgeVal) {
       const currentEdge = char.condition.edgeCurrent ?? 1;
       edgeVal.textContent = currentEdge;
+    }
+  }
+
+  function updateConditionPills(char, derived) {
+    const armorPill = document.getElementById("armor-status-pill");
+    const armorDmg = char.condition?.armorDamage || 0;
+    const armorMax = derived.armorMax || 9;
+    if (armorPill) {
+      if (armorDmg === 0) {
+        armorPill.textContent = "ÍNTEGRA";
+        armorPill.className = "condition-status-pill pill-status-ok";
+      } else if (armorDmg >= armorMax) {
+        armorPill.textContent = "DESTRUÍDA";
+        armorPill.className = "condition-status-pill pill-status-danger";
+      } else {
+        armorPill.textContent = `AVARIADA`;
+        armorPill.className = "condition-status-pill pill-status-warn";
+      }
+    }
+
+    const physPill = document.getElementById("phys-status-pill");
+    const physDmg = char.condition?.physicalDamage || 0;
+    const physMax = derived.physMax || 10;
+    if (physPill) {
+      if (physDmg === 0) {
+        physPill.textContent = "ÍNTEGRO";
+        physPill.className = "condition-status-pill pill-status-ok";
+      } else if (physDmg >= physMax) {
+        physPill.textContent = "INCAPACITADO";
+        physPill.className = "condition-status-pill pill-status-danger";
+      } else {
+        const p = Math.floor(physDmg / 3);
+        if (p > 0) {
+          physPill.textContent = `FERIDO (-${p}D)`;
+          physPill.className = p >= 2 ? "condition-status-pill pill-status-danger" : "condition-status-pill pill-status-warn";
+        } else {
+          physPill.textContent = "ARRANHADO";
+          physPill.className = "condition-status-pill pill-status-ok";
+        }
+      }
+    }
+
+    const stunPill = document.getElementById("stun-status-pill");
+    const stunDmg = char.condition?.stunDamage || 0;
+    const stunMax = derived.stunMax || 10;
+    if (stunPill) {
+      if (stunDmg === 0) {
+        stunPill.textContent = "LÚCIDO";
+        stunPill.className = "condition-status-pill pill-status-ok";
+      } else if (stunDmg >= stunMax) {
+        stunPill.textContent = "COLAPSADO";
+        stunPill.className = "condition-status-pill pill-status-danger";
+      } else {
+        const p = Math.floor(stunDmg / 3);
+        if (p > 0) {
+          stunPill.textContent = `ATORDOADO (-${p}D)`;
+          stunPill.className = p >= 2 ? "condition-status-pill pill-status-danger" : "condition-status-pill pill-status-warn";
+        } else {
+          stunPill.textContent = "FADIGADO";
+          stunPill.className = "condition-status-pill pill-status-ok";
+        }
+      }
     }
   }
 
@@ -1651,26 +2160,33 @@
     if (counter) counter.textContent = `${currentDamage} / ${maxBoxes}`;
     if (!container) return;
 
-    let cellsHtml = "";
+    let tripletsHtml = "";
+    let currentTripletCells = "";
+
     for (let i = 1; i <= maxBoxes; i++) {
       const isMarked = i <= currentDamage;
       const isThreshold = (trackType !== "armor") && (i % 3 === 0);
-      const penaltyTag = isThreshold ? `-${i / 3}` : "";
+      const penaltyTag = isThreshold ? `-${i / 3}D` : "";
 
-      cellsHtml += `
-      <div 
-        class="track-cell ${cellClass} ${isMarked ? "marked" : ""} ${isThreshold ? "threshold-penalty" : ""}" 
-        data-track="${trackType}" 
-        data-index="${i}"
-        data-penalty="${penaltyTag}"
-        title="Célula ${i} (Clique para marcar/limpar)"
-      >
-        ${i}
-      </div>
-    `;
+      currentTripletCells += `
+        <div 
+          class="track-cell ${cellClass} ${isMarked ? "marked" : ""}" 
+          data-track="${trackType}" 
+          data-index="${i}"
+          title="Caixa ${i} (Clique para marcar/limpar)"
+        >
+          <span>${i}</span>
+          ${isThreshold ? `<span class="cell-penalty-sub">${penaltyTag}</span>` : ""}
+        </div>
+      `;
+
+      if (i % 3 === 0 || i === maxBoxes) {
+        tripletsHtml += `<div class="track-triplet">${currentTripletCells}</div>`;
+        currentTripletCells = "";
+      }
     }
 
-    container.innerHTML = cellsHtml;
+    container.innerHTML = tripletsHtml;
   }
 
   function renderWeaponsTab(char) {
@@ -1941,6 +2457,7 @@
     const tabPanes = document.querySelectorAll(".tab-pane");
     const sidebar = document.getElementById("terminal-sidebar");
     const mobileToggle = document.getElementById("btn-mobile-nav");
+    const sidebarBackdrop = document.getElementById("sidebar-backdrop");
 
     navButtons.forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1956,6 +2473,7 @@
         // Close mobile drawer if open
         if (sidebar && sidebar.classList.contains("open")) {
           sidebar.classList.remove("open");
+          sidebarBackdrop?.classList.remove("active");
         }
 
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1963,12 +2481,20 @@
     });
 
     mobileToggle?.addEventListener("click", () => {
-      sidebar?.classList.toggle("open");
+      const isOpen = sidebar?.classList.toggle("open");
+      if (sidebarBackdrop) {
+        sidebarBackdrop.classList.toggle("active", !!isOpen);
+      }
+    });
+
+    sidebarBackdrop?.addEventListener("click", () => {
+      sidebar?.classList.remove("open");
+      sidebarBackdrop.classList.remove("active");
     });
   }
 
   /**
-   * Header Controls & Data Management Panel
+   * Header Controls & Multi-Sheet Data Management
    */
   function setupHeaderAndDataControls() {
     const footerStatus = document.getElementById("footer-save-status");
@@ -1987,6 +2513,20 @@
       }
     });
 
+    // Manual Save Action
+    const handleSaveSheet = () => {
+      const res = store.forceSaveNow();
+      if (res.success) {
+        const char = store.get();
+        const alias = char.character?.alias || char.character?.name || "Runner";
+        showToast(`FICHA SALVA COM SUCESSO // ${alias}`, "success");
+        renderSheetsModal(store.getRoster(), store.getActiveId());
+      } else {
+        showToast("ERRO AO SALVAR FICHA LOCALMENTE", "error");
+      }
+    };
+    document.getElementById("btn-header-save")?.addEventListener("click", handleSaveSheet);
+
     // Export JSON triggers
     const triggerExport = () => {
       const char = store.get();
@@ -2000,6 +2540,7 @@
 
     document.getElementById("btn-header-export")?.addEventListener("click", triggerExport);
     document.getElementById("btn-data-export")?.addEventListener("click", triggerExport);
+    document.getElementById("btn-modal-export")?.addEventListener("click", triggerExport);
 
     // Import JSON triggers
     const fileInput = document.getElementById("file-import-input");
@@ -2007,6 +2548,7 @@
 
     document.getElementById("btn-header-import")?.addEventListener("click", triggerImportClick);
     document.getElementById("btn-data-import")?.addEventListener("click", triggerImportClick);
+    document.getElementById("btn-modal-import")?.addEventListener("click", triggerImportClick);
 
     fileInput?.addEventListener("change", async (e) => {
       const file = e.target.files?.[0];
@@ -2014,7 +2556,7 @@
 
       try {
         const confirmed = window.confirm(
-          "CONFIRMAR IMPORTAÇÃO DE FICHA:\n\nA ficha ativa no terminal será substituída pelos dados do arquivo.\n(Um snapshot de segurança será gravado localmente)."
+          "CONFIRMAR IMPORTAÇÃO DE FICHA:\n\nA ficha do arquivo será adicionada à sua coleção de fichas sem apagar suas outras fichas."
         );
         if (!confirmed) {
           fileInput.value = "";
@@ -2022,8 +2564,12 @@
         }
 
         const parsedData = await readJsonFile(file);
-        store.set(parsedData, true);
-        showToast(`RUNNER CARREGADO // ${parsedData.character.alias || parsedData.character.name}`, "success");
+        if (!parsedData.id) {
+          parsedData.id = `char_imp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        }
+        saveCharacter(parsedData);
+        store.switchCharacter(parsedData.id);
+        showToast(`RUNNER IMPORTADO // ${parsedData.character.alias || parsedData.character.name}`, "success");
       } catch (err) {
         showToast(`ERRO: ${err.message}`, "error");
       } finally {
@@ -2033,12 +2579,10 @@
 
     // Create New Runner
     const handleNewRunner = () => {
-      const confirmed = window.confirm(
-        "CONFIRMAR CRIAÇÃO DE NOVO RUNNER:\n\nOs dados atuais serão arquivados em backup de segurança e a ficha será reiniciada com o perfil padrão."
-      );
-      if (confirmed) {
-        store.resetToDefault();
-        showToast("NOVO RUNNER INICIALIZADO", "success");
+      const alias = window.prompt("CRIAR NOVA FICHA // Digite o nome ou Nom de Guerre do Runner:", "Novo Runner");
+      if (alias !== null) {
+        const newChar = store.createCharacter(alias.trim() || "Novo Runner");
+        showToast(`NOVA FICHA CRIADA // ${newChar.character.alias || newChar.character.name}`, "success");
       }
     };
     document.getElementById("btn-header-new")?.addEventListener("click", handleNewRunner);
@@ -2062,12 +2606,103 @@
   }
 
   /**
-   * Modal Controllers (Dice Roller, Backdrop Click, Esc Key)
+   * Modal Controllers (Dice Roller, Sheets Manager, Backdrop Click, Esc Key)
    */
   function setupModals() {
+    // Dice Modal
     document.getElementById("btn-close-dice-modal")?.addEventListener("click", closeDiceModal);
     document.getElementById("btn-modal-roll-action")?.addEventListener("click", executeModalRoll);
 
+    // Sheets Manager Modal
+    const sheetsModal = document.getElementById("modal-sheets-manager");
+    const openSheetsModal = () => {
+      if (sheetsModal) {
+        renderSheetsModal(store.getRoster(), store.getActiveId());
+        sheetsModal.classList.add("active");
+        setTimeout(() => {
+          document.getElementById("input-new-sheet-name")?.focus();
+        }, 50);
+      }
+    };
+
+    const closeSheetsModal = () => {
+      sheetsModal?.classList.remove("active");
+    };
+
+    document.getElementById("btn-header-sheets")?.addEventListener("click", openSheetsModal);
+    document.getElementById("btn-sidebar-sheets")?.addEventListener("click", openSheetsModal);
+    document.getElementById("btn-close-sheets-modal")?.addEventListener("click", closeSheetsModal);
+
+    // Create sheet in modal
+    document.getElementById("btn-modal-create-sheet")?.addEventListener("click", () => {
+      const input = document.getElementById("input-new-sheet-name");
+      const val = input ? input.value.trim() : "";
+      const newChar = store.createCharacter(val || "Novo Runner");
+      if (input) input.value = "";
+      showToast(`NOVA FICHA CRIADA // ${newChar.character.alias || newChar.character.name}`, "success");
+      renderSheetsModal(store.getRoster(), store.getActiveId());
+    });
+
+    document.getElementById("input-new-sheet-name")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("btn-modal-create-sheet")?.click();
+      }
+    });
+
+    // Delegated events for cards inside Sheets Modal
+    sheetsModal?.addEventListener("click", (e) => {
+      const target = e.target.closest("button");
+      if (!target) return;
+
+      if (target.id === "btn-modal-save-now") {
+        const res = store.forceSaveNow();
+        if (res.success) {
+          showToast("FICHA SALVA COM SUCESSO", "success");
+          renderSheetsModal(store.getRoster(), store.getActiveId());
+        }
+        return;
+      }
+
+      if (target.classList.contains("btn-open-sheet")) {
+        const charId = target.getAttribute("data-id");
+        if (charId) {
+          store.switchCharacter(charId);
+          const char = store.get();
+          showToast(`FICHA ABERTA // ${char.character?.alias || char.character?.name}`, "success");
+          closeSheetsModal();
+        }
+        return;
+      }
+
+      if (target.classList.contains("btn-duplicate-sheet")) {
+        const charId = target.getAttribute("data-id");
+        if (charId) {
+          const copy = store.duplicateCharacter(charId, true);
+          showToast(`FICHA DUPLICADA COM SUCESSO // ${copy.character?.alias}`, "success");
+          renderSheetsModal(store.getRoster(), store.getActiveId());
+        }
+        return;
+      }
+
+      if (target.classList.contains("btn-delete-sheet")) {
+        const charId = target.getAttribute("data-id");
+        const roster = store.getRoster();
+        const targetChar = roster.find(c => c.id === charId);
+        const targetName = targetChar ? (targetChar.character?.alias || targetChar.character?.name || "Runner") : "este Runner";
+        const confirmed = window.confirm(
+          `CONFIRMAR EXCLUSÃO DA FICHA:\n\nDeseja excluir permanentemente a ficha "${targetName}"?\nEsta ação não poderá ser desfeita.`
+        );
+        if (confirmed && charId) {
+          store.deleteCharacter(charId);
+          showToast(`FICHA "${targetName}" EXCLUÍDA`, "info");
+          renderSheetsModal(store.getRoster(), store.getActiveId());
+        }
+        return;
+      }
+    });
+
+    // Universal backdrop and ESC handling
     document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
       backdrop.addEventListener("click", (e) => {
         if (e.target === backdrop) backdrop.classList.remove("active");
@@ -2193,6 +2828,22 @@
       store.update(char => {
         if (!char.contacts) char.contacts = [];
         char.contacts.push({ id: `ct_${Date.now()}`, name: "Novo Contato", connection: 2, loyalty: 2, role: "Fixer", notes: "" });
+      });
+    });
+
+    // Qualidades Add (SRA)
+    document.getElementById("btn-add-quality")?.addEventListener("click", () => {
+      store.update(char => {
+        if (!char.qualities) char.qualities = [];
+        const posCount = char.qualities.filter(q => q.type === "positive").length;
+        const negCount = char.qualities.filter(q => q.type === "negative").length;
+        const defaultType = posCount < 2 ? "positive" : (negCount < 1 ? "negative" : "positive");
+        char.qualities.push({
+          id: `q_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+          name: "",
+          type: defaultType,
+          effect: ""
+        });
       });
     });
 
@@ -2462,6 +3113,39 @@
         store.update(char => char.vehicles?.splice(idx, 1));
         return;
       }
+      if (target.classList.contains("btn-remove-quality")) {
+        const idx = parseInt(target.getAttribute("data-index"), 10);
+        store.update(char => char.qualities?.splice(idx, 1));
+        return;
+      }
+
+      // Condition Track Quick Actions
+      if (target.classList.contains("btn-track-inc")) {
+        const track = target.getAttribute("data-track");
+        store.update(char => {
+          const key = `${track}Damage`;
+          const derived = store.getDerived();
+          const maxKey = track === "armor" ? "armorMax" : (track === "physical" ? "physMax" : "stunMax");
+          const max = derived[maxKey] || 10;
+          char.condition[key] = Math.min(max, (char.condition[key] || 0) + 1);
+        });
+        return;
+      }
+      if (target.classList.contains("btn-track-dec")) {
+        const track = target.getAttribute("data-track");
+        store.update(char => {
+          const key = `${track}Damage`;
+          char.condition[key] = Math.max(0, (char.condition[key] || 0) - 1);
+        });
+        return;
+      }
+      if (target.classList.contains("btn-track-clear")) {
+        const track = target.getAttribute("data-track");
+        store.update(char => {
+          char.condition[`${track}Damage`] = 0;
+        });
+        return;
+      }
     });
 
     // Delegated Input/Change Handlers
@@ -2595,10 +3279,42 @@
         return;
       }
 
+      // Qualidades Fields (Texto Livre)
+      if (target.classList.contains("quality-name-input")) {
+        store.update(char => {
+          if (char.qualities?.[idx]) {
+            char.qualities[idx].name = target.value;
+          }
+        }, true, typingMeta);
+        return;
+      }
+
+      if (target.classList.contains("quality-effect-input")) {
+        store.update(char => {
+          if (char.qualities?.[idx]) {
+            char.qualities[idx].effect = target.value;
+          }
+        }, true, typingMeta);
+        return;
+      }
+
     });
 
     mainDeck.addEventListener("change", (e) => {
       const target = e.target;
+
+      // Quality Type Select
+      if (target.classList.contains("quality-type-select")) {
+        const idx = parseInt(target.getAttribute("data-index"), 10);
+        if (!isNaN(idx)) {
+          store.update(char => {
+            if (char.qualities?.[idx]) {
+              char.qualities[idx].type = target.value;
+            }
+          });
+        }
+        return;
+      }
 
       const picker = target.closest(".skill-picker-select");
       if (picker) {

@@ -61,21 +61,30 @@
 
       <!-- Quick Action Controls -->
       <div class="header-right">
-        <button id="btn-header-dice" class="btn-term btn-term-primary" title="Abrir Matrix Dice Roller">
-          ROLAR D6
+        <button id="btn-header-sheets" class="btn-term btn-term-primary" title="Gerenciar Múltiplas Fichas de Personagem">
+          FICHAS (<span id="header-sheets-count">1</span>)
         </button>
-        <button id="btn-header-new" class="btn-term" title="Criar Nova Ficha Padrão">
-          NOVA FICHA
+        <button id="btn-header-save" class="btn-term" title="Salvar Ficha Atual Manualmente">
+          SALVAR
         </button>
-        <button id="btn-header-export" class="btn-term" title="Exportar JSON da Ficha">
+        <button id="btn-header-new" class="btn-term" title="Criar Nova Ficha">
+          + NOVA
+        </button>
+        <button id="btn-header-dice" class="btn-term" title="Abrir Matrix Dice Roller">
+          🎲 D6
+        </button>
+        <button id="btn-header-export" class="btn-term btn-header-extra" title="Exportar JSON da Ficha">
           EXPORTAR
         </button>
-        <button id="btn-header-import" class="btn-term" title="Importar JSON da Ficha">
+        <button id="btn-header-import" class="btn-term btn-header-extra" title="Importar JSON da Ficha">
           IMPORTAR
         </button>
         <input type="file" id="file-import-input" accept=".json,application/json" style="display: none;" />
       </div>
     </header>
+
+    <!-- Backdrop for mobile sidebar drawer -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
 
     <!-- ===================================================================
          WORKSPACE: FIXED SIDEBAR + MAIN CONTENT DECK
@@ -86,7 +95,12 @@
       <aside class="terminal-sidebar" id="terminal-sidebar">
         <!-- Runner Identity Mini-Dossier -->
         <div class="sidebar-runner-card bracket-box">
-          <div class="tag">// ACTIVE RUNNER</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div class="tag" style="margin: 0;">// ACTIVE RUNNER</div>
+            <button id="btn-sidebar-sheets" class="btn-term btn-term-sm" title="Gerenciar Fichas" style="padding: 0.15rem 0.45rem; font-size: 0.65rem; color: var(--term-green); border-color: var(--term-green-border);">
+              FICHAS (<span id="sidebar-sheets-count">1</span>) ▾
+            </button>
+          </div>
           <div id="sidebar-alias-display" class="alias">---</div>
           <div class="sub-meta">
             <span id="sidebar-meta-display">---</span>
@@ -158,7 +172,7 @@
             </div>
           </div>
 
-          <!-- Main Split: Dossier & Narrative (Left) + Condition Monitors (Right) -->
+          <!-- Main Split: Dossier (Left) + Condition Monitors (Right) -->
           <div class="deck-grid-2">
             <!-- Left: Identity Dossier + Cues/Dispositions -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
@@ -254,7 +268,7 @@
                 </div>
               </div>
 
-              <!-- 01.2 Cues & Dispositions (Side by Side) -->
+              <!-- 01.2 Narrative: Cues & Dispositions (Restored under Dossier) -->
               <div class="term-panel bracket-box">
                 <div class="term-panel-header" style="padding: 0.4rem 0.85rem;">
                   <div class="term-panel-title">
@@ -269,7 +283,7 @@
                       <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                         <div class="field-label" style="margin-bottom: 0;">FRASES DE EFEITO</div>
-                        <button id="btn-add-cue" class="btn-term btn-term-sm">+</button>
+                        <button type="button" id="btn-add-cue" class="btn-term btn-term-sm">+</button>
                       </div>
                       <div id="cues-list-container"></div>
                     </div>
@@ -279,7 +293,7 @@
                       <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                         <div class="field-label" style="margin-bottom: 0;">DISPOSIÇÕES & ATITUDE</div>
-                        <button id="btn-add-disp" class="btn-term btn-term-sm">+</button>
+                        <button type="button" id="btn-add-disp" class="btn-term btn-term-sm">+</button>
                       </div>
                       <div id="dispositions-list-container"></div>
                     </div>
@@ -292,94 +306,158 @@
             <div class="term-panel bracket-box">
               <div class="term-panel-header" style="padding: 0.4rem 0.85rem;">
                 <div class="term-panel-title">
-                  <span class="prefix">01.5 //</span> MONITORES DE CONDIÇÃO
+                  <span class="prefix">01.3 //</span> MONITORES DE CONDIÇÃO & VITAIS
                 </div>
                 <span class="sys-tag" style="color: var(--term-red);">VITAL_SIGNS</span>
               </div>
               <div class="term-panel-body" style="padding: 0.65rem 0.85rem;">
-                <!-- Armor Track -->
-                <div class="monitor-deck-card">
-                  <div class="monitor-deck-header">
-                    <span class="monitor-name-tag" style="color: var(--term-amber);">
-                      MONITOR DE ARMADURA (ARMOR TRACK)
-                    </span>
-                    <span class="armor-max-control">
-                      <span class="armor-max-label">MÁX</span>
-                      <span class="stepper-tactical armor-max-stepper"
-                        title="Ajustar o número máximo de caixas de armadura">
-                        <button type="button" class="btn-armor-max-dec"
-                          aria-label="Diminuir máximo de armadura">−</button>
-                        <input id="armor-rating-input" class="armor-max-input" type="number" min="1" max="30" step="1"
-                          value="9" inputmode="numeric" aria-label="Máximo de caixas do Monitor de Armadura" />
-                        <button type="button" class="btn-armor-max-inc"
-                          aria-label="Aumentar máximo de armadura">+</button>
-                      </span>
-                      <span id="val-armor-count" class="sys-tag armor-max-count" style="color: var(--term-amber);">0 /
-                        9</span>
-                    </span>
+                <div class="monitors-container">
+                  <!-- Armor Track Card -->
+                  <div class="condition-monitor-card track-armor">
+                    <div class="condition-monitor-header">
+                      <div class="condition-title-group">
+                        <span class="condition-icon-badge">⛉</span>
+                        <div class="condition-title-text">
+                          <span class="name" style="color: var(--term-amber);">MONITOR DE ARMADURA</span>
+                          <span class="formula">PROTEÇÃO BALÍSTICA // ABSORÇÃO DE IMPACTO</span>
+                        </div>
+                      </div>
+                      <div class="condition-metrics">
+                        <div class="armor-max-control">
+                          <span class="armor-max-label">MÁX</span>
+                          <span class="stepper-tactical armor-max-stepper"
+                            title="Ajustar o número máximo de caixas de armadura">
+                            <button type="button" class="btn-armor-max-dec"
+                              aria-label="Diminuir máximo de armadura">−</button>
+                            <input id="armor-rating-input" class="armor-max-input" type="number" min="1" max="30" step="1"
+                              value="9" inputmode="numeric" aria-label="Máximo de caixas do Monitor de Armadura" />
+                            <button type="button" class="btn-armor-max-inc"
+                              aria-label="Aumentar máximo de armadura">+</button>
+                          </span>
+                          <span id="val-armor-count" class="sys-tag armor-max-count" style="color: var(--term-amber);">0 / 9</span>
+                        </div>
+                        <span id="armor-status-pill" class="condition-status-pill pill-status-ok">ÍNTEGRA</span>
+                      </div>
+                    </div>
+                    <div id="track-armor-boxes" class="track-triplets-wrapper"></div>
+                    <div class="condition-track-footer">
+                      <span id="armor-track-hint"></span>
+                      <div class="track-quick-actions">
+                        <button type="button" class="btn-track-action btn-track-inc" data-track="armor">+1 Dano</button>
+                        <button type="button" class="btn-track-action btn-track-dec" data-track="armor">-1 Dano</button>
+                        <button type="button" class="btn-track-action btn-track-clear" data-track="armor">Reparar</button>
+                      </div>
+                    </div>
                   </div>
-                  <div id="track-armor-boxes" class="cell-track-grid"></div>
-                </div>
 
-                <!-- Physical Track -->
-                <div class="monitor-deck-card">
-                  <div class="monitor-deck-header">
-                    <span class="monitor-name-tag" style="color: var(--term-red);">
-                      MONITOR FÍSICO (8 + FOR/2)
-                    </span>
-                    <span id="val-phys-count" class="sys-tag" style="color: var(--term-red);">0 / 10</span>
+                  <!-- Physical Track Card -->
+                  <div class="condition-monitor-card track-phys">
+                    <div class="condition-monitor-header">
+                      <div class="condition-title-group">
+                        <span class="condition-icon-badge">♡</span>
+                        <div class="condition-title-text">
+                          <span class="name" style="color: var(--term-red);">MONITOR FÍSICO</span>
+                          <span class="formula">FÓRMULA: 8 + (FOR ÷ 2) // FERIMENTOS BIOLÓGICOS</span>
+                        </div>
+                      </div>
+                      <div class="condition-metrics">
+                        <span id="val-phys-count" class="sys-tag" style="color: var(--term-red);">0 / 10</span>
+                        <span id="phys-status-pill" class="condition-status-pill pill-status-ok">ÍNTEGRO</span>
+                      </div>
+                    </div>
+                    <div id="track-physical-boxes" class="track-triplets-wrapper"></div>
+                    <div class="condition-track-footer">
+                      <span id="phys-track-hint"></span>
+                      <div class="track-quick-actions">
+                        <button type="button" class="btn-track-action btn-track-inc" data-track="physical">+1 Dano</button>
+                        <button type="button" class="btn-track-action btn-track-dec" data-track="physical">-1 Dano</button>
+                        <button type="button" class="btn-track-action btn-track-clear" data-track="physical">Curar</button>
+                      </div>
+                    </div>
                   </div>
-                  <div id="track-physical-boxes" class="cell-track-grid"></div>
-                </div>
 
-                <!-- Stun Track -->
-                <div class="monitor-deck-card">
-                  <div class="monitor-deck-header">
-                    <span class="monitor-name-tag" style="color: var(--term-cyan);">
-                      MONITOR DE ATORDOAMENTO (8 + VON/2)
-                    </span>
-                    <span id="val-stun-count" class="sys-tag" style="color: var(--term-cyan);">0 / 10</span>
+                  <!-- Stun Track Card -->
+                  <div class="condition-monitor-card track-stun">
+                    <div class="condition-monitor-header">
+                      <div class="condition-title-group">
+                        <span class="condition-icon-badge">︎⚡︎</span>
+                        <div class="condition-title-text">
+                          <span class="name" style="color: var(--term-cyan);">MONITOR DE ATORDOAMENTO</span>
+                          <span class="formula">FÓRMULA: 8 + (VON ÷ 2) // FADIGA & BIOFEEDBACK</span>
+                        </div>
+                      </div>
+                      <div class="condition-metrics">
+                        <span id="val-stun-count" class="sys-tag" style="color: var(--term-cyan);">0 / 10</span>
+                        <span id="stun-status-pill" class="condition-status-pill pill-status-ok">LÚCIDO</span>
+                      </div>
+                    </div>
+                    <div id="track-stun-boxes" class="track-triplets-wrapper"></div>
+                    <div class="condition-track-footer">
+                      <span id="stun-track-hint"></span>
+                      <div class="track-quick-actions">
+                        <button type="button" class="btn-track-action btn-track-inc" data-track="stun">+1 Dano</button>
+                        <button type="button" class="btn-track-action btn-track-dec" data-track="stun">-1 Dano</button>
+                        <button type="button" class="btn-track-action btn-track-clear" data-track="stun">Recuperar</button>
+                      </div>
+                    </div>
                   </div>
-                  <div id="track-stun-boxes" class="cell-track-grid"></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Bottom: Attributes (5 Primary + 2 Special in separate bracket boxes) -->
+          <!-- Middle: Attributes (5 Primary + 2 Special in separate bracket boxes) -->
           <div class="deck-grid-attrs-compact" style="margin-top: 0.85rem;">
-            <!-- 01.3 Primary Attributes Panel -->
+            <!-- 01.4 Primary Attributes Panel -->
             <div class="term-panel bracket-box" style="display: flex; flex-direction: column;">
               <div class="term-panel-header" style="padding: 0.4rem 0.85rem;">
                 <div class="term-panel-title">
-                  <span class="prefix">01.3 //</span> ATRIBUTOS PRIMÁRIOS
+                  <span class="prefix">01.4 //</span> ATRIBUTOS PRIMÁRIOS
                 </div>
                 <span class="sys-tag" style="color: var(--term-green);">PHYSICAL_MENTAL</span>
               </div>
               <div class="term-panel-body"
                 style="padding: 0.55rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
-                <div
-                  style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.45rem;">
-                </div>
                 <div id="attributes-primary-container" class="attr-primary-grid"></div>
               </div>
             </div>
 
-            <!-- 01.4 Special Resources: Trunfo & Essência -->
+            <!-- 01.5 Special Resources: Trunfo & Essência -->
             <div class="term-panel bracket-box" style="display: flex; flex-direction: column;">
               <div class="term-panel-header" style="padding: 0.4rem 0.85rem;">
                 <div class="term-panel-title">
-                  <span class="prefix">01.4 //</span> TRUNFO & ESSÊNCIA
+                  <span class="prefix">01.5 //</span> TRUNFO & ESSÊNCIA
                 </div>
                 <span class="sys-tag" style="color: var(--term-cyan);">SPECIAL_RESOURCES</span>
               </div>
               <div class="term-panel-body"
                 style="padding: 0.55rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
-                <div
-                  style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 0.45rem;">
-                </div>
                 <div id="attributes-special-container" class="attr-special-grid"></div>
               </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Qualities (Full Width across Main Deck) -->
+          <div class="term-panel bracket-box" id="qualities-panel" style="margin-top: 0.85rem;">
+            <div class="term-panel-header" style="padding: 0.4rem 0.85rem;">
+              <div class="term-panel-title">
+                <span class="prefix">01.6 //</span> QUALIDADES DO RUNNER (SRA)
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span id="qualities-status-badge" class="sys-tag" style="color: var(--term-green);">
+                  PADRÃO SRA: 2 POSITIVAS // 1 NEGATIVA
+                </span>
+                <button type="button" id="btn-add-quality" class="btn-term btn-term-sm" title="Adicionar Qualidade">+ QUALIDADE</button>
+              </div>
+            </div>
+            <div class="term-panel-body" style="padding: 0.65rem 0.85rem;">
+              <div class="quality-info-strip">
+                <div class="quality-info-icon">❖</div>
+                <div class="quality-info-text">
+                  <strong>DIRETRIZ SRA:</strong> Defina qualidades positivas e negativas (2 positivas e 1 negativa no padrão).
+                </div>
+              </div>
+              <div id="qualities-list-container" class="qualities-grid"></div>
             </div>
           </div>
         </section>
@@ -562,6 +640,56 @@
         </div>
       </div>
     </footer>
+  </div>
+
+  <!-- =====================================================================
+       DOSSIÊ DE RUNNERS // MULTI-SHEET MANAGER MODAL
+       ===================================================================== -->
+  <div id="modal-sheets-manager" class="modal-backdrop">
+    <div class="modal-window bracket-box modal-window-sheets">
+      <div class="modal-header">
+        <div>
+          <h3 style="margin: 0; color: var(--term-green); font-size: 1.05rem;">DOSSIÊ // GERENCIADOR DE FICHAS</h3>
+          <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted);">
+            // GERENCIAMENTO MULTI-RUNNER (SHADOWRUN: ANARCHY)
+          </div>
+        </div>
+        <button id="btn-close-sheets-modal" class="btn-term btn-term-sm" style="border: none;" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Active Sheet Spotlight Banner -->
+        <div id="modal-active-sheet-summary"></div>
+
+        <!-- New Sheet Creation Bar -->
+        <div class="new-sheet-bar bracket-box">
+          <div class="field-block" style="flex: 1; margin: 0;">
+            <div class="field-label" style="font-size: 0.65rem;">NOVA FICHA // NOM DE GUERRE OU IDENTIFICADOR</div>
+            <input type="text" id="input-new-sheet-name" class="field-input" placeholder="Ex: Kage, Chrome, Street Samurai..." autocomplete="off" />
+          </div>
+          <button type="button" id="btn-modal-create-sheet" class="btn-term btn-term-primary" style="white-space: nowrap; height: 36px; padding: 0 1rem;">
+            + CRIAR FICHA
+          </button>
+        </div>
+
+        <!-- Character Roster Title -->
+        <div class="sheets-section-title">
+          <span>COLEÇÃO DE RUNNERS NO TERMINAL</span>
+          <span class="sys-tag" style="color: var(--term-cyan);">TOTAL INDEPENDENTE</span>
+        </div>
+
+        <!-- Roster List -->
+        <div id="modal-roster-list" class="sheets-roster-grid"></div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" id="btn-modal-import" class="btn-term btn-term-sm">IMPORTAR JSON</button>
+          <button type="button" id="btn-modal-export" class="btn-term btn-term-sm">EXPORTAR ATIVA</button>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-sheets-manager').classList.remove('active')" class="btn-term btn-term-sm">FECHAR</button>
+      </div>
+    </div>
   </div>
 
   <!-- =====================================================================

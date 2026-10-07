@@ -6,6 +6,8 @@
 export const SCHEMA_VERSION = 1;
 export const SYSTEM_NAME = "Shadowrun: Anarchy";
 export const STORAGE_KEY = "sra_sheet_active_char_v2";
+export const STORAGE_ROSTER_KEY = "sra_characters_roster_v2";
+export const STORAGE_ACTIVE_ID_KEY = "sra_active_character_id_v2";
 export const STORAGE_BACKUP_PREFIX = "sra_sheet_backup_";
 
 export const METATYPES = {
@@ -382,19 +384,53 @@ export const SHADOW_AMP_TYPES = [
   { id: "creature_power", label: "Poder de Criatura (Espírito / PDM)" }
 ];
 
+export const SRA_QUALITIES_PRESETS = [
+  // Qualidades Positivas
+  { name: "Ambidestro", type: "positive", effect: "+1 dado ao atacar com armas em ambas as mãos." },
+  { name: "Ás do Volante", type: "positive", effect: "+2 dados em testes de pilotagem em perseguições ou manobras evasivas." },
+  { name: "Calar a Boca", type: "positive", effect: "Gaste 1 Ponto de Trama para interromper a Narração de um oponente." },
+  { name: "Código de Honra", type: "positive", effect: "+1 dado em testes sociais com indivíduos que respeitam seu código moral." },
+  { name: "Durão", type: "positive", effect: "+1 caixa de dano adicional no Monitor Físico ou de Atordoamento." },
+  { name: "Firme Sob Fogo", type: "positive", effect: "Ignora a primeira penalidade de -1 dado de ferimento durante tiroteios." },
+  { name: "Guerreiro Nato", type: "positive", effect: "+1 dado em testes de Combate Corpo a Corpo." },
+  { name: "Mente Blindada", type: "positive", effect: "+2 dados para resistir a manipulações mentais e invasões da Matriz." },
+  { name: "Primeiros Socorros Rápidos", type: "positive", effect: "Pode estabilizar ferimentos graves sem kit médico cirúrgico completo." },
+  { name: "Reflexos Rápidos", type: "positive", effect: "Ganha +1 ação narrativa preventiva ou bônus na iniciativa de combate." },
+  { name: "Resistência a Toxinas", type: "positive", effect: "+2 dados em testes para resistir a patógenos, drogas e venenos." },
+  { name: "Sentidos Aguçados", type: "positive", effect: "+2 dados em testes de Percepção para um sentido específico (visão/audição)." },
+  { name: "Sorte Grande", type: "positive", effect: "Recupera 1 Ponto de Trunfo (Edge) adicional após descansar." },
+  { name: "Visão Astral", type: "positive", effect: "Capacidade de perceber o plano astral e auras sem conjuração ativa." },
+
+  // Qualidades Negativas
+  { name: "Alvo Marcado", type: "negative", effect: "Rosto notório e procurado; -2 dados em disfarce e discrição pública." },
+  { name: "Código Rígido", type: "negative", effect: "Incapaz de agir de forma desonrosa, atacar pelas costas ou ferir inocentes." },
+  { name: "Dívida Pesada", type: "negative", effect: "Deve grande soma a agiotas ou sindicatos do crime; cobranças constantes." },
+  { name: "Fobia", type: "negative", effect: "Sofre -2 dados em todas as ações na presença imediata do objeto do seu pavor." },
+  { name: "Inimigo Jurado", type: "negative", effect: "Uma corporação, gangue ou fixer rival persegue você ativamente." },
+  { name: "Pavio Curto", type: "negative", effect: "Deve ser bem-sucedido em teste de Vontade para não reagir com violência a ofensas." },
+  { name: "Problemas com a Lei", type: "negative", effect: "Atenção constante de patrulhas policiais e seguranças corporativos." },
+  { name: "Reputação Ruim", type: "negative", effect: "-2 dados em testes de Negociação e primeiros contatos com novos fixers." },
+  { name: "Sensível à Matriz", type: "negative", effect: "Sofre +1 de dano de atordoamento adicional em ataques de biofeedback." },
+  { name: "SINner (Cidadão Legal)", type: "negative", effect: "Possui registro civil e biometria na rede; muito mais fácil de rastrear." },
+  { name: "Vício / Dependência", type: "negative", effect: "-2 dados em todas as paradas de dados se passar 24h sem a substância." }
+];
+
 /**
  * Creates a completely blank, zeroed character sheet
  * ready for full custom player creation.
  */
-export function createDefaultCharacter() {
+export function createDefaultCharacter(customAlias = "") {
+  const charId = `char_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const initialName = customAlias || "";
   return {
+    id: charId,
     version: SCHEMA_VERSION,
     system: SYSTEM_NAME,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     character: {
-      name: "",
-      alias: "",
+      name: initialName,
+      alias: initialName,
       metatype: "Human",
       archetype: "",
       awakenedType: "mundane",
@@ -432,7 +468,12 @@ export function createDefaultCharacter() {
     skills: [],
     knowledgeSkills: [],
     shadowAmps: [],
-    qualities: [],
+    // 3 Qualidades Padrão SRA (2 positivas e 1 negativa)
+    qualities: [
+      { id: "q_pos_1", name: "", type: "positive", effect: "" },
+      { id: "q_pos_2", name: "", type: "positive", effect: "" },
+      { id: "q_neg_1", name: "", type: "negative", effect: "" }
+    ],
     weapons: [],
     armor: [],
     gear: [],
@@ -441,3 +482,4 @@ export function createDefaultCharacter() {
     notes: ""
   };
 }
+
