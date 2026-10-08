@@ -71,7 +71,7 @@
           + NOVA
         </button>
         <button id="btn-header-dice" class="btn-term" title="Abrir Matrix Dice Roller">
-          🎲 D6
+          D6
         </button>
         <button id="btn-header-export" class="btn-term btn-header-extra" title="Exportar JSON da Ficha">
           EXPORTAR
@@ -93,6 +93,12 @@
 
       <!-- Tactical Sidebar Navigation -->
       <aside class="terminal-sidebar" id="terminal-sidebar">
+        <!-- Mobile Drawer Header with Close Button -->
+        <div class="sidebar-mobile-header">
+          <span class="sidebar-mobile-title">// NAVEGAÇÃO SRA</span>
+          <button type="button" id="btn-close-sidebar" class="btn-term btn-term-sm" title="Fechar Menu">✕</button>
+        </div>
+
         <!-- Runner Identity Mini-Dossier -->
         <div class="sidebar-runner-card bracket-box">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
@@ -127,6 +133,22 @@
 
       <!-- Main Tactical Deck -->
       <main class="terminal-main-deck">
+
+        <!-- Mobile Top Horizontal Tab Switcher (< 860px) -->
+        <nav class="mobile-tabs-bar" aria-label="Navegação Rápida de Abas">
+          <button type="button" class="nav-link-btn active" data-tab="overview">
+            <span class="nav-idx">01</span> PERFIL
+          </button>
+          <button type="button" class="nav-link-btn" data-tab="skills">
+            <span class="nav-idx">02</span> PERÍCIAS
+          </button>
+          <button type="button" class="nav-link-btn" data-tab="gear">
+            <span class="nav-idx">03</span> ARSENAL
+          </button>
+          <button type="button" class="nav-link-btn" data-tab="notes">
+            <span class="nav-idx">04</span> DOSSIÊ
+          </button>
+        </nav>
 
         <!-- =================================================================
              01 // PERFIL, ATRIBUTOS & MONITORES DE CONDIÇÃO

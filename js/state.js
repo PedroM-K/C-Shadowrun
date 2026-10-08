@@ -196,3 +196,7 @@ class CharacterStore {
 }
 
 export const store = new CharacterStore();
+if (typeof window !== "undefined") {
+  window.SRA_STORE = store;
+  window.SRA_STATE = store;
+}

@@ -2458,38 +2458,66 @@
     const sidebar = document.getElementById("terminal-sidebar");
     const mobileToggle = document.getElementById("btn-mobile-nav");
     const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+    const closeSidebarBtn = document.getElementById("btn-close-sidebar");
+
+    const closeSidebar = () => {
+      sidebar?.classList.remove("open");
+      sidebarBackdrop?.classList.remove("active");
+    };
+
+    const openSidebar = () => {
+      sidebar?.classList.add("open");
+      sidebarBackdrop?.classList.add("active");
+    };
 
     navButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         const targetTab = btn.getAttribute("data-tab");
+        if (!targetTab) return;
 
-        navButtons.forEach(b => b.classList.remove("active"));
+        navButtons.forEach(b => {
+          if (b.getAttribute("data-tab") === targetTab) {
+            b.classList.add("active");
+          } else {
+            b.classList.remove("active");
+          }
+        });
+
         tabPanes.forEach(p => p.classList.remove("active"));
-
-        btn.classList.add("active");
         const targetPane = document.getElementById(`tab-${targetTab}`);
         if (targetPane) targetPane.classList.add("active");
 
-        // Close mobile drawer if open
-        if (sidebar && sidebar.classList.contains("open")) {
-          sidebar.classList.remove("open");
-          sidebarBackdrop?.classList.remove("active");
-        }
-
+        closeSidebar();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
 
-    mobileToggle?.addEventListener("click", () => {
-      const isOpen = sidebar?.classList.toggle("open");
-      if (sidebarBackdrop) {
-        sidebarBackdrop.classList.toggle("active", !!isOpen);
+    mobileToggle?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (sidebar?.classList.contains("open")) {
+        closeSidebar();
+      } else {
+        openSidebar();
       }
     });
 
+    closeSidebarBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeSidebar();
+    });
+
     sidebarBackdrop?.addEventListener("click", () => {
-      sidebar?.classList.remove("open");
-      sidebarBackdrop.classList.remove("active");
+      closeSidebar();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && sidebar?.classList.contains("open")) {
+        closeSidebar();
+      }
+    });
+
+    document.getElementById("btn-sidebar-sheets")?.addEventListener("click", () => {
+      closeSidebar();
     });
   }
 

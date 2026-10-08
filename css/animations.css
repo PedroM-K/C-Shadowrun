@@ -125,5 +125,4 @@
 /* Semi-transparent panel depth to highlight matrix stream beneath */
 .terminal-workspace {
   position: relative;
-  z-index: 1;
 }
