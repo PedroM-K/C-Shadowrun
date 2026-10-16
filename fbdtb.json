@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "system": "Shadowrun: Anarchy",
+  "createdAt": "2026-09-30T18:24:44.829Z",
+  "updatedAt": "2026-09-30T18:50:38.528Z",
+  "character": {
+    "name": "",
+    "alias": "fbdtb",
+    "metatype": "Human",
+    "archetype": "",
+    "awakenedType": "mundane",
+    "gender": "",
+    "age": "",
+    "height": "",
+    "weight": "",
+    "karma": 0,
+    "totalKarma": 0,
+    "nuyen": 0,
+    "plotPoints": 0,
+    "maxPlotPoints": 5
+  },
+  "attributes": {
+    "str": {
+      "base": 1,
+      "mod": 0
+    },
+    "agi": {
+      "base": 1,
+      "mod": 0
+    },
+    "wil": {
+      "base": 1,
+      "mod": 0
+    },
+    "log": {
+      "base": 1,
+      "mod": 0
+    },
+    "cha": {
+      "base": 1,
+      "mod": 0
+    },
+    "edg": {
+      "base": 1,
+      "mod": 0
+    }
+  },
+  "condition": {
+    "physicalDamage": 0,
+    "stunDamage": 0,
+    "armorDamage": 0,
+    "armorRating": 0,
+    "edgeCurrent": 1
+  },
+  "cues": [],
+  "dispositions": [],
+  "skills": [
+    {
+      "id": "athletics",
+      "name": "Atletismo (Athletics)",
+      "attr": "str",
+      "category": "Físico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "close_combat",
+      "name": "Combate Corpo a Corpo (Close Combat)",
+      "attr": "agi",
+      "category": "Combate",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "firearms",
+      "name": "Armas de Fogo (Firearms)",
+      "attr": "agi",
+      "category": "Combate",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "heavy_weapons",
+      "name": "Armas Pesadas (Heavy Weapons)",
+      "attr": "agi",
+      "category": "Combate",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "projectiles",
+      "name": "Projéteis (Projectiles)",
+      "attr": "agi",
+      "category": "Combate",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "stealth",
+      "name": "Furtividade (Stealth)",
+      "attr": "agi",
+      "category": "Físico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "vehicle",
+      "name": "Veículos (Piloting/Driving)",
+      "attr": "agi",
+      "category": "Veículos",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "sorcery",
+      "name": "Feitiçaria (Sorcery)",
+      "attr": "wil",
+      "category": "Magia",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "conjuring",
+      "name": "Conjuração de Espíritos (Conjuring)",
+      "attr": "wil",
+      "category": "Magia",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "astral_combat",
+      "name": "Combate Astral (Astral Combat)",
+      "attr": "wil",
+      "category": "Magia",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "biotech",
+      "name": "Biotecnologia / Medicina (Biotech)",
+      "attr": "log",
+      "category": "Técnico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "electronics",
+      "name": "Eletrônica (Electronics)",
+      "attr": "log",
+      "category": "Técnico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "engineering",
+      "name": "Engenharia / Reparos (Engineering)",
+      "attr": "log",
+      "category": "Técnico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "hacking",
+      "name": "Hacking / Cybercombate",
+      "attr": "log",
+      "category": "Técnico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "tracking",
+      "name": "Rastreamento / Investigação (Tracking)",
+      "attr": "log",
+      "category": "Técnico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "tasking",
+      "name": "Tasking / Tecnomancia",
+      "attr": "log",
+      "category": "Técnico",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "con",
+      "name": "Lábia / Trapaça (Con)",
+      "attr": "cha",
+      "category": "Social",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "disguise",
+      "name": "Disfarce (Disguise)",
+      "attr": "cha",
+      "category": "Social",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "intimidation",
+      "name": "Intimidação (Intimidation)",
+      "attr": "cha",
+      "category": "Social",
+      "rating": 0,
+      "spec": ""
+    },
+    {
+      "id": "negotiation",
+      "name": "Negociação / Etiqueta",
+      "attr": "cha",
+      "category": "Social",
+      "rating": 0,
+      "spec": ""
+    }
+  ],
+  "knowledgeSkills": [],
+  "shadowAmps": [],
+  "qualities": [],
+  "weapons": [],
+  "armor": [],
+  "gear": [],
+  "contacts": [],
+  "vehicles": [],
+  "notes": ""
+}

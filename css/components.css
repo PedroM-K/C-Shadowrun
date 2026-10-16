@@ -1,0 +1,1682 @@
+/* ==========================================================================
+   SHADOWRUN: ANARCHY - CLANDESTINE OS TACTICAL COMPONENT SYSTEM
+   High-Craft 80s Cassette Futurism + Matrix Terminal UI Overhaul
+   Zero AI-Slop // Complete Diegetic Component Architecture
+   ========================================================================== */
+
+/* ==========================================================================
+   1. TERMINAL PANELS & FRAMES (DIEGETIC HARDWARE MODULES)
+   ========================================================================== */
+.term-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color var(--duration-component) var(--ease-out-soft),
+              box-shadow var(--duration-component) var(--ease-out-soft);
+}
+
+.term-panel:hover {
+  border-color: var(--border-bright);
+}
+
+.term-panel-header {
+  padding: 0.65rem 1.15rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-panel);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-tech);
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  position: relative;
+}
+
+.term-panel-title {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-bright);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.term-panel-title .prefix {
+  color: var(--term-green);
+  font-family: var(--font-tech);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+}
+
+.term-panel-body {
+  padding: 1.25rem;
+  position: relative;
+}
+
+/* ==========================================================================
+   2. INPUTS, SELECTS & FORM FIELDS (TACTICAL TERMINAL INPUTS)
+   ========================================================================== */
+.field-block {
+  margin-bottom: 0.85rem;
+  position: relative;
+}
+
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-tech);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+  user-select: none;
+}
+
+.field-label .code {
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+}
+
+.field-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.55rem 0.75rem;
+  color: var(--text-bright);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  transition: border-color var(--duration-micro) var(--ease-micro),
+              box-shadow var(--duration-micro) var(--ease-micro),
+              background-color var(--duration-micro) var(--ease-micro);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.field-input::placeholder {
+  color: var(--text-dim);
+  font-family: var(--font-tech);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+}
+
+.field-input:hover {
+  border-color: rgba(0, 255, 102, 0.35);
+  background: rgba(6, 12, 9, 0.95);
+}
+
+.field-input:focus {
+  border-color: var(--term-green);
+  background: var(--bg-input-focus);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 102, 0.28);
+  outline: none;
+  color: #fff;
+}
+
+.field-input-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+textarea.field-input {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+select.field-input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ff66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 14px;
+  padding-right: 2.2rem;
+}
+
+select.field-input option {
+  background: var(--bg-panel-solid);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   3. TACTICAL MECHANICAL BUTTONS (TERMINAL KEYS)
+   ========================================================================== */
+.btn-term {
+  font-family: var(--font-tech);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.48rem 0.9rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-panel);
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: transform var(--duration-micro) var(--ease-micro),
+              background-color var(--duration-micro) var(--ease-micro),
+              border-color var(--duration-micro) var(--ease-micro),
+              box-shadow var(--duration-micro) var(--ease-micro),
+              color var(--duration-micro) var(--ease-micro);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-term:hover {
+  background: rgba(22, 36, 28, 0.95);
+  border-color: rgba(0, 255, 102, 0.4);
+  color: var(--text-bright);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 255, 102, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-term:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+  transition-duration: 60ms;
+}
+
+.btn-term-primary {
+  background: rgba(0, 255, 102, 0.12);
+  border-color: var(--term-green-border);
+  color: var(--term-green);
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(0, 255, 102, 0.08);
+}
+
+.btn-term-primary:hover {
+  background: var(--term-green);
+  border-color: var(--term-green-bright);
+  color: #030805;
+  font-weight: 800;
+  text-shadow: none;
+  box-shadow: 0 0 16px var(--term-green-glow), 0 4px 12px rgba(0, 0, 0, 0.8);
+}
+
+.btn-term-danger {
+  background: rgba(255, 30, 68, 0.12);
+  border-color: var(--term-red-border);
+  color: #ff6b81;
+  text-shadow: 0 0 6px rgba(255, 30, 68, 0.4);
+}
+
+.btn-term-danger:hover {
+  background: var(--term-red);
+  border-color: var(--term-red-bright);
+  color: #ffffff;
+  font-weight: 800;
+  text-shadow: none;
+  box-shadow: 0 0 16px var(--term-red-glow), 0 4px 12px rgba(0, 0, 0, 0.8);
+}
+
+.btn-term-sm {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+/* ==========================================================================
+   4. TACTICAL STEPPERS [-] [VAL] [+]
+   ========================================================================== */
+.stepper-tactical {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(3, 6, 4, 0.9);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.stepper-tactical button {
+  background: var(--bg-elevated);
+  border: none;
+  color: var(--text-main);
+  width: 27px;
+  height: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-tech);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-micro);
+  user-select: none;
+}
+
+.stepper-tactical button:hover {
+  background: var(--term-green);
+  color: #020503;
+  box-shadow: 0 0 8px var(--term-green);
+}
+
+.stepper-tactical button:active {
+  transform: scale(0.92);
+}
+
+.stepper-tactical .val {
+  min-width: 32px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-bright);
+  padding: 0 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 680px) {
+  .stepper-tactical button {
+    width: 34px;
+    height: 34px;
+    font-size: 1.15rem;
+  }
+  .stepper-tactical .val {
+    min-width: 32px;
+    font-size: 1rem;
+  }
+}
+
+/* Compact Armor Maximum Control */
+.armor-max-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: nowrap;
+}
+
+.armor-max-label {
+  font-family: var(--font-tech);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.armor-max-stepper {
+  border-color: rgba(255, 176, 0, 0.35);
+  box-shadow: inset 0 0 6px rgba(255, 176, 0, 0.06);
+}
+
+.armor-max-stepper button {
+  width: 24px;
+  height: 25px;
+  color: var(--term-amber);
+}
+
+.armor-max-stepper button:hover {
+  background: var(--term-amber);
+  color: #000;
+  box-shadow: 0 0 8px var(--term-amber);
+}
+
+.armor-max-input {
+  width: 34px;
+  height: 25px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--term-amber);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 800;
+  appearance: textfield;
+}
+
+.armor-max-input::-webkit-outer-spin-button,
+.armor-max-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.armor-max-input:focus {
+  background: rgba(255, 176, 0, 0.1);
+}
+
+.armor-max-count {
+  min-width: 3.5rem;
+  text-align: right;
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .armor-max-stepper button {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  .armor-max-input {
+    width: 40px;
+    height: 30px;
+  }
+}
+
+/* ==========================================================================
+   5. TACTICAL HUD DEFENSE & WOUND STRIP (TOP BAR IN TAB 01)
+   ========================================================================== */
+.tactical-hud-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.85rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-panel);
+  padding: 0.75rem 1.15rem;
+  border-radius: var(--radius-xs);
+  margin-bottom: 1.15rem;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.hud-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.hud-metric .label {
+  font-family: var(--font-tech);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.hud-metric .num {
+  font-family: var(--font-mono);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--term-green);
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.35);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-metric-control {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.2rem;
+}
+
+/* ==========================================================================
+   6. ATTRIBUTES: SEGMENTED LED METER CARDS (80s EQUALIZER / VU-METER)
+   ========================================================================== */
+.deck-grid-attrs-compact {
+  display: grid;
+  grid-template-columns: 5fr 2fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 1080px) {
+  .deck-grid-attrs-compact {
+    grid-template-columns: 1fr;
+  }
+}
+
+.attr-primary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 1100px) {
+  .attr-primary-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.attr-special-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 1100px) {
+  .attr-special-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .attr-primary-grid,
+  .attr-special-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .attr-primary-grid,
+  .attr-special-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.attr-meter-card {
+  background: rgba(8, 14, 11, 0.75);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.85rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: all var(--duration-micro) var(--ease-micro);
+  min-width: 0;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.attr-meter-card:hover {
+  border-color: rgba(0, 255, 102, 0.4);
+  background: rgba(12, 20, 16, 0.88);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 102, 0.1);
+  transform: translateY(-1px);
+}
+
+.attr-meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.attr-meter-header .name {
+  font-family: var(--font-heading);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-bright);
+}
+
+.attr-meter-header .score {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--term-green);
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Segmented Bar Meter: 80s Hardware LED Bar */
+.segmented-meter {
+  display: flex;
+  gap: 3px;
+  margin: 0.35rem 0;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.meter-segment {
+  height: 8px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+  transition: all var(--duration-micro) var(--ease-micro);
+}
+
+.meter-segment.filled {
+  background: var(--term-green);
+  box-shadow: 0 0 6px var(--term-green), 0 0 10px rgba(0, 255, 102, 0.4);
+}
+
+.meter-segment.filled.essence-segment {
+  background: var(--term-cyan);
+  box-shadow: 0 0 6px var(--term-cyan), 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+/* ==========================================================================
+   7. CONDITION MONITORS (01.3) & VITALS (80s ANALOG CRT / LED TILES)
+   ========================================================================== */
+.monitors-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.condition-monitor-card {
+  background: rgba(10, 16, 13, 0.85);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.95rem 1.15rem;
+  transition: all var(--duration-component) var(--ease-out-soft);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Left Status Accent Indicator */
+.condition-monitor-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.condition-monitor-card.track-armor::before {
+  background: var(--term-amber);
+  box-shadow: 0 0 8px var(--term-amber);
+}
+
+.condition-monitor-card.track-phys::before {
+  background: var(--term-red);
+  box-shadow: 0 0 8px var(--term-red);
+}
+
+.condition-monitor-card.track-stun::before {
+  background: var(--term-cyan);
+  box-shadow: 0 0 8px var(--term-cyan);
+}
+
+.condition-monitor-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6);
+}
+
+.condition-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.condition-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.condition-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.track-armor .condition-icon-badge {
+  background: rgba(255, 176, 0, 0.15);
+  color: var(--term-amber);
+  border: 1px solid var(--term-amber);
+  box-shadow: 0 0 8px rgba(255, 176, 0, 0.3);
+}
+
+.track-phys .condition-icon-badge {
+  background: rgba(255, 30, 68, 0.15);
+  color: var(--term-red);
+  border: 1px solid var(--term-red);
+  box-shadow: 0 0 8px rgba(255, 30, 68, 0.3);
+}
+
+.track-stun .condition-icon-badge {
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--term-cyan);
+  border: 1px solid var(--term-cyan);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
+.condition-title-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.condition-title-text .name {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.condition-title-text .formula {
+  font-family: var(--font-tech);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.condition-metrics {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.condition-status-pill {
+  font-family: var(--font-tech);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.22rem 0.65rem;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pill-status-ok {
+  background: rgba(0, 255, 102, 0.12);
+  color: var(--term-green);
+  border: 1px solid var(--term-green-border);
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.15);
+}
+
+.pill-status-warn {
+  background: rgba(255, 176, 0, 0.15);
+  color: var(--term-amber);
+  border: 1px solid var(--term-amber);
+  box-shadow: 0 0 8px rgba(255, 176, 0, 0.25);
+}
+
+.pill-status-danger {
+  background: rgba(255, 30, 68, 0.18);
+  color: var(--term-red);
+  border: 1px solid var(--term-red);
+  animation: ledBlinkAlarm 1s infinite ease-in-out;
+}
+
+/* Triplet Grid for Tracks (Bank of 3 Cells) */
+.track-triplets-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin: 0.65rem 0;
+}
+
+.track-triplet {
+  display: flex;
+  gap: 4px;
+  background: rgba(2, 5, 3, 0.85);
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+/* Individual Physical 80s LED Cell */
+.track-cell {
+  width: 34px;
+  height: 38px;
+  background: rgba(8, 14, 11, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: all var(--duration-micro) var(--ease-micro);
+  line-height: 1;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+.track-cell:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: var(--text-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+.track-cell:active {
+  transform: scale(0.94);
+}
+
+/* MARKED DAMAGE CELLS: INTENSE 80S CRT GLOWS */
+.track-cell.marked.armor-cell {
+  background: var(--term-amber);
+  border-color: #ffe082;
+  color: #030402;
+  font-weight: 900;
+  box-shadow: 0 0 14px var(--term-amber-glow), 0 0 24px rgba(255, 176, 0, 0.4), inset 0 0 6px #fff;
+  text-shadow: none;
+}
+
+.track-cell.marked.phys-cell {
+  background: var(--term-red);
+  border-color: #ff8597;
+  color: #ffffff;
+  font-weight: 900;
+  box-shadow: 0 0 14px var(--term-red-glow), 0 0 24px rgba(255, 30, 68, 0.4), inset 0 0 6px #fff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.track-cell.marked.stun-cell {
+  background: var(--term-cyan);
+  border-color: #a5f3fc;
+  color: #020608;
+  font-weight: 900;
+  box-shadow: 0 0 14px var(--term-cyan-glow), 0 0 24px rgba(0, 240, 255, 0.4), inset 0 0 6px #fff;
+  text-shadow: none;
+}
+
+/* Penalty tag attached on threshold cell (-1D, -2D, etc.) */
+.track-cell .cell-penalty-sub {
+  font-size: 0.54rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--term-red);
+  margin-top: 3px;
+}
+
+.track-cell.marked .cell-penalty-sub {
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.track-cell.marked.armor-cell .cell-penalty-sub {
+  color: #030402;
+}
+
+.track-cell.marked.stun-cell .cell-penalty-sub {
+  color: #020608;
+}
+
+/* Track Footer Controls */
+.condition-track-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  font-family: var(--font-tech);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.track-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-track-action {
+  background: rgba(6, 12, 9, 0.85);
+  border: 1px solid var(--border-panel);
+  color: var(--text-muted);
+  font-family: var(--font-tech);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-micro);
+  text-transform: uppercase;
+}
+
+.btn-track-action:hover {
+  color: var(--text-bright);
+  border-color: rgba(0, 255, 102, 0.4);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.15);
+}
+
+.btn-track-action:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+  .condition-track-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+  .track-quick-actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+  .btn-track-action {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.74rem;
+    min-height: 32px;
+  }
+  .track-cell {
+    width: 32px;
+    height: 36px;
+    font-size: 0.78rem;
+  }
+}
+
+/* ==========================================================================
+   8. QUALITIES: SRA RUNNER PROFILE (01.6)
+   ========================================================================== */
+.quality-info-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(192, 132, 252, 0.08);
+  border: 1px solid var(--term-purple-border);
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.85rem;
+}
+
+.quality-info-icon {
+  font-size: 1.15rem;
+  color: var(--term-purple);
+  flex-shrink: 0;
+  text-shadow: 0 0 8px var(--term-purple);
+}
+
+.quality-info-text {
+  font-family: var(--font-tech);
+  font-size: 0.74rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.quality-info-text strong {
+  color: var(--term-purple);
+}
+
+.qualities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.95rem;
+}
+
+@media (max-width: 1080px) {
+  .qualities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .qualities-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quality-card {
+  background: rgba(10, 16, 13, 0.85);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  position: relative;
+  transition: all var(--duration-component) var(--ease-out-soft);
+}
+
+.quality-card.quality-positive {
+  border-left: 3px solid var(--term-green);
+}
+
+.quality-card.quality-positive:focus-within,
+.quality-card.quality-positive:hover {
+  border-color: rgba(0, 255, 102, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 14px rgba(0, 255, 102, 0.15);
+}
+
+.quality-card.quality-negative {
+  border-left: 3px solid var(--term-red);
+}
+
+.quality-card.quality-negative:focus-within,
+.quality-card.quality-negative:hover {
+  border-color: rgba(255, 30, 68, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 14px rgba(255, 30, 68, 0.15);
+}
+
+.quality-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.quality-slot-label {
+  font-family: var(--font-tech);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+.quality-type-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  color: var(--text-bright);
+  font-family: var(--font-tech);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  outline: none;
+  transition: all var(--duration-micro) var(--ease-micro);
+}
+
+.quality-card.quality-positive .quality-type-select {
+  border-color: rgba(0, 255, 102, 0.4);
+  color: var(--term-green);
+  background: rgba(0, 255, 102, 0.08);
+}
+
+.quality-card.quality-negative .quality-type-select {
+  border-color: rgba(255, 30, 68, 0.4);
+  color: var(--term-red);
+  background: rgba(255, 30, 68, 0.08);
+}
+
+.quality-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1;
+}
+
+.quality-effect-input {
+  width: 100%;
+  min-height: 72px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-xs);
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.quality-effect-input:focus {
+  border-color: var(--term-green);
+  outline: none;
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.2);
+}
+
+.quality-card.quality-negative .quality-effect-input:focus {
+  border-color: var(--term-red);
+  box-shadow: 0 0 8px rgba(255, 30, 68, 0.2);
+}
+
+/* ==========================================================================
+   9. SKILLS: TACTICAL ACTION MATRIX (02 // PERÍCIAS DE AÇÃO)
+   ========================================================================== */
+.skills-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin: 1.45rem 0 0.65rem 0;
+  padding: 0.25rem 0;
+}
+
+.skills-category-header:first-child {
+  margin-top: 0.35rem;
+}
+
+.skills-category-header .cat-title-block {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  white-space: nowrap;
+}
+
+.skills-category-header .cat-prefix {
+  font-family: var(--font-tech);
+  font-size: 0.84rem;
+  opacity: 0.8;
+  font-weight: 800;
+}
+
+.skills-category-header .cat-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.skills-category-header .cat-attr-pill {
+  font-family: var(--font-tech);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-xs);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-panel);
+  color: var(--text-bright);
+}
+
+.skills-category-header .cat-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-panel);
+  min-width: 20px;
+}
+
+.skills-category-header .cat-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skills-category-header .skill-picker-select {
+  background: rgba(8, 14, 11, 0.9);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  color: var(--text-bright);
+  font-family: var(--font-tech);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.32rem 0.75rem;
+  cursor: pointer;
+  outline: none;
+  transition: all var(--duration-micro) var(--ease-micro);
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 680px) {
+  .skills-category-header {
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .skills-category-header .cat-line {
+    display: none;
+  }
+  .skills-category-header .cat-picker-wrap {
+    width: 100%;
+  }
+  .skills-category-header .skill-picker-select {
+    width: 100%;
+    min-height: 38px;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+.skills-category-header.category-agi { color: var(--term-green); }
+.skills-category-header.category-wil { color: var(--term-purple); }
+.skills-category-header.category-log { color: var(--term-cyan); }
+.skills-category-header.category-cha { color: var(--term-amber); }
+.skills-category-header.category-str { color: var(--term-red); }
+
+.skills-category-header.category-agi .skill-picker-select:hover { border-color: var(--term-green); box-shadow: 0 0 8px var(--term-green-glow); }
+.skills-category-header.category-wil .skill-picker-select:hover { border-color: var(--term-purple); box-shadow: 0 0 8px var(--term-purple-glow); }
+.skills-category-header.category-log .skill-picker-select:hover { border-color: var(--term-cyan); box-shadow: 0 0 8px var(--term-cyan-glow); }
+.skills-category-header.category-cha .skill-picker-select:hover { border-color: var(--term-amber); box-shadow: 0 0 8px var(--term-amber-glow); }
+.skills-category-header.category-str .skill-picker-select:hover { border-color: var(--term-red); box-shadow: 0 0 8px var(--term-red-glow); }
+
+.skill-category-empty {
+  font-family: var(--font-tech);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  padding: 0.55rem 0.95rem;
+  margin-bottom: 0.45rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.skill-category-empty .empty-icon {
+  opacity: 0.5;
+  color: var(--text-muted);
+}
+
+.skill-tactical-item {
+  display: grid;
+  grid-template-columns: 2.2fr 65px 1.4fr 95px 65px 80px 34px;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.95rem;
+  background: rgba(10, 16, 13, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.45rem;
+  transition: all var(--duration-micro) var(--ease-micro);
+}
+
+.skill-tactical-item:hover {
+  border-color: rgba(0, 255, 102, 0.3);
+  background: rgba(14, 24, 18, 0.9);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.skill-tactical-item .skill-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.skill-tactical-item .name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  color: var(--text-bright);
+}
+
+.skill-tactical-item .skill-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.skill-tactical-item .attr-tag {
+  font-family: var(--font-tech);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.skill-tactical-item .attr-tag-agi { color: var(--term-green); }
+.skill-tactical-item .attr-tag-wil { color: var(--term-purple); }
+.skill-tactical-item .attr-tag-log { color: var(--term-cyan); }
+.skill-tactical-item .attr-tag-cha { color: var(--term-amber); }
+.skill-tactical-item .attr-tag-str { color: var(--term-red); }
+
+.skill-tactical-item .pool-box {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--term-green);
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.35);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.skill-tactical-item .btn-remove-skill {
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+
+.skill-tactical-item .btn-remove-skill:hover {
+  color: var(--term-red);
+  border-color: var(--term-red);
+  box-shadow: 0 0 8px var(--term-red-glow);
+}
+
+@media (max-width: 860px) {
+  .skill-tactical-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.55rem 0.65rem;
+    padding: 0.75rem 0.85rem;
+    align-items: center;
+  }
+  .skill-tactical-item .skill-name-col {
+    grid-column: 1 / 2;
+    min-width: 0;
+  }
+  .skill-tactical-item .attr-tag {
+    grid-column: 2 / 3;
+    justify-self: end;
+  }
+  .skill-tactical-item > div:nth-child(7) {
+    grid-column: 3 / 4;
+    justify-self: end;
+  }
+  .skill-tactical-item > div:nth-child(3) {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .skill-tactical-item > div:nth-child(3) input {
+    width: 100%;
+  }
+  .skill-tactical-item .stepper-tactical {
+    grid-column: 1 / 2;
+    justify-self: start;
+  }
+  .skill-tactical-item .pool-box {
+    grid-column: 2 / 3;
+    justify-self: center;
+    font-size: 1.15rem;
+  }
+  .skill-tactical-item > div:nth-child(6) {
+    grid-column: 3 / 4;
+    justify-self: end;
+  }
+  .skill-tactical-item .btn-roll-skill {
+    min-height: 36px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+  }
+}
+
+/* ==========================================================================
+   10. WEAPONS, SHADOW AMPS, GEAR & VEHICLES (03 // ARSENAL)
+   ========================================================================= */
+.weapon-tactical-card {
+  background: rgba(10, 16, 13, 0.85);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.95rem 1.15rem;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+  transition: all var(--duration-component) var(--ease-out-soft);
+}
+
+.weapon-tactical-card:hover {
+  border-color: rgba(0, 255, 102, 0.35);
+  transform: translateY(-1px);
+}
+
+.weapon-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+
+.weapon-reg-id {
+  font-family: var(--font-tech);
+  font-size: 0.74rem;
+  color: var(--term-green);
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.3);
+}
+
+.weapon-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.65rem;
+  margin: 0.55rem 0;
+}
+
+.amp-diagnostic-item {
+  background: rgba(10, 16, 13, 0.85);
+  border: 1px solid var(--border-panel);
+  border-left: 3px solid var(--term-cyan);
+  border-radius: var(--radius-xs);
+  padding: 0.85rem 1.15rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+  transition: all var(--duration-component) var(--ease-out-soft);
+}
+
+.amp-diagnostic-item:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55), 0 0 10px rgba(0, 240, 255, 0.15);
+}
+
+/* ==========================================================================
+   11. MODAL WINDOWS & DICE ROLLER (DIEGETIC CYBERDECK OVERLAYS)
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 3, 2, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.25rem;
+  animation: terminalFadeIn var(--duration-component) var(--ease-out-expo);
+}
+
+.modal-backdrop.active {
+  display: flex;
+}
+
+.modal-window {
+  background: rgba(8, 14, 11, 0.95);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-xs);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 255, 102, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 0.95rem 1.45rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-panel);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body {
+  padding: 1.45rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 0.85rem 1.45rem;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-panel);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.85rem;
+}
+
+/* Dice Face visual */
+.dice-results-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 1.45rem 0;
+}
+
+.die-tactical-box {
+  width: 46px;
+  height: 46px;
+  background: rgba(4, 8, 6, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+  transition: all var(--duration-micro) var(--ease-micro);
+}
+
+.die-tactical-box.hit {
+  background: rgba(0, 255, 102, 0.18);
+  border-color: var(--term-green);
+  color: var(--term-green);
+  box-shadow: 0 0 12px var(--term-green-glow), inset 0 0 6px rgba(0, 255, 102, 0.3);
+  text-shadow: 0 0 6px var(--term-green);
+}
+
+.die-tactical-box.one {
+  background: rgba(255, 30, 68, 0.18);
+  border-color: var(--term-red);
+  color: var(--term-red);
+  box-shadow: 0 0 10px var(--term-red-glow);
+}
+
+.die-tactical-box.anarchy-die {
+  border: 2px solid var(--term-purple);
+  position: relative;
+  box-shadow: 0 0 10px var(--term-purple-glow);
+}
+
+.die-tactical-box.anarchy-die::before {
+  content: "A";
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 0.58rem;
+  color: var(--term-purple);
+  font-weight: 900;
+  font-family: var(--font-tech);
+}
+
+/* Multi-Sheet Manager Modal */
+.modal-window-sheets {
+  max-width: 780px;
+  max-height: 88vh;
+}
+
+.active-sheet-banner {
+  background: rgba(0, 255, 102, 0.06);
+  border: 1px solid var(--term-green-border);
+  border-left: 4px solid var(--term-green);
+  padding: 0.95rem 1.15rem;
+  border-radius: var(--radius-xs);
+  box-shadow: 0 0 14px rgba(0, 255, 102, 0.1);
+}
+
+.active-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px dashed rgba(0, 255, 102, 0.25);
+  margin-bottom: 0.65rem;
+}
+
+.active-sheet-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.95rem 1.45rem;
+  font-family: var(--font-tech);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.active-sheet-stats .label {
+  color: var(--text-dim);
+  margin-right: 0.35rem;
+  letter-spacing: 0.08em;
+}
+
+.active-sheet-stats strong {
+  color: var(--text-bright);
+}
+
+.new-sheet-bar {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-end;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-panel);
+  padding: 0.85rem 1.15rem;
+  border-radius: var(--radius-xs);
+}
+
+@media (max-width: 580px) {
+  .new-sheet-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.sheets-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-tech);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-panel);
+  margin-top: 0.35rem;
+}
+
+.sheets-roster-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.sheet-roster-card {
+  background: rgba(10, 16, 13, 0.85);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.15rem;
+  transition: all var(--duration-micro) var(--ease-micro);
+}
+
+.sheet-roster-card:hover {
+  border-color: rgba(0, 255, 102, 0.35);
+  background: rgba(14, 24, 18, 0.95);
+  transform: translateX(2px);
+}
+
+.sheet-roster-card.active-roster-card {
+  border-left: 3px solid var(--term-green);
+  border-color: var(--term-green-border);
+  background: rgba(0, 255, 102, 0.06);
+  box-shadow: 0 0 16px rgba(0, 255, 102, 0.12);
+}
+
+.sheet-roster-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.sheet-roster-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.sheet-roster-num {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.sheet-roster-alias {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  color: var(--text-bright);
+}
+
+.sheet-roster-alias.text-green {
+  color: var(--term-green);
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+}
+
+.sheet-roster-real {
+  font-family: var(--font-tech);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.sheet-active-badge {
+  font-size: 0.66rem;
+  color: var(--term-green);
+  border-color: var(--term-green-border);
+  background: rgba(0, 255, 102, 0.12);
+}
+
+.sheet-roster-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-family: var(--font-tech);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.sheet-roster-date {
+  color: var(--text-dim);
+}
+
+.sheet-roster-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   12. TOAST NOTIFICATIONS (HEAD-UP ALERT DISPLAY)
+   ========================================================================== */
+#toast-container {
+  position: fixed;
+  bottom: 3.5rem;
+  right: 1.75rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(10, 18, 14, 0.95);
+  border: 1px solid var(--term-green-border);
+  border-left: 4px solid var(--term-green);
+  padding: 0.75rem 1.15rem;
+  border-radius: var(--radius-xs);
+  color: var(--text-bright);
+  font-family: var(--font-tech);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 14px rgba(0, 255, 102, 0.2);
+  pointer-events: auto;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
