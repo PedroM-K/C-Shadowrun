@@ -9,6 +9,78 @@ export const STORAGE_KEY = "sra_sheet_active_char_v2";
 export const STORAGE_ROSTER_KEY = "sra_characters_roster_v2";
 export const STORAGE_ACTIVE_ID_KEY = "sra_active_character_id_v2";
 export const STORAGE_BACKUP_PREFIX = "sra_sheet_backup_";
+export const STORAGE_THEME_KEY = "sra_terminal_theme_v1";
+
+export const DEFAULT_THEME_ID = "matrix";
+
+export const THEME_PRESETS = [
+  {
+    id: "matrix",
+    name: "Verde",
+    code: "CRT-P1",
+    hex: "#00ff66",
+    rgb: "0, 255, 102",
+    isDefault: true
+  },
+  {
+    id: "amber",
+    name: "Âmbar",
+    code: "VECTOR-W8",
+    hex: "#ffb000",
+    rgb: "255, 176, 0"
+  },
+  {
+    id: "cyan",
+    name: "Ciano",
+    code: "RENRAKU-ICE",
+    hex: "#00f0ff",
+    rgb: "0, 240, 255"
+  },
+  {
+    id: "crimson",
+    name: "Vermelho",
+    code: "ARES-ALARM",
+    hex: "#ff1e44",
+    rgb: "255, 30, 68"
+  },
+  {
+    id: "violet",
+    name: "Violeta",
+    code: "CHIBA-NEON",
+    hex: "#c084fc",
+    rgb: "192, 132, 252"
+  },
+  {
+    id: "gold",
+    name: "Dourado",
+    code: "HAZARD-SK",
+    hex: "#facc15",
+    rgb: "250, 204, 21"
+  },
+  {
+    id: "monochrome",
+    name: "Branco",
+    code: "STEALTH-P4",
+    hex: "#e2e8f0",
+    rgb: "226, 232, 240"
+  }
+];
+
+export function hexToRgb(hex) {
+  if (!hex || typeof hex !== "string") return null;
+  let cleaned = hex.replace("#", "").trim();
+  if (cleaned.length === 3) {
+    cleaned = cleaned.split("").map(c => c + c).join("");
+  }
+  if (cleaned.length !== 6) return null;
+  const num = parseInt(cleaned, 16);
+  if (isNaN(num)) return null;
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255
+  };
+}
 
 export const METATYPES = {
   Human: {

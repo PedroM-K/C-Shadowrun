@@ -8,6 +8,8 @@ import {
   STORAGE_ROSTER_KEY,
   STORAGE_ACTIVE_ID_KEY,
   STORAGE_BACKUP_PREFIX,
+  STORAGE_THEME_KEY,
+  DEFAULT_THEME_ID,
   createDefaultCharacter,
   normalizeCharacterSkills
 } from "./constants.js";
@@ -291,3 +293,37 @@ export function hasSavedData() {
     return false;
   }
 }
+
+/**
+ * Loads the active theme configuration from localStorage
+ */
+export function loadSavedTheme() {
+  try {
+    const raw = localStorage.getItem(STORAGE_THEME_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && typeof data === "object") {
+        return {
+          id: data.id || DEFAULT_THEME_ID,
+          customHex: data.customHex || null
+        };
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load saved theme:", err);
+  }
+  return { id: DEFAULT_THEME_ID, customHex: null };
+}
+
+/**
+ * Persists chosen theme configuration to localStorage
+ */
+export function saveThemeSetting(themeId, customHex = null) {
+  try {
+    const data = { id: themeId, customHex };
+    localStorage.setItem(STORAGE_THEME_KEY, JSON.stringify(data));
+  } catch (err) {
+    console.error("Failed to save theme:", err);
+  }
+}
+

@@ -76,7 +76,6 @@ export function rollD6Pool(poolSize, options = {}) {
 
   let glitchStatus = isGlitch ? "glitch" : "none";
 
-
   return {
     poolSize,
     dice,
@@ -84,9 +83,51 @@ export function rollD6Pool(poolSize, options = {}) {
     onesCount,
     glitchStatus,
     isAnarchyGlitch,
+    isThresholdGlitch,
     anarchyDieHit: useAnarchyDie && (anarchyDieResult?.value >= 5),
     useRuleOfSix,
     useAnarchyDie,
     timestamp: new Date().toLocaleTimeString()
   };
 }
+
+export function rollDie() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+export function recalculateRollStats(dice, options = {}) {
+  const { useRuleOfSix = false, useAnarchyDie = false } = options;
+  let onesCount = 0;
+  let hits = 0;
+  let anarchyDieResult = null;
+
+  for (let i = 0; i < dice.length; i++) {
+    const d = dice[i];
+    d.isHit = d.value >= 5;
+    d.isOne = d.value === 1;
+    if (d.isAnarchyDie) {
+      anarchyDieResult = d;
+    }
+    if (d.isHit) hits++;
+    if (d.isOne) onesCount++;
+  }
+
+  const isThresholdGlitch = onesCount > (dice.length / 2);
+  const isAnarchyGlitch = useAnarchyDie && anarchyDieResult?.value === 1;
+  const isGlitch = isAnarchyGlitch || isThresholdGlitch;
+
+  return {
+    poolSize: dice.length,
+    dice,
+    hits,
+    onesCount,
+    glitchStatus: isGlitch ? "glitch" : "none",
+    isAnarchyGlitch,
+    isThresholdGlitch,
+    anarchyDieHit: useAnarchyDie && (anarchyDieResult?.value >= 5),
+    useRuleOfSix,
+    useAnarchyDie,
+    timestamp: new Date().toLocaleTimeString()
+  };
+}
+

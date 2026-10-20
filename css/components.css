@@ -57,7 +57,7 @@
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.1em;
-  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+  text-shadow: 0 0 6px rgba(var(--term-green-rgb), 0.4);
 }
 
 .term-panel-body {
@@ -119,14 +119,14 @@
 }
 
 .field-input:hover {
-  border-color: rgba(0, 255, 102, 0.35);
+  border-color: rgba(var(--term-green-rgb), 0.35);
   background: rgba(6, 12, 9, 0.95);
 }
 
 .field-input:focus {
   border-color: var(--term-green);
   background: var(--bg-input-focus);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 102, 0.28);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(var(--term-green-rgb), 0.28);
   outline: none;
   color: #fff;
 }
@@ -194,9 +194,9 @@ select.field-input option {
 
 .btn-term:hover {
   background: rgba(22, 36, 28, 0.95);
-  border-color: rgba(0, 255, 102, 0.4);
+  border-color: rgba(var(--term-green-rgb), 0.4);
   color: var(--text-bright);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 255, 102, 0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0 0 8px rgba(var(--term-green-rgb), 0.2);
   transform: translateY(-1px);
 }
 
@@ -207,11 +207,11 @@ select.field-input option {
 }
 
 .btn-term-primary {
-  background: rgba(0, 255, 102, 0.12);
+  background: rgba(var(--term-green-rgb), 0.12);
   border-color: var(--term-green-border);
   color: var(--term-green);
-  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(0, 255, 102, 0.08);
+  text-shadow: 0 0 6px rgba(var(--term-green-rgb), 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(var(--term-green-rgb), 0.08);
 }
 
 .btn-term-primary:hover {
@@ -420,7 +420,7 @@ select.field-input option {
   font-size: 1.45rem;
   font-weight: 800;
   color: var(--term-green);
-  text-shadow: 0 0 10px rgba(0, 255, 102, 0.35);
+  text-shadow: 0 0 10px rgba(var(--term-green-rgb), 0.35);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -500,9 +500,9 @@ select.field-input option {
 }
 
 .attr-meter-card:hover {
-  border-color: rgba(0, 255, 102, 0.4);
+  border-color: rgba(var(--term-green-rgb), 0.4);
   background: rgba(12, 20, 16, 0.88);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 102, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 10px rgba(var(--term-green-rgb), 0.1);
   transform: translateY(-1px);
 }
 
@@ -526,7 +526,7 @@ select.field-input option {
   font-size: 1.4rem;
   font-weight: 800;
   color: var(--term-green);
-  text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+  text-shadow: 0 0 10px rgba(var(--term-green-rgb), 0.4);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -552,7 +552,7 @@ select.field-input option {
 
 .meter-segment.filled {
   background: var(--term-green);
-  box-shadow: 0 0 6px var(--term-green), 0 0 10px rgba(0, 255, 102, 0.4);
+  box-shadow: 0 0 6px var(--term-green), 0 0 10px rgba(var(--term-green-rgb), 0.4);
 }
 
 .meter-segment.filled.essence-segment {
@@ -694,10 +694,10 @@ select.field-input option {
 }
 
 .pill-status-ok {
-  background: rgba(0, 255, 102, 0.12);
+  background: rgba(var(--term-green-rgb), 0.12);
   color: var(--term-green);
   border: 1px solid var(--term-green-border);
-  box-shadow: 0 0 6px rgba(0, 255, 102, 0.15);
+  box-shadow: 0 0 6px rgba(var(--term-green-rgb), 0.15);
 }
 
 .pill-status-warn {
@@ -855,9 +855,9 @@ select.field-input option {
 
 .btn-track-action:hover {
   color: var(--text-bright);
-  border-color: rgba(0, 255, 102, 0.4);
+  border-color: rgba(var(--term-green-rgb), 0.4);
   background: var(--bg-elevated);
-  box-shadow: 0 0 8px rgba(0, 255, 102, 0.15);
+  box-shadow: 0 0 8px rgba(var(--term-green-rgb), 0.15);
 }
 
 .btn-track-action:active {
@@ -956,8 +956,8 @@ select.field-input option {
 
 .quality-card.quality-positive:focus-within,
 .quality-card.quality-positive:hover {
-  border-color: rgba(0, 255, 102, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 14px rgba(0, 255, 102, 0.15);
+  border-color: rgba(var(--term-green-rgb), 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 14px rgba(var(--term-green-rgb), 0.15);
 }
 
 .quality-card.quality-negative {
@@ -1003,9 +1003,9 @@ select.field-input option {
 }
 
 .quality-card.quality-positive .quality-type-select {
-  border-color: rgba(0, 255, 102, 0.4);
+  border-color: rgba(var(--term-green-rgb), 0.4);
   color: var(--term-green);
-  background: rgba(0, 255, 102, 0.08);
+  background: rgba(var(--term-green-rgb), 0.08);
 }
 
 .quality-card.quality-negative .quality-type-select {
@@ -1038,7 +1038,7 @@ select.field-input option {
 .quality-effect-input:focus {
   border-color: var(--term-green);
   outline: none;
-  box-shadow: 0 0 8px rgba(0, 255, 102, 0.2);
+  box-shadow: 0 0 8px rgba(var(--term-green-rgb), 0.2);
 }
 
 .quality-card.quality-negative .quality-effect-input:focus {
@@ -1186,7 +1186,7 @@ select.field-input option {
 }
 
 .skill-tactical-item:hover {
-  border-color: rgba(0, 255, 102, 0.3);
+  border-color: rgba(var(--term-green-rgb), 0.3);
   background: rgba(14, 24, 18, 0.9);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   transform: translateY(-1px);
@@ -1231,7 +1231,7 @@ select.field-input option {
   font-size: 1.15rem;
   font-weight: 800;
   color: var(--term-green);
-  text-shadow: 0 0 8px rgba(0, 255, 102, 0.35);
+  text-shadow: 0 0 8px rgba(var(--term-green-rgb), 0.35);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -1313,7 +1313,7 @@ select.field-input option {
 }
 
 .weapon-tactical-card:hover {
-  border-color: rgba(0, 255, 102, 0.35);
+  border-color: rgba(var(--term-green-rgb), 0.35);
   transform: translateY(-1px);
 }
 
@@ -1330,7 +1330,7 @@ select.field-input option {
   color: var(--term-green);
   letter-spacing: 0.12em;
   font-weight: 800;
-  text-shadow: 0 0 6px rgba(0, 255, 102, 0.3);
+  text-shadow: 0 0 6px rgba(var(--term-green-rgb), 0.3);
 }
 
 .weapon-metrics-grid {
@@ -1386,7 +1386,7 @@ select.field-input option {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 255, 102, 0.15);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(var(--term-green-rgb), 0.15);
   position: relative;
   overflow: hidden;
 }
@@ -1415,18 +1415,422 @@ select.field-input option {
   gap: 0.85rem;
 }
 
-/* Dice Face visual */
+/* ==========================================================================
+   11.1 MATRIX D6 TACTICAL ROLLER (INTERACTIVE CYBERDECK MODULE)
+   ========================================================================== */
+
+.modal-window-dice {
+  max-width: 660px;
+}
+
+/* Pool Control Box */
+.dice-pool-control-box {
+  background: rgba(var(--term-green-rgb), 0.03);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-xs);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dice-pool-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dice-presets-chips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dice-presets-label {
+  font-size: 0.64rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-right: 2px;
+}
+
+.btn-dice-preset {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.btn-dice-preset:hover {
+  border-color: var(--term-green);
+  color: var(--term-green);
+  background: var(--term-green-dim);
+}
+
+.btn-dice-preset:active {
+  transform: scale(0.95);
+}
+
+.dice-stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dice-stepper-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-stepper-quick {
+  min-width: 34px;
+  height: 36px;
+  padding: 0 6px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dice-pool-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dice-pool-numeric {
+  width: 74px;
+  height: 36px;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--term-green);
+  padding: 0 18px 0 6px !important;
+  -moz-appearance: textfield;
+}
+
+.dice-pool-numeric::-webkit-outer-spin-button,
+.dice-pool-numeric::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dice-pool-suffix {
+  position: absolute;
+  right: 6px;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* Custom Tactical Toggle Switches */
+.dice-toggles-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.dice-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+}
+
+.dice-toggle-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.dice-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.45);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 180ms ease;
+}
+
+.dice-toggle-pill .toggle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  transition: all 180ms ease;
+}
+
+.dice-toggle-label input:checked + .dice-toggle-anarchy {
+  border-color: var(--term-purple);
+  color: var(--term-purple-bright);
+  background: var(--term-purple-dim);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.25);
+}
+
+.dice-toggle-label input:checked + .dice-toggle-anarchy .toggle-dot {
+  background: var(--term-purple);
+  box-shadow: 0 0 6px var(--term-purple);
+}
+
+/* Arena & Standby */
+.dice-arena-container {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.dice-standby-placeholder {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 1px dashed rgba(var(--term-green-rgb), 0.2);
+  border-radius: var(--radius-xs);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.standby-radar-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--term-green-border);
+  animation: radarSweepPulse 2.6s infinite ease-in-out;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.standby-radar-ring::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--term-green);
+  box-shadow: 0 0 8px var(--term-green);
+}
+
+.standby-mono-text {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--term-green);
+  letter-spacing: 0.08em;
+}
+
+.standby-subtext {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+
+
+
+
+/* Dice Face visual & Tactical Cards Grid */
 .dice-results-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 9px;
   justify-content: center;
-  margin: 1.45rem 0;
+  align-content: flex-start;
+  max-height: 290px;
+  overflow-y: auto;
+  padding: 6px 4px;
+  margin: 0.5rem 0;
 }
 
+/* Tactical Die Card */
+.die-tactical-card {
+  width: 52px;
+  height: 64px;
+  background: rgba(4, 9, 6, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-xs);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 3px 3px;
+  position: relative;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.6);
+  user-select: none;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-micro), border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.die-tactical-card:hover {
+  transform: translateY(-3px) scale(1.06);
+  border-color: rgba(var(--term-green-rgb), 0.55);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8), 0 0 10px rgba(var(--term-green-rgb), 0.2);
+  z-index: 5;
+}
+
+.die-tactical-card:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.die-tactical-card.rolling {
+  animation: dieTumble 0.14s infinite linear;
+  border-color: var(--term-green-border);
+  color: var(--term-green);
+  cursor: wait;
+}
+
+.die-tactical-card.settled {
+  animation: dieLockSettle 0.26s var(--ease-out-expo) forwards;
+}
+
+.die-card-tag {
+  font-size: 0.52rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.die-card-value {
+  font-family: var(--font-mono);
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-dim);
+  transition: color 150ms ease;
+}
+
+.die-card-footer {
+  font-size: 0.52rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* Die States & Badges */
+.die-tactical-card.hit {
+  background: rgba(var(--term-green-rgb), 0.14);
+  border-color: var(--term-green);
+  box-shadow: 0 0 12px var(--term-green-glow), inset 0 0 8px rgba(var(--term-green-rgb), 0.22);
+}
+
+.die-tactical-card.hit .die-card-tag {
+  color: var(--term-green);
+}
+
+.die-tactical-card.hit .die-card-value {
+  color: var(--term-green);
+  text-shadow: 0 0 8px var(--term-green);
+}
+
+.die-tactical-card.hit .die-card-footer {
+  color: var(--term-green);
+}
+
+.die-tactical-card.critical-hit {
+  border-width: 1.5px;
+  border-color: var(--term-green-bright);
+}
+
+.die-tactical-card.one {
+  background: rgba(255, 30, 68, 0.14);
+  border-color: var(--term-red);
+  box-shadow: 0 0 10px var(--term-red-glow), inset 0 0 6px rgba(255, 30, 68, 0.2);
+}
+
+.die-tactical-card.one .die-card-tag {
+  color: var(--term-red);
+}
+
+.die-tactical-card.one .die-card-value {
+  color: var(--term-red);
+  text-shadow: 0 0 6px var(--term-red);
+}
+
+.die-tactical-card.one .die-card-footer {
+  color: var(--term-red);
+}
+
+.die-tactical-card.anarchy-die {
+  border: 2px solid var(--term-purple);
+  box-shadow: 0 0 12px var(--term-purple-glow);
+  animation: anarchyAura 3s infinite ease-in-out;
+}
+
+.die-tactical-card.anarchy-die .die-card-tag {
+  color: var(--term-purple);
+  font-weight: 900;
+}
+
+.die-tactical-card.anarchy-die.hit {
+  background: rgba(192, 132, 252, 0.18);
+  border-color: var(--term-purple-bright);
+}
+
+.die-tactical-card.anarchy-die.hit .die-card-value {
+  color: var(--term-purple-bright);
+  text-shadow: 0 0 10px var(--term-purple);
+}
+
+.die-tactical-card.anarchy-die.one {
+  border-color: var(--term-red);
+  box-shadow: 0 0 14px var(--term-red-glow);
+}
+
+.die-tactical-card.anarchy-die.one .die-card-tag {
+  color: var(--term-red);
+}
+
+.die-tactical-card.exploded {
+  border-color: var(--term-cyan);
+  box-shadow: 0 0 10px var(--term-cyan-glow);
+}
+
+.die-tactical-card.exploded .die-card-tag {
+  color: var(--term-cyan);
+}
+
+.die-tactical-card.dimmed {
+  opacity: 0.22;
+  transform: scale(0.92);
+  filter: grayscale(80%);
+}
+
+/* Legacy Alias */
 .die-tactical-box {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   background: rgba(4, 8, 6, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xs);
@@ -1442,35 +1846,21 @@ select.field-input option {
 }
 
 .die-tactical-box.hit {
-  background: rgba(0, 255, 102, 0.18);
+  background: rgba(var(--term-green-rgb), 0.18);
   border-color: var(--term-green);
   color: var(--term-green);
-  box-shadow: 0 0 12px var(--term-green-glow), inset 0 0 6px rgba(0, 255, 102, 0.3);
-  text-shadow: 0 0 6px var(--term-green);
+  box-shadow: 0 0 12px var(--term-green-glow);
 }
 
 .die-tactical-box.one {
   background: rgba(255, 30, 68, 0.18);
   border-color: var(--term-red);
   color: var(--term-red);
-  box-shadow: 0 0 10px var(--term-red-glow);
 }
 
 .die-tactical-box.anarchy-die {
   border: 2px solid var(--term-purple);
-  position: relative;
   box-shadow: 0 0 10px var(--term-purple-glow);
-}
-
-.die-tactical-box.anarchy-die::before {
-  content: "A";
-  position: absolute;
-  top: 2px;
-  left: 3px;
-  font-size: 0.58rem;
-  color: var(--term-purple);
-  font-weight: 900;
-  font-family: var(--font-tech);
 }
 
 /* Multi-Sheet Manager Modal */
@@ -1480,12 +1870,12 @@ select.field-input option {
 }
 
 .active-sheet-banner {
-  background: rgba(0, 255, 102, 0.06);
+  background: rgba(var(--term-green-rgb), 0.06);
   border: 1px solid var(--term-green-border);
   border-left: 4px solid var(--term-green);
   padding: 0.95rem 1.15rem;
   border-radius: var(--radius-xs);
-  box-shadow: 0 0 14px rgba(0, 255, 102, 0.1);
+  box-shadow: 0 0 14px rgba(var(--term-green-rgb), 0.1);
 }
 
 .active-sheet-header {
@@ -1495,7 +1885,7 @@ select.field-input option {
   flex-wrap: wrap;
   gap: 0.85rem;
   padding-bottom: 0.65rem;
-  border-bottom: 1px dashed rgba(0, 255, 102, 0.25);
+  border-bottom: 1px dashed rgba(var(--term-green-rgb), 0.25);
   margin-bottom: 0.65rem;
 }
 
@@ -1571,7 +1961,7 @@ select.field-input option {
 }
 
 .sheet-roster-card:hover {
-  border-color: rgba(0, 255, 102, 0.35);
+  border-color: rgba(var(--term-green-rgb), 0.35);
   background: rgba(14, 24, 18, 0.95);
   transform: translateX(2px);
 }
@@ -1579,8 +1969,8 @@ select.field-input option {
 .sheet-roster-card.active-roster-card {
   border-left: 3px solid var(--term-green);
   border-color: var(--term-green-border);
-  background: rgba(0, 255, 102, 0.06);
-  box-shadow: 0 0 16px rgba(0, 255, 102, 0.12);
+  background: rgba(var(--term-green-rgb), 0.06);
+  box-shadow: 0 0 16px rgba(var(--term-green-rgb), 0.12);
 }
 
 .sheet-roster-info {
@@ -1614,7 +2004,7 @@ select.field-input option {
 
 .sheet-roster-alias.text-green {
   color: var(--term-green);
-  text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+  text-shadow: 0 0 8px rgba(var(--term-green-rgb), 0.3);
 }
 
 .sheet-roster-real {
@@ -1627,7 +2017,7 @@ select.field-input option {
   font-size: 0.66rem;
   color: var(--term-green);
   border-color: var(--term-green-border);
-  background: rgba(0, 255, 102, 0.12);
+  background: rgba(var(--term-green-rgb), 0.12);
 }
 
 .sheet-roster-meta-row {
@@ -1675,7 +2065,7 @@ select.field-input option {
   font-family: var(--font-tech);
   font-size: 0.82rem;
   letter-spacing: 0.08em;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 14px rgba(0, 255, 102, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 14px rgba(var(--term-green-rgb), 0.2);
   pointer-events: auto;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

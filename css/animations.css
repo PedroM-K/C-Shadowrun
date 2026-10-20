@@ -8,15 +8,15 @@
 @keyframes crtFlicker {
   0% {
     opacity: 0.98;
-    text-shadow: 0 0 1px currentColor, 0 0 4px rgba(0, 255, 102, 0.3);
+    text-shadow: 0 0 1px currentColor, 0 0 4px rgba(var(--term-green-rgb), 0.3);
   }
   3% {
     opacity: 0.88;
-    text-shadow: 0 0 2px currentColor, 0 0 8px rgba(0, 255, 102, 0.6);
+    text-shadow: 0 0 2px currentColor, 0 0 8px rgba(var(--term-green-rgb), 0.6);
   }
   6% {
     opacity: 0.99;
-    text-shadow: 0 0 1px currentColor, 0 0 4px rgba(0, 255, 102, 0.3);
+    text-shadow: 0 0 1px currentColor, 0 0 4px rgba(var(--term-green-rgb), 0.3);
   }
   7% {
     opacity: 0.92;
@@ -26,7 +26,7 @@
   }
   50% {
     opacity: 1;
-    text-shadow: 0 0 2px currentColor, 0 0 6px rgba(0, 255, 102, 0.4);
+    text-shadow: 0 0 2px currentColor, 0 0 6px rgba(var(--term-green-rgb), 0.4);
   }
   92% {
     opacity: 0.97;
@@ -39,7 +39,7 @@
   }
   100% {
     opacity: 0.98;
-    text-shadow: 0 0 1px currentColor, 0 0 4px rgba(0, 255, 102, 0.3);
+    text-shadow: 0 0 1px currentColor, 0 0 4px rgba(var(--term-green-rgb), 0.3);
   }
 }
 
@@ -47,12 +47,12 @@
 @keyframes ledBreathGreen {
   0%, 100% {
     transform: scale(0.92);
-    box-shadow: 0 0 4px #00ff66, 0 0 8px rgba(0, 255, 102, 0.3);
+    box-shadow: 0 0 4px var(--term-green), 0 0 8px rgba(var(--term-green-rgb), 0.3);
     opacity: 0.82;
   }
   50% {
     transform: scale(1.08);
-    box-shadow: 0 0 8px #00ff66, 0 0 14px rgba(0, 255, 102, 0.6), 0 0 20px rgba(0, 255, 102, 0.25);
+    box-shadow: 0 0 8px var(--term-green), 0 0 14px rgba(var(--term-green-rgb), 0.6), 0 0 20px rgba(var(--term-green-rgb), 0.25);
     opacity: 1;
   }
 }
@@ -132,11 +132,11 @@
 /* 6. Neon Border Pulse */
 @keyframes borderPulse {
   0%, 100% {
-    border-color: rgba(0, 255, 102, 0.25);
+    border-color: rgba(var(--term-green-rgb), 0.25);
   }
   50% {
-    border-color: rgba(0, 255, 102, 0.6);
-    box-shadow: 0 0 12px rgba(0, 255, 102, 0.15);
+    border-color: rgba(var(--term-green-rgb), 0.6);
+    box-shadow: 0 0 12px rgba(var(--term-green-rgb), 0.15);
   }
 }
 
@@ -201,9 +201,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 255, 102, 0.1) 20%,
+    rgba(var(--term-green-rgb), 0.1) 20%,
     var(--term-green) 50%,
-    rgba(0, 255, 102, 0.1) 80%,
+    rgba(var(--term-green-rgb), 0.1) 80%,
     transparent 100%
   );
   transform: translateX(-100%);
@@ -245,6 +245,116 @@
   position: relative;
 }
 
+/* ==========================================================================
+   MATRIX D6 TACTICAL ROLLER ANIMATIONS
+   ========================================================================== */
+
+/* Die 3D Tumbler / Digital Scrambler during rolling */
+@keyframes dieTumble {
+  0% {
+    transform: perspective(400px) rotateX(0deg) rotateY(0deg) scale(0.96);
+  }
+  25% {
+    transform: perspective(400px) rotateX(16deg) rotateY(-14deg) scale(1.05);
+  }
+  50% {
+    transform: perspective(400px) rotateX(-14deg) rotateY(16deg) scale(0.97);
+  }
+  75% {
+    transform: perspective(400px) rotateX(12deg) rotateY(10deg) scale(1.03);
+  }
+  100% {
+    transform: perspective(400px) rotateX(0deg) rotateY(0deg) scale(1);
+  }
+}
+
+/* Die Lock Settle (Snap-in Pop) */
+@keyframes dieLockSettle {
+  0% {
+    transform: scale(0.78) translateY(-6px);
+    opacity: 0.2;
+    filter: brightness(2.2);
+  }
+  60% {
+    transform: scale(1.12) translateY(0);
+    filter: brightness(1.4);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* Hit Glow Phosphor Pulse */
+@keyframes hitPulseGlow {
+  0% {
+    box-shadow: 0 0 6px var(--term-green-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--term-green), 0 0 35px rgba(var(--term-green-rgb), 0.45);
+  }
+  100% {
+    box-shadow: 0 0 10px var(--term-green-glow);
+  }
+}
+
+/* Glitch Alert Pulse */
+@keyframes glitchAlertPulse {
+  0%, 100% {
+    border-color: var(--term-red);
+    box-shadow: 0 0 8px var(--term-red-glow);
+  }
+  50% {
+    border-color: var(--term-red-bright);
+    box-shadow: 0 0 22px var(--term-red), inset 0 0 10px rgba(255, 30, 68, 0.35);
+  }
+}
+
+/* Anarchy Die Violet Aura */
+@keyframes anarchyAura {
+  0%, 100% {
+    border-color: var(--term-purple);
+    box-shadow: 0 0 8px var(--term-purple-glow);
+  }
+  50% {
+    border-color: var(--term-purple-bright);
+    box-shadow: 0 0 20px var(--term-purple), inset 0 0 8px rgba(192, 132, 252, 0.3);
+  }
+}
+
+/* Standby Radar Sweep */
+@keyframes radarSweepPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.9;
+    box-shadow: 0 0 25px rgba(var(--term-green-rgb), 0.3);
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.4;
+  }
+}
+
+/* Numeric Counter Pop */
+@keyframes numCounterPop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+  60% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   .led-green,
@@ -260,5 +370,11 @@
   }
   #matrix-rain-canvas {
     opacity: 0.15 !important;
+  }
+  .die-tactical-card.rolling {
+    animation: none !important;
+  }
+  .die-tactical-card.settled {
+    animation: none !important;
   }
 }

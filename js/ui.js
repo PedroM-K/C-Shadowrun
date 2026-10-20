@@ -4,9 +4,21 @@
  */
 
 import { store } from "./state.js";
-import { METATYPES, ATTRIBUTES, SHADOW_AMP_TYPES, ATTRIBUTE_SKILL_PRESETS, ACTION_SKILL_ATTRIBUTES, OFFICIAL_SKILL_DESCRIPTIONS, getSkillDescription, SRA_QUALITIES_PRESETS } from "./constants.js";
+import {
+  METATYPES,
+  ATTRIBUTES,
+  SHADOW_AMP_TYPES,
+  ATTRIBUTE_SKILL_PRESETS,
+  ACTION_SKILL_ATTRIBUTES,
+  OFFICIAL_SKILL_DESCRIPTIONS,
+  getSkillDescription,
+  SRA_QUALITIES_PRESETS,
+  THEME_PRESETS,
+  DEFAULT_THEME_ID,
+  hexToRgb
+} from "./constants.js";
 import { calculateSkillDicePool } from "./rules.js";
-import { rollD6Pool } from "./dice.js";
+import { rollD6Pool, rollDie, recalculateRollStats } from "./dice.js";
 
 function escapeHtml(str) {
   if (typeof str !== "string") return str ?? "";
@@ -45,6 +57,266 @@ export function showToast(message, type = "info") {
 }
 
 /**
+ * Lightweight Cyberdeck Audio Synthesizer (Zero-latency Web Audio API)
+ */
+let audioCtx = null;
+let diceSoundEnabled = true;
+
+try {
+  const storedSound = localStorage.getItem("sra_dice_sound_enabled");
+  if (storedSound !== null) {
+    diceSoundEnabled = storedSound === "true";
+  }
+} catch (e) {}
+
+function getAudioContext() {
+  if (!diceSoundEnabled) return null;
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
+  }
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+export function playTacticalSound(type) {
+  if (!diceSoundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.04, now);
+    masterGain.connect(ctx.destination);
+
+    if (type === "tick") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(500 + Math.random() * 450, now);
+      gain.gain.setValueAtTime(0.025, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(now);
+      osc.stop(now + 0.03);
+    } else if (type === "lock") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.07);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (type === "hit") {
+      [523.25, 659.25, 783.99].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, now + i * 0.035);
+        gain.gain.setValueAtTime(0.035, now + i * 0.035);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.035 + 0.14);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now + i * 0.035);
+        osc.stop(now + i * 0.035 + 0.16);
+      });
+    } else if (type === "glitch") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.linearRampToValueAtTime(110, now + 0.18);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    }
+  } catch (e) {
+    // Graceful fallback if audio is blocked
+  }
+}
+
+/**
+ * State & Handlers for Interactive Dice Roller
+ */
+let currentActiveRoll = null;
+let isDiceRolling = false;
+let diceListenersInitialized = false;
+
+function buildDieCardHtml(die, index, isRolling = false) {
+  let classes = ["die-tactical-card"];
+  if (isRolling) {
+    classes.push("rolling");
+  } else {
+    classes.push("settled");
+    if (die.isHit) classes.push("hit");
+    if (die.value === 6) classes.push("critical-hit");
+    if (die.isOne) classes.push("one");
+    if (die.isAnarchyDie) classes.push("anarchy-die");
+    if (die.exploded) classes.push("exploded");
+    if (!die.isHit && !die.isOne) classes.push("neutral");
+  }
+
+  let tag = "D6";
+  if (die.isAnarchyDie) tag = "ANARQUIA";
+  else if (die.exploded) tag = "EDGE";
+
+  let footer = "—";
+  if (die.isHit) footer = die.value === 6 ? "CRIT" : "HIT";
+  else if (die.isOne) footer = "GLITCH";
+
+  const titleTooltip = die.isAnarchyDie
+    ? `Dado de Anarquia: ${die.value} (Clique para re-rolar)`
+    : `D6: ${die.value} (Clique para re-rolar)`;
+
+  return `
+    <div class="${classes.join(" ")}" data-index="${index}" title="${titleTooltip}" role="button" tabindex="0">
+      <div class="die-card-tag">${tag}</div>
+      <div class="die-card-value">${die.value}</div>
+      <div class="die-card-footer">${footer}</div>
+    </div>
+  `;
+}
+
+function renderFullDiceResults(container, roll) {
+  if (!container || !roll) return;
+
+  let diceGridHtml = `<div class="dice-results-grid" id="dice-grid-interactive">`;
+  roll.dice.forEach((die, idx) => {
+    diceGridHtml += buildDieCardHtml(die, idx, false);
+  });
+  diceGridHtml += `</div>`;
+
+  container.innerHTML = diceGridHtml;
+}
+
+function rerollSingleDie(index) {
+  if (isDiceRolling || !currentActiveRoll || !currentActiveRoll.dice[index]) return;
+
+  const card = document.querySelector(`.die-tactical-card[data-index="${index}"]`);
+  if (!card) return;
+
+  isDiceRolling = true;
+  card.classList.add("rolling");
+  card.classList.remove("settled", "hit", "critical-hit", "one", "neutral");
+  playTacticalSound("tick");
+
+  let scrambles = 0;
+  const interval = setInterval(() => {
+    const valEl = card.querySelector(".die-card-value");
+    if (valEl) valEl.textContent = Math.floor(Math.random() * 6) + 1;
+    playTacticalSound("tick");
+    scrambles++;
+
+    if (scrambles >= 6) {
+      clearInterval(interval);
+      const newVal = rollDie();
+      currentActiveRoll.dice[index].value = newVal;
+
+      const updated = recalculateRollStats(currentActiveRoll.dice, {
+        useRuleOfSix: currentActiveRoll.useRuleOfSix,
+        useAnarchyDie: currentActiveRoll.useAnarchyDie
+      });
+      currentActiveRoll = updated;
+
+      isDiceRolling = false;
+      const resultsContainer = document.getElementById("dice-modal-results");
+      renderFullDiceResults(resultsContainer, currentActiveRoll);
+
+      if (newVal >= 5) {
+        playTacticalSound("hit");
+      } else if (newVal === 1) {
+        playTacticalSound("glitch");
+      } else {
+        playTacticalSound("lock");
+      }
+    }
+  }, 40);
+}
+
+export function initDiceModalListeners() {
+  if (diceListenersInitialized) return;
+  diceListenersInitialized = true;
+
+  const poolInput = document.getElementById("dice-pool-input");
+
+  // Steppers
+  const adjustPool = (delta) => {
+    if (!poolInput) return;
+    let val = (parseInt(poolInput.value, 10) || 6) + delta;
+    val = Math.max(1, Math.min(50, val));
+    poolInput.value = val;
+    playTacticalSound("tick");
+  };
+
+  document.getElementById("btn-pool-dec-5")?.addEventListener("click", () => adjustPool(-5));
+  document.getElementById("btn-pool-dec-1")?.addEventListener("click", () => adjustPool(-1));
+  document.getElementById("btn-pool-inc-1")?.addEventListener("click", () => adjustPool(1));
+  document.getElementById("btn-pool-inc-5")?.addEventListener("click", () => adjustPool(5));
+
+  // Preset chips
+  document.querySelectorAll(".btn-dice-preset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const p = parseInt(btn.getAttribute("data-pool"), 10);
+      if (p && poolInput) {
+        poolInput.value = p;
+        playTacticalSound("tick");
+      }
+    });
+  });
+
+  // Sound Toggle
+  const sndBtn = document.getElementById("btn-dice-sound-toggle");
+  if (sndBtn) {
+    sndBtn.textContent = diceSoundEnabled ? "SND: ON" : "SND: OFF";
+    sndBtn.addEventListener("click", () => {
+      diceSoundEnabled = !diceSoundEnabled;
+      sndBtn.textContent = diceSoundEnabled ? "SND: ON" : "SND: OFF";
+      try {
+        localStorage.setItem("sra_dice_sound_enabled", String(diceSoundEnabled));
+      } catch (e) {}
+      if (diceSoundEnabled) playTacticalSound("lock");
+    });
+  }
+
+  // Event Delegation in results arena (die click to re-roll individual die)
+  const resultsContainer = document.getElementById("dice-modal-results");
+  resultsContainer?.addEventListener("click", (e) => {
+    const dieCard = e.target.closest(".die-tactical-card");
+    if (dieCard) {
+      const idx = parseInt(dieCard.getAttribute("data-index"), 10);
+      if (!isNaN(idx)) rerollSingleDie(idx);
+    }
+  });
+
+  // Keyboard shortcut: Space or Enter when modal is open and input not active
+  window.addEventListener("keydown", (e) => {
+    const modal = document.getElementById("modal-dice-roller");
+    if (!modal?.classList.contains("active")) return;
+
+    if (e.key === " " || e.key === "Enter") {
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      if (activeTag !== "input" && activeTag !== "textarea") {
+        e.preventDefault();
+        executeModalRoll();
+      }
+    }
+  });
+}
+
+/**
  * Open Matrix D6 Dice Roller Modal
  */
 export function openDiceModal(options = {}) {
@@ -52,23 +324,35 @@ export function openDiceModal(options = {}) {
   const modal = document.getElementById("modal-dice-roller");
   if (!modal) return;
 
+  initDiceModalListeners();
+
   const modalTitle = document.getElementById("dice-modal-title");
   const poolInput = document.getElementById("dice-pool-input");
   const subtext = document.getElementById("dice-modal-subtext");
   const resultsContainer = document.getElementById("dice-modal-results");
 
   if (modalTitle) modalTitle.textContent = title;
-  if (poolInput) poolInput.value = Math.max(1, pool);
+  if (poolInput) poolInput.value = Math.max(1, Math.min(50, pool));
   if (subtext) {
     subtext.textContent = (attributeName || skillName)
       ? `// ORIGEM: ${skillName || ""} ${attributeName ? `[${attributeName}]` : ""}`
       : "// TESTE DE RESERVA DE DADOS";
   }
+
+  currentActiveRoll = null;
+
   if (resultsContainer) {
-    resultsContainer.innerHTML = `<div style="text-align: center; font-family: var(--font-mono); color: var(--text-muted); padding: 1.5rem;">// AGUARDANDO COMANDO DE ROLAGEM...</div>`;
+    resultsContainer.innerHTML = `
+      <div class="dice-standby-placeholder">
+        <div class="standby-radar-ring" aria-hidden="true"></div>
+        <div class="standby-mono-text">// SISTEMA DE ROLAGEM MATRICIAL PRONTO //</div>
+        <div class="standby-subtext">Defina a reserva (${pool}D6) e dispare a rolagem tática na Matriz</div>
+      </div>
+    `;
   }
 
   modal.classList.add("active");
+  playTacticalSound("tick");
 }
 
 export function closeDiceModal() {
@@ -77,58 +361,127 @@ export function closeDiceModal() {
 }
 
 /**
- * Execute D6 Roll inside Modal
+ * Execute D6 Roll inside Modal (Kinetic Tumbler Scramble & Settle Animation)
  */
 export function executeModalRoll() {
+  if (isDiceRolling) return;
+
   const poolInput = document.getElementById("dice-pool-input");
   const anarchyDieCb = document.getElementById("cb-anarchy-die");
   const resultsContainer = document.getElementById("dice-modal-results");
+  const rollActionBtn = document.getElementById("btn-modal-roll-action");
 
-  const pool = parseInt(poolInput.value, 10) || 1;
-  const useAnarchyDie = anarchyDieCb?.checked || false;
+  const rawPool = parseInt(poolInput?.value, 10);
+  const pool = Math.max(1, Math.min(50, isNaN(rawPool) ? 6 : rawPool));
+  if (poolInput) poolInput.value = pool;
 
-  const roll = rollD6Pool(pool, { useRuleOfSix: false, useAnarchyDie });
+  const useAnarchyDie = anarchyDieCb?.checked ?? true;
 
-  // Render individual tactical dice boxes
-  let diceHtml = `<div class="dice-results-grid">`;
-  for (const die of roll.dice) {
-    let classes = ["die-tactical-box", "anim-fill"];
-    if (die.isHit) classes.push("hit");
-    if (die.isOne) classes.push("one");
-    if (die.isAnarchyDie) classes.push("anarchy-die");
-    diceHtml += `<div class="${classes.join(" ")}" title="${die.isAnarchyDie ? "Dado de Anarquia" : "D6"}">${die.value}</div>`;
-  }
-  diceHtml += `</div>`;
+  isDiceRolling = true;
 
-  // Status Alerts (sem falha crítica e sem emojis)
-  let statusBanner = "";
-  if (roll.glitchStatus === "glitch") {
-    statusBanner = `<div style="background: var(--term-amber-dim); border: 1px solid var(--term-amber); color: var(--term-amber); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs);">GLITCH DETECTADO (DADO DE ANARQUIA: 1)</div>`;
+  // Visual busy state on execution button
+  if (rollActionBtn) {
+    rollActionBtn.disabled = true;
+    rollActionBtn.innerHTML = `
+      <span class="led-indicator led-green" style="margin-right: 6px;"></span>
+      <span>PROCESSANDO TELEMETRIA...</span>
+    `;
   }
 
-  if (roll.anarchyDieHit) {
-    statusBanner += `<div style="background: var(--term-purple-dim); border: 1px solid var(--term-purple); color: var(--term-purple); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 0.45rem; text-align: center; border-radius: var(--radius-xs); margin-top: 0.4rem;">DADO DE ANARQUIA ACERTOU!</div>`;
+  // Pre-calculate final roll
+  const finalRoll = rollD6Pool(pool, { useRuleOfSix: false, useAnarchyDie });
+  currentActiveRoll = finalRoll;
+
+  // Render dice placeholders in rolling state
+  let rollingHtml = `<div class="dice-results-grid" id="dice-grid-interactive">`;
+  for (let i = 0; i < finalRoll.dice.length; i++) {
+    const isAnarchy = useAnarchyDie && i === 0;
+    const tempDie = { value: Math.floor(Math.random() * 6) + 1, isAnarchyDie: isAnarchy };
+    rollingHtml += buildDieCardHtml(tempDie, i, true);
   }
+  rollingHtml += `</div>`;
+  if (resultsContainer) resultsContainer.innerHTML = rollingHtml;
 
+  playTacticalSound("tick");
 
-  resultsContainer.innerHTML = `
-    <div style="display: flex; justify-content: space-around; align-items: center; background: var(--bg-elevated); padding: 0.85rem; border-radius: var(--radius-xs); border: 1px solid var(--border-panel); margin-bottom: 0.75rem;">
-      <div style="text-align: center;">
-        <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted);">SUCESSOS (HITS)</div>
-        <div style="font-size: 2rem; font-family: var(--font-mono); font-weight: 800; color: var(--term-green);">${roll.hits}</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted);">UNS (1s)</div>
-        <div style="font-size: 1.4rem; font-family: var(--font-mono); font-weight: 800; color: var(--term-red);">${roll.onesCount}</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted);">TOTAL DADOS</div>
-        <div style="font-size: 1.4rem; font-family: var(--font-mono); font-weight: 800; color: var(--term-cyan);">${roll.dice.length}</div>
-      </div>
-    </div>
-    ${statusBanner}
-    ${diceHtml}
-  `;
+  // Rapid scramble loop
+  let scrambleCount = 0;
+  const scrambleInterval = setInterval(() => {
+    scrambleCount++;
+    const cards = document.querySelectorAll(".die-tactical-card.rolling");
+    cards.forEach(card => {
+      const valEl = card.querySelector(".die-card-value");
+      if (valEl) valEl.textContent = Math.floor(Math.random() * 6) + 1;
+    });
+    playTacticalSound("tick");
+
+    if (scrambleCount >= 7) {
+      clearInterval(scrambleInterval);
+
+      // Staggered settling of dice
+      const cards = document.querySelectorAll(".die-tactical-card");
+      let settleIndex = 0;
+
+      const settleNextDie = () => {
+        if (settleIndex < finalRoll.dice.length) {
+          const die = finalRoll.dice[settleIndex];
+          const card = cards[settleIndex];
+
+          if (card) {
+            card.classList.remove("rolling");
+            card.classList.add("settled");
+            if (die.isHit) card.classList.add("hit");
+            if (die.value === 6) card.classList.add("critical-hit");
+            if (die.isOne) card.classList.add("one");
+            if (die.isAnarchyDie) card.classList.add("anarchy-die");
+            if (die.exploded) card.classList.add("exploded");
+            if (!die.isHit && !die.isOne) card.classList.add("neutral");
+
+            const valEl = card.querySelector(".die-card-value");
+            if (valEl) valEl.textContent = die.value;
+
+            const footerEl = card.querySelector(".die-card-footer");
+            if (footerEl) {
+              footerEl.textContent = die.isHit ? (die.value === 6 ? "CRIT" : "HIT") : (die.isOne ? "GLITCH" : "—");
+            }
+          }
+
+          settleIndex++;
+          if (settleIndex % 2 === 0) playTacticalSound("tick");
+          setTimeout(settleNextDie, 18);
+        } else {
+          // All dice settled! Reveal full HUD and toolbar
+          isDiceRolling = false;
+
+          if (rollActionBtn) {
+            rollActionBtn.disabled = false;
+            rollActionBtn.innerHTML = `
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8" cy="8" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="8" r="1.3" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+              </svg>
+              <span>EXECUTAR ROLAGEM NA MATRIZ</span>
+            `;
+          }
+
+          renderFullDiceResults(resultsContainer, finalRoll);
+
+          // Audio conclusion
+          if (finalRoll.isAnarchyGlitch || finalRoll.glitchStatus === "glitch") {
+            playTacticalSound("glitch");
+          } else if (finalRoll.hits > 0) {
+            playTacticalSound("hit");
+          } else {
+            playTacticalSound("lock");
+          }
+        }
+      };
+
+      settleNextDie();
+    }
+  }, 35);
 }
 
 /**
@@ -638,8 +991,14 @@ function renderSkillsTab(char, derived) {
                     data-skill-name="${escapeHtml(skill.name)}" 
                     data-pool="${pool}" 
                     data-attr="${escapeHtml(attrDef.name)}"
+                    style="display: inline-flex; align-items: center; gap: 4px;"
                   >
-                    🎲 ROLAR
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8" cy="8" r="1.3" fill="currentColor"/>
+                      <circle cx="16" cy="16" r="1.3" fill="currentColor"/>
+                    </svg>
+                    ROLAR
                   </button>
                 </div>
                 <div>
@@ -948,44 +1307,6 @@ function renderGearTab(char) {
       `).join("");
     }
   }
-
-  // Vehicles
-  const vehContainer = document.getElementById("vehicles-list-container");
-  if (vehContainer) {
-    const vehicles = char.vehicles || [];
-    if (vehContainer.contains(document.activeElement) && vehContainer.querySelectorAll(".veh-name-input").length === vehicles.length) {
-      // Preservar foco em veículos
-    } else if (vehicles.length === 0) {
-      vehContainer.innerHTML = `<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0;">// NENHUM VEÍCULO OU DRONE REGISTRADO.</div>`;
-    } else {
-      vehContainer.innerHTML = vehicles.map((v, idx) => `
-        <div class="weapon-tactical-card bracket-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <input type="text" class="field-input veh-name-input" data-index="${idx}" value="${escapeHtml(v.name)}" style="font-weight: 700; color: var(--term-green); flex: 2;" placeholder="Veículo/Drone..." />
-            <button class="btn-term btn-term-danger btn-term-sm btn-remove-veh" data-index="${idx}">✕</button>
-          </div>
-          <div class="veh-metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.35rem;">
-            <div>
-              <div class="field-label">MANEJO</div>
-              <input type="number" class="field-input field-input-mono veh-hand-input" data-index="${idx}" value="${v.handling || 3}" />
-            </div>
-            <div>
-              <div class="field-label">VELOCIDADE</div>
-              <input type="number" class="field-input field-input-mono veh-spd-input" data-index="${idx}" value="${v.speed || 3}" />
-            </div>
-            <div>
-              <div class="field-label">ARMADURA</div>
-              <input type="number" class="field-input field-input-mono veh-arm-input" data-index="${idx}" value="${v.armor || 6}" />
-            </div>
-            <div>
-              <div class="field-label">CATEGORIA</div>
-              <input type="text" class="field-input veh-type-input" data-index="${idx}" value="${escapeHtml(v.type || "")}" placeholder="Ex: Moto/Drone" />
-            </div>
-          </div>
-        </div>
-      `).join("");
-    }
-  }
 }
 
 function renderContactsTab(char) {
@@ -1040,3 +1361,160 @@ function renderNotesTab(char) {
     notesEl.value = char.notes || "";
   }
 }
+
+/**
+ * =====================================================================
+ * THEME SYSTEM UI RENDERING & DYNAMICS
+ * =====================================================================
+ */
+
+/**
+ * Applies the given theme configuration to the DOM.
+ * If customHex is provided, applies calculated dynamic properties.
+ */
+export function applyTheme(themeId, customHex = null) {
+  const root = document.documentElement;
+
+  if (themeId === "custom" && customHex) {
+    const rgb = hexToRgb(customHex);
+    if (!rgb) return;
+    const rgbStr = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+    root.setAttribute("data-theme", "custom");
+    root.style.setProperty("--term-green-rgb", rgbStr);
+    root.style.setProperty("--term-green", customHex);
+
+    const brightR = Math.min(255, Math.round(rgb.r + (255 - rgb.r) * 0.45));
+    const brightG = Math.min(255, Math.round(rgb.g + (255 - rgb.g) * 0.45));
+    const brightB = Math.min(255, Math.round(rgb.b + (255 - rgb.b) * 0.45));
+    root.style.setProperty("--term-green-bright", `rgb(${brightR}, ${brightG}, ${brightB})`);
+    root.style.setProperty("--term-green-dim", `rgba(${rgbStr}, 0.09)`);
+    root.style.setProperty("--term-green-dimmer", `rgba(${rgbStr}, 0.04)`);
+    root.style.setProperty("--term-green-border", `rgba(${rgbStr}, 0.32)`);
+    root.style.setProperty("--term-green-border-strong", `rgba(${rgbStr}, 0.68)`);
+    root.style.setProperty("--term-green-glow", `0 0 10px rgba(${rgbStr}, 0.40)`);
+    root.style.setProperty("--term-green-glow-lg", `0 0 22px rgba(${rgbStr}, 0.25)`);
+    root.style.setProperty("--border-panel", `rgba(${rgbStr}, 0.18)`);
+    root.style.setProperty("--border-tech", `rgba(${rgbStr}, 0.28)`);
+    root.style.setProperty("--border-bright", `rgba(${rgbStr}, 0.55)`);
+    root.style.setProperty("--border-active", customHex);
+    root.style.setProperty("--text-code", customHex);
+
+    const bgR = Math.round(rgb.r * 0.025);
+    const bgG = Math.round(rgb.g * 0.025);
+    const bgB = Math.round(rgb.b * 0.025);
+    root.style.setProperty("--bg-void", `rgb(${bgR}, ${bgG}, ${bgB})`);
+    root.style.setProperty("--bg-base", `rgb(${bgR + 3}, ${bgG + 4}, ${bgB + 4})`);
+    root.style.setProperty("--bg-panel", `rgba(${bgR + 6}, ${bgG + 8}, ${bgB + 8}, 0.88)`);
+    root.style.setProperty("--bg-panel-solid", `rgb(${bgR + 6}, ${bgG + 8}, ${bgB + 8})`);
+    root.style.setProperty("--bg-card", `rgba(${bgR + 10}, ${bgG + 14}, ${bgB + 14}, 0.72)`);
+    root.style.setProperty("--bg-card-solid", `rgb(${bgR + 10}, ${bgG + 14}, ${bgB + 14})`);
+    root.style.setProperty("--bg-elevated", `rgba(${bgR + 16}, ${bgG + 22}, ${bgB + 22}, 0.82)`);
+    root.style.setProperty("--bg-elevated-solid", `rgb(${bgR + 16}, ${bgG + 22}, ${bgB + 22})`);
+  } else {
+    // Preset: reset inline style overrides and rely on [data-theme="..."]
+    root.removeAttribute("style");
+    root.setAttribute("data-theme", themeId || DEFAULT_THEME_ID);
+  }
+
+  // Update header dot indicator
+  const headerDot = document.getElementById("header-theme-dot");
+  if (headerDot) {
+    if (themeId === "custom" && customHex) {
+      headerDot.style.backgroundColor = customHex;
+      headerDot.style.boxShadow = `0 0 8px ${customHex}`;
+    } else {
+      headerDot.style.backgroundColor = "";
+      headerDot.style.boxShadow = "";
+    }
+  }
+
+  // Update meta theme-color for PWA & mobile browser UI
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    const computedBg = getComputedStyle(root).getPropertyValue("--bg-base").trim() || "#08090b";
+    metaTheme.setAttribute("content", computedBg);
+  }
+
+  // Sync indicators in UI
+  updateThemeIndicators(themeId, customHex);
+}
+
+/**
+ * Renders the presets grid and custom color values in the Theme Modal
+ */
+export function renderThemeModal(activeThemeId, activeCustomHex = null) {
+  const grid = document.getElementById("theme-presets-grid");
+  if (!grid) return;
+
+  grid.innerHTML = THEME_PRESETS.map((p) => {
+    const isActive = activeThemeId === p.id;
+    return `
+      <div class="theme-preset-card ${isActive ? "active" : ""}" data-theme-id="${p.id}" tabindex="0" role="button" aria-pressed="${isActive}">
+        <div class="theme-card-top">
+          <span class="theme-card-swatch" style="background-color: ${p.hex}; color: ${p.hex};"></span>
+          <span class="sys-tag" style="color: ${p.hex}; border-color: ${p.hex}55; background: ${p.hex}18; font-size: 0.6rem;">${p.code}</span>
+        </div>
+        <div class="theme-card-name" style="margin-top: 0.2rem;">${escapeHtml(p.name)}</div>
+        ${isActive ? `<div class="theme-card-badge" style="align-self: flex-start; margin-top: 0.3rem;">[● ATIVO]</div>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  const customPicker = document.getElementById("input-theme-custom-picker");
+  const customHex = document.getElementById("input-theme-custom-hex");
+
+  if (activeThemeId === "custom" && activeCustomHex) {
+    if (customPicker) customPicker.value = activeCustomHex;
+    if (customHex) customHex.value = activeCustomHex;
+  } else {
+    const activePreset = THEME_PRESETS.find(p => p.id === activeThemeId) || THEME_PRESETS[0];
+    if (customPicker) customPicker.value = activePreset.hex;
+    if (customHex) customHex.value = activePreset.hex;
+  }
+}
+
+/**
+ * Updates active indicators across header dot and modal cards
+ */
+export function updateThemeIndicators(activeThemeId, activeCustomHex = null) {
+  // Update modal cards
+  const cards = document.querySelectorAll(".theme-preset-card");
+  cards.forEach((card) => {
+    const id = card.dataset.themeId;
+    const isActive = id === activeThemeId;
+    card.classList.toggle("active", isActive);
+    card.setAttribute("aria-pressed", isActive ? "true" : "false");
+    
+    // Check if badge exists or needs to be toggled
+    let badge = card.querySelector(".theme-card-badge");
+    if (isActive && !badge) {
+      badge = document.createElement("div");
+      badge.className = "theme-card-badge";
+      badge.style.alignSelf = "flex-start";
+      badge.style.marginTop = "0.3rem";
+      badge.textContent = "[● ATIVO]";
+      card.appendChild(badge);
+    } else if (!isActive && badge) {
+      badge.remove();
+    }
+  });
+}
+
+/**
+ * Opens the Theme Calibration Modal
+ */
+export function openThemeModal(activeThemeId, activeCustomHex) {
+  const modal = document.getElementById("modal-theme-selector");
+  if (!modal) return;
+  renderThemeModal(activeThemeId, activeCustomHex);
+  modal.classList.add("active");
+}
+
+/**
+ * Closes the Theme Calibration Modal
+ */
+export function closeThemeModal() {
+  const modal = document.getElementById("modal-theme-selector");
+  if (modal) modal.classList.remove("active");
+}
+

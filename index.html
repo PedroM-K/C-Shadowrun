@@ -68,6 +68,9 @@
 
       <!-- Quick Action Controls -->
       <div class="header-right">
+        <button id="btn-header-theme" class="btn-term" title="Alterar Cor do Tema do Terminal">
+          <span class="theme-swatch-dot" id="header-theme-dot"></span>TEMA
+        </button>
         <button id="btn-header-sheets" class="btn-term btn-term-primary" title="Gerenciar Múltiplas Fichas de Personagem">
           FICHAS (<span id="header-sheets-count">1</span>)
         </button>
@@ -78,7 +81,14 @@
           + NOVA
         </button>
         <button id="btn-header-dice" class="btn-term" title="Abrir Matrix Dice Roller">
-          🎲 D6
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -1px;" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8" cy="8" r="1.3" fill="currentColor"/>
+            <circle cx="16" cy="8" r="1.3" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+            <circle cx="8" cy="16" r="1.3" fill="currentColor"/>
+            <circle cx="16" cy="16" r="1.3" fill="currentColor"/>
+          </svg>D6
         </button>
         <button id="btn-header-export" class="btn-term btn-header-extra" title="Exportar JSON da Ficha">
           EXPORTAR
@@ -571,32 +581,16 @@
             </div>
           </div>
 
-          <!-- Equipamentos & Veículos (2 colunas) -->
-          <div class="deck-grid-2">
-            <!-- Gear items -->
-            <div class="term-panel bracket-box">
-              <div class="term-panel-header">
-                <div class="term-panel-title">
-                  <span class="prefix">03.3 //</span> EQUIPAMENTOS & ITENS
-                </div>
-                <button id="btn-add-gear" class="btn-term btn-term-sm">+ ITEM</button>
+          <!-- Equipamentos & Itens -->
+          <div class="term-panel bracket-box">
+            <div class="term-panel-header">
+              <div class="term-panel-title">
+                <span class="prefix">03.3 //</span> EQUIPAMENTOS & ITENS
               </div>
-              <div class="term-panel-body">
-                <div id="gear-list-container"></div>
-              </div>
+              <button id="btn-add-gear" class="btn-term btn-term-sm">+ ITEM</button>
             </div>
-
-            <!-- Vehicles & Drones -->
-            <div class="term-panel bracket-box">
-              <div class="term-panel-header">
-                <div class="term-panel-title">
-                  <span class="prefix">03.4 //</span> VEÍCULOS & DRONES
-                </div>
-                <button id="btn-add-veh" class="btn-term btn-term-sm">+ VEÍCULO</button>
-              </div>
-              <div class="term-panel-body">
-                <div id="vehicles-list-container"></div>
-              </div>
+            <div class="term-panel-body">
+              <div id="gear-list-container"></div>
             </div>
           </div>
         </section>
@@ -721,50 +715,175 @@
   </div>
 
   <!-- =====================================================================
-       MATRIX D6 DICE ROLLER MODAL
+       MATRIX D6 DICE ROLLER MODAL (CYBERDECK INTERACTIVE CONSOLE)
        ===================================================================== -->
   <div id="modal-dice-roller" class="modal-backdrop">
-    <div class="modal-window bracket-box">
+    <div class="modal-window bracket-box modal-window-dice">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="d6-header-icon" aria-hidden="true" style="display: flex; align-items: center; color: var(--term-green);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8" cy="8" r="1.3" fill="currentColor"/>
+              <circle cx="16" cy="8" r="1.3" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+              <circle cx="8" cy="16" r="1.3" fill="currentColor"/>
+              <circle cx="16" cy="16" r="1.3" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <h3 id="dice-modal-title" style="margin: 0; color: var(--term-green); font-size: 1.05rem; letter-spacing: 0.5px;">MATRIX D6 ROLLER</h3>
+            <div id="dice-modal-subtext" style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted);">// TESTE DE RESERVA DE DADOS</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button type="button" id="btn-dice-sound-toggle" class="btn-term btn-term-sm" title="Alternar Efeitos Sonoros Táticos">SND: ON</button>
+          <button type="button" id="btn-close-dice-modal" class="btn-term btn-term-sm" style="border: none;" aria-label="Fechar">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Pool Configuration Panel -->
+        <div class="dice-pool-control-box bracket-box">
+          <div class="dice-pool-header-row">
+            <span class="field-label" style="margin: 0;">RESERVA DE DADOS (D6)</span>
+            <div class="dice-presets-chips">
+              <span class="dice-presets-label">PRESETS:</span>
+              <button type="button" class="btn-dice-preset" data-pool="4">4</button>
+              <button type="button" class="btn-dice-preset" data-pool="6">6</button>
+              <button type="button" class="btn-dice-preset" data-pool="8">8</button>
+              <button type="button" class="btn-dice-preset" data-pool="10">10</button>
+              <button type="button" class="btn-dice-preset" data-pool="12">12</button>
+              <button type="button" class="btn-dice-preset" data-pool="16">16</button>
+            </div>
+          </div>
+
+          <div class="dice-stepper-row">
+            <div class="dice-stepper-group">
+              <button type="button" id="btn-pool-dec-5" class="btn-term btn-term-sm btn-stepper-quick" title="Diminuir 5 dados">-5</button>
+              <button type="button" id="btn-pool-dec-1" class="btn-term btn-term-sm btn-stepper-quick" title="Diminuir 1 dado">-1</button>
+              <div class="dice-pool-input-wrapper">
+                <input type="number" id="dice-pool-input" class="field-input field-input-mono dice-pool-numeric" min="1" max="50" value="6" />
+                <span class="dice-pool-suffix">D6</span>
+              </div>
+              <button type="button" id="btn-pool-inc-1" class="btn-term btn-term-sm btn-stepper-quick" title="Aumentar 1 dado">+1</button>
+              <button type="button" id="btn-pool-inc-5" class="btn-term btn-term-sm btn-stepper-quick" title="Aumentar 5 dados">+5</button>
+            </div>
+
+            <!-- Toggle for Anarchy Die -->
+            <div class="dice-toggles-cluster">
+              <label class="dice-toggle-label" title="O primeiro dado é o Dado de Anarquia (SRA). 1 = Glitch, 5-6 = Acerto de Anarquia">
+                <input type="checkbox" id="cb-anarchy-die" checked />
+                <span class="dice-toggle-pill dice-toggle-anarchy">
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">DADO DE ANARQUIA</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Results & Arena Container -->
+        <div id="dice-modal-results" class="dice-arena-container">
+          <!-- Standby Initial State -->
+          <div class="dice-standby-placeholder">
+            <div class="standby-radar-ring" aria-hidden="true"></div>
+            <div class="standby-mono-text">// SISTEMA DE ROLAGEM MATRICIAL PRONTO //</div>
+            <div class="standby-subtext">Defina a reserva e dispare a rolagem tática na Matriz</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+        <div class="dice-footer-hint" style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted);">
+          ATALHO: <kbd style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 2px; color: var(--text-bright);">ESPAÇO</kbd> OU <kbd style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 2px; color: var(--text-bright);">ENTER</kbd>
+        </div>
+        <button type="button" id="btn-modal-roll-action" class="btn-term btn-term-primary btn-roll-trigger" style="flex: 1; min-width: 220px; font-size: 0.95rem; padding: 0.7rem 1.25rem; font-weight: 700; letter-spacing: 0.8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8" cy="8" r="1.3" fill="currentColor"/>
+            <circle cx="16" cy="8" r="1.3" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+          </svg>
+          <span>EXECUTAR ROLAGEM NA MATRIZ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MATRIZ CROMÁTICA // THEME SELECTOR MODAL
+       ===================================================================== -->
+  <div id="modal-theme-selector" class="modal-backdrop">
+    <div class="modal-window bracket-box modal-window-theme">
       <div class="modal-header">
         <div>
-          <h3 id="dice-modal-title" style="margin: 0; color: var(--term-green); font-size: 1.05rem;">MATRIX D6 ROLLER
+          <h3 style="margin: 0; color: var(--term-green); font-size: 1.05rem;">
+            // CALIBRAGEM CROMÁTICA DO TERMINAL
           </h3>
-          <div id="dice-modal-subtext"
-            style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted);">// TESTE DE RESERVA DE
-            DADOS</div>
+          <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted);">
+            // SELEÇÃO DE ESQUEMA DE CORES CYBERDECK (PADRÃO: MATRIX GREEN)
+          </div>
         </div>
-        <button id="btn-close-dice-modal" class="btn-term btn-term-sm" style="border: none;">✕</button>
+        <button id="btn-close-theme-modal" class="btn-term btn-term-sm" style="border: none;" aria-label="Fechar">✕</button>
       </div>
 
-      <div class="modal-body">
-        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 120px;">
-            <label class="field-label" for="dice-pool-input">RESERVA DE DADOS (D6)</label>
-            <input type="number" id="dice-pool-input" class="field-input field-input-mono" min="1" max="50" value="6"
-              style="font-size: 1.4rem; font-weight: 800; text-align: center; color: var(--term-green);" />
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1.15rem;">
+        <!-- Live Real-Time Telemetry Preview -->
+        <div class="theme-preview-hud bracket-box">
+          <div class="theme-preview-label">// TELEMETRIA EM TEMPO REAL // PRÉVIA DOS ELEMENTOS</div>
+          <div class="theme-preview-elements">
+            <span class="sys-tag" style="color: var(--term-green); border-color: var(--term-green-border); background: var(--term-green-dim);">
+              ● SRA-2080 ONLINE
+            </span>
+            <span class="led-indicator led-green"></span>
+            <button type="button" class="btn-term btn-term-sm btn-term-primary" style="pointer-events: none;">
+              BOTÃO TÁTICO
+            </button>
+            <span style="font-family: var(--font-mono); color: var(--term-green); font-weight: 700;">
+              D6 [HITS: 4]
+            </span>
           </div>
-
-          <div style="display: flex; align-items: center;">
-            <label
-              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-family: var(--font-mono); cursor: pointer;">
-              <input type="checkbox" id="cb-anarchy-die" checked />
-              <span style="color: var(--term-purple); font-weight: 700;">DADO DE ANARQUIA (SRA)</span>
-            </label>
-          </div>
-
         </div>
 
-        <div id="dice-modal-results">
-          <div style="text-align: center; font-family: var(--font-mono); color: var(--text-muted); padding: 1.5rem;">
-            // AGUARDANDO COMANDO DE ROLAGEM...
+        <!-- Presets Grid Title -->
+        <div class="sheets-section-title">
+          <span>ESQUEMAS TÁTICOS PREDEFINIDOS</span>
+          <span class="sys-tag" style="color: var(--term-cyan);">7 PERFIS</span>
+        </div>
+
+        <!-- Presets Grid Container -->
+        <div id="theme-presets-grid" class="theme-presets-grid"></div>
+
+        <!-- Custom Color Section -->
+        <div class="sheets-section-title">
+          <span>ESPECTRO LIVRE // COR PERSONALIZADA</span>
+          <span class="sys-tag" style="color: var(--term-purple);">HEX / RGB</span>
+        </div>
+
+        <div class="custom-color-box bracket-box">
+          <div class="custom-color-inputs">
+            <div class="color-picker-wrapper">
+              <label for="input-theme-custom-picker" class="field-label" style="font-size: 0.65rem;">PALETA</label>
+              <input type="color" id="input-theme-custom-picker" value="#00ff66" title="Escolha qualquer cor personalizada" />
+            </div>
+            <div class="field-block" style="flex: 1; margin: 0;">
+              <div class="field-label" style="font-size: 0.65rem;">HEXADECIMAL</div>
+              <input type="text" id="input-theme-custom-hex" class="field-input field-input-mono" placeholder="#00ff66" maxlength="7" spellcheck="false" autocomplete="off" />
+            </div>
+            <button type="button" id="btn-apply-custom-theme" class="btn-term btn-term-primary" style="white-space: nowrap; height: 38px;">
+              APLICAR COR
+            </button>
           </div>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button id="btn-modal-roll-action" class="btn-term btn-term-primary"
-          style="width: 100%; font-size: 0.95rem; padding: 0.65rem;">
-          🎲 EXECUTAR ROLAGEM NA MATRIZ
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <button type="button" id="btn-reset-default-theme" class="btn-term btn-term-sm" title="Restaurar para Verde Matrix Original">
+          ↺ RESTAURAR PADRÃO (MATRIX)
+        </button>
+        <button type="button" id="btn-confirm-theme-modal" class="btn-term btn-term-sm btn-term-primary">
+          CONCLUÍDO
         </button>
       </div>
     </div>

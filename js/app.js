@@ -4,14 +4,43 @@
  */
 
 import { store } from "./state.js";
-import { saveCharacter } from "./storage.js";
-import { renderApp, renderSheetsModal, showToast, openDiceModal, closeDiceModal, executeModalRoll } from "./ui.js";
+import { saveCharacter, loadSavedTheme, saveThemeSetting } from "./storage.js";
+import {
+  renderApp,
+  renderSheetsModal,
+  showToast,
+  openDiceModal,
+  closeDiceModal,
+  executeModalRoll,
+  initDiceModalListeners,
+  applyTheme,
+  renderThemeModal,
+  openThemeModal,
+  closeThemeModal
+} from "./ui.js";
 import { exportCharacterToFile, readJsonFile } from "./importer-exporter.js";
 import { calculateSkillDicePool } from "./rules.js";
-import { ATTRIBUTE_SKILL_PRESETS, OFFICIAL_SKILL_DESCRIPTIONS, getSkillDescription } from "./constants.js";
+import {
+  ATTRIBUTE_SKILL_PRESETS,
+  OFFICIAL_SKILL_DESCRIPTIONS,
+  getSkillDescription,
+  THEME_PRESETS,
+  DEFAULT_THEME_ID,
+  hexToRgb
+} from "./constants.js";
+
+// Active theme state & dynamic Matrix rain color cache
+let currentThemeConfig = { id: DEFAULT_THEME_ID, customHex: null };
+let rainColorPrimary = "#00ff66";
+let rainColorDim = "rgba(0, 255, 102, 0.65)";
 
 function bootTerminal() {
   try {
+    // Initialize Theme immediately on boot to prevent flash of wrong colors
+    currentThemeConfig = loadSavedTheme();
+    updateRainThemeColors(currentThemeConfig.id, currentThemeConfig.customHex);
+    applyTheme(currentThemeConfig.id, currentThemeConfig.customHex);
+
     // Subscribe UI to store updates
     store.subscribe((char, derived, eventMeta) => {
       renderApp(char, derived, eventMeta);
@@ -19,9 +48,10 @@ function bootTerminal() {
 
     store.init();
 
-    // Wire navigation, header, modals and dynamic delegations
+    // Wire navigation, header, theme controls, modals and dynamic delegations
     setupNavigation();
     setupHeaderAndDataControls();
+    setupThemeControls();
     setupModals();
     setupDelegatedEvents();
     setupMatrixRain();
@@ -255,6 +285,7 @@ function setupModals() {
   // Dice Modal
   document.getElementById("btn-close-dice-modal")?.addEventListener("click", closeDiceModal);
   document.getElementById("btn-modal-roll-action")?.addEventListener("click", executeModalRoll);
+  initDiceModalListeners();
 
   // Sheets Manager Modal
   const sheetsModal = document.getElementById("modal-sheets-manager");
@@ -458,13 +489,6 @@ function setupDelegatedEvents() {
     store.update(char => {
       if (!char.gear) char.gear = [];
       char.gear.push({ id: `g_${Date.now()}`, name: "Novo Item", qty: 1, notes: "" });
-    });
-  });
-
-  document.getElementById("btn-add-veh")?.addEventListener("click", () => {
-    store.update(char => {
-      if (!char.vehicles) char.vehicles = [];
-      char.vehicles.push({ id: `v_${Date.now()}`, name: "Novo Veículo", handling: 3, speed: 3, armor: 6, type: "Moto", notes: "" });
     });
   });
 
@@ -674,15 +698,10 @@ function setupDelegatedEvents() {
       return;
     }
 
-    // Gear, Vehicles, Qualities Remove
+    // Gear, Qualities Remove
     if (target.classList.contains("btn-remove-gear")) {
       const idx = parseInt(target.getAttribute("data-index"), 10);
       store.update(char => char.gear?.splice(idx, 1));
-      return;
-    }
-    if (target.classList.contains("btn-remove-veh")) {
-      const idx = parseInt(target.getAttribute("data-index"), 10);
-      store.update(char => char.vehicles?.splice(idx, 1));
       return;
     }
     if (target.classList.contains("btn-remove-quality")) {
@@ -809,26 +828,6 @@ function setupDelegatedEvents() {
     }
     if (target.classList.contains("gear-notes-input")) {
       store.update(char => { if (char.gear?.[idx]) char.gear[idx].notes = target.value; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("veh-name-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].name = target.value; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("veh-hand-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].handling = parseInt(target.value, 10) || 0; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("veh-spd-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].speed = parseInt(target.value, 10) || 0; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("veh-arm-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].armor = parseInt(target.value, 10) || 0; }, true, typingMeta);
-      return;
-    }
-    if (target.classList.contains("veh-type-input")) {
-      store.update(char => { if (char.vehicles?.[idx]) char.vehicles[idx].type = target.value; }, true, typingMeta);
       return;
     }
     if (target.classList.contains("contact-name-input")) {
@@ -962,6 +961,106 @@ function registerServiceWorker() {
 }
 
 /**
+ * =====================================================================
+ * THEME CONTROLLERS & EVENT WIRES
+ * =====================================================================
+ */
+function setupThemeControls() {
+  // Header button to open calibration modal
+  document.getElementById("btn-header-theme")?.addEventListener("click", () => {
+    openThemeModal(currentThemeConfig.id, currentThemeConfig.customHex);
+  });
+
+  // Close modal buttons
+  document.getElementById("btn-close-theme-modal")?.addEventListener("click", closeThemeModal);
+  document.getElementById("btn-confirm-theme-modal")?.addEventListener("click", closeThemeModal);
+
+  // Theme preset cards delegation inside modal
+  document.getElementById("theme-presets-grid")?.addEventListener("click", (e) => {
+    const card = e.target.closest(".theme-preset-card");
+    if (!card) return;
+    const themeId = card.dataset.themeId;
+    if (themeId) {
+      setAndSaveTheme(themeId, null);
+      const preset = THEME_PRESETS.find(p => p.id === themeId);
+      showToast(`TEMA ATIVADO // ${preset ? preset.name.toUpperCase() : themeId.toUpperCase()}`, "info");
+    }
+  });
+
+  // Keyboard accessibility for preset cards
+  document.getElementById("theme-presets-grid")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      const card = e.target.closest(".theme-preset-card");
+      if (card) {
+        e.preventDefault();
+        card.click();
+      }
+    }
+  });
+
+  // Custom color picker and hex input sync
+  const customPicker = document.getElementById("input-theme-custom-picker");
+  const customHex = document.getElementById("input-theme-custom-hex");
+  const btnApplyCustom = document.getElementById("btn-apply-custom-theme");
+
+  customPicker?.addEventListener("input", (e) => {
+    if (customHex) customHex.value = e.target.value.toUpperCase();
+  });
+
+  const applyCustomColorAction = () => {
+    let hex = customHex ? customHex.value.trim() : "";
+    if (!hex.startsWith("#")) hex = "#" + hex;
+    const rgb = hexToRgb(hex);
+    if (!rgb) {
+      showToast("CÓDIGO HEX INVÁLIDO. EXEMPLO: #00FF66 OU #00F0FF", "warn");
+      return;
+    }
+    if (customPicker) customPicker.value = hex;
+    setAndSaveTheme("custom", hex);
+    showToast(`COR PERSONALIZADA ATIVADA // ${hex.toUpperCase()}`, "success");
+  };
+
+  btnApplyCustom?.addEventListener("click", applyCustomColorAction);
+  customHex?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyCustomColorAction();
+    }
+  });
+
+  // Reset to default button
+  document.getElementById("btn-reset-default-theme")?.addEventListener("click", () => {
+    setAndSaveTheme(DEFAULT_THEME_ID, null);
+    showToast("TEMA PADRÃO RESTAURADO // MATRIX GREEN", "info");
+  });
+}
+
+function setAndSaveTheme(themeId, customHex = null) {
+  currentThemeConfig = { id: themeId, customHex };
+  saveThemeSetting(themeId, customHex);
+  updateRainThemeColors(themeId, customHex);
+  applyTheme(themeId, customHex);
+  renderThemeModal(themeId, customHex);
+}
+
+function updateRainThemeColors(themeId, customHex = null) {
+  if (themeId === "custom" && customHex) {
+    rainColorPrimary = customHex;
+    const rgb = hexToRgb(customHex);
+    rainColorDim = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.55)` : customHex;
+  } else {
+    const preset = THEME_PRESETS.find(p => p.id === themeId);
+    if (preset) {
+      rainColorPrimary = preset.hex;
+      rainColorDim = `rgba(${preset.rgb}, 0.55)`;
+    } else {
+      rainColorPrimary = "#00ff66";
+      rainColorDim = "rgba(0, 255, 102, 0.55)";
+    }
+  }
+}
+
+/**
  * Matrix Binary Rain Background Animation
  * Lightweight, high-performance canvas loop rendering falling binary (0 & 1) and hex fragments
  */
@@ -1011,13 +1110,13 @@ function setupMatrixRain() {
       const y = drops[i] * fontSize;
 
       if (y > 0) {
-        // Cabeça da coluna mais brilhante, cauda verde fosforescente
+        // Cabeça da coluna mais brilhante, cauda na cor do tema ativo
         if (Math.random() > 0.88) {
           ctx.fillStyle = "#ffffff";
         } else if (Math.random() > 0.5) {
-          ctx.fillStyle = "#00ff66";
+          ctx.fillStyle = rainColorPrimary;
         } else {
-          ctx.fillStyle = "#009933";
+          ctx.fillStyle = rainColorDim;
         }
         ctx.fillText(text, x, y);
       }
@@ -1031,4 +1130,5 @@ function setupMatrixRain() {
 
   requestAnimationFrame(draw);
 }
+
 
